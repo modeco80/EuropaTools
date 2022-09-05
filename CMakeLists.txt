@@ -9,5 +9,7 @@ include(cmake/Policies.cmake)
 
 project(EuropaTools)
 
+add_subdirectory(third_party/libpixel)
+
 add_subdirectory(src/libeuropa)
 add_subdirectory(src/tools)

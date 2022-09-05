@@ -21,7 +21,7 @@ namespace europa::io {
 
 	void PakReader::ReadData() {
 		auto ReadHeader = [&]() {
-			header = LameRead<structs::PakHeader>(stream);
+			header = impl::ReadStreamType<structs::PakHeader>(stream);
 		};
 
 		auto ReadTocEntry = [&]() {
@@ -29,10 +29,10 @@ namespace europa::io {
 			// which we don't store inside the type (because we can't)
 			//
 			// Read this in first.
-			auto filename = ReadPString(stream);
+			auto filename = impl::ReadPString(stream);
 
 			// Then read in the rest.
-			tocData[filename] = LameRead<structs::PakTocEntry>(stream);
+			tocData[filename] = impl::ReadStreamType<structs::PakTocEntry>(stream);
 		};
 
 		ReadHeader();

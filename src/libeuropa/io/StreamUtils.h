@@ -12,59 +12,34 @@
 #include <iostream>
 #include <string>
 
-namespace europa::io {
+namespace europa::io::impl {
+
+	namespace detail {
+		void ReadStreamTypeImpl(std::istream& is, char* buffer, std::size_t size);
+	}
+
 
 	// This is lame. But it works :)
 	template <class T>
-	T LameRead(std::istream& is) {
-		if(!is)
-			throw std::runtime_error("stream is bad");
+	constexpr T ReadStreamType(std::istream& is) {
+		T object {};
 
-		T t {};
-		is.read(reinterpret_cast<char*>(&t), sizeof(T));
-		return t;
+		// Absolutely UB.
+		union Hack {
+			T* t;
+			char* c;
+		} address {
+			.t = &object
+		};
+
+		detail::ReadStreamTypeImpl(is, address.c, sizeof(T));
+
+		return object;
 	}
 
-	std::string ReadZeroTerminatedString(std::istream& is) {
-		std::string s;
-		char c;
+	std::string ReadZeroTerminatedString(std::istream& is);
+	std::string ReadPString(std::istream& is);
 
-		if(!is)
-			return "";
-
-		while(true) {
-			c = static_cast<char>(is.get());
-
-			if(c == '\0')
-				return s;
-
-			s.push_back(c);
-		}
-	}
-
-	std::string ReadPString(std::istream& is) {
-		std::string s;
-		char c;
-
-		if(!is)
-			return "";
-
-		// should be just resizing, and refactor this loop to not do this,
-		// but .... meh. I'll get to it if it's a problem
-		std::uint8_t length = is.get();
-		s.reserve(length);
-
-		while(true) {
-			c = static_cast<char>(is.get());
-
-			if(c == '\0')
-				return s;
-
-			s.push_back(c);
-		}
-	}
-
-
-}
+} // namespace europa::io::impl
 
 #endif // EUROPA_TOOLS_STREAMUTILS_H

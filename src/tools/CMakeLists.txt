@@ -6,3 +6,13 @@ set_target_properties(europa_pack_extractor PROPERTIES
 		CXX_STANDARD 20
 		CXX_STANDARD_REQUIRED ON
 		)
+
+
+add_executable(texdump texdump.cpp)
+
+target_link_libraries(texdump PUBLIC libeuropa)
+
+set_target_properties(texdump PROPERTIES
+		CXX_STANDARD 20
+		CXX_STANDARD_REQUIRED ON
+		)

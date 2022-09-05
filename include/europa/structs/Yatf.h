@@ -1,0 +1,52 @@
+//
+// EuropaTools
+//
+// (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+//
+
+#ifndef EUROPA_STRUCTS_YATF_H
+#define EUROPA_STRUCTS_YATF_H
+
+#include <europa/util/FourCC.h>
+
+#include <europa/structs/ImHexAdapter.h>
+#include <type_traits>
+
+namespace europa::structs {
+
+	struct [[gnu::packed]] YatfHeader {
+
+		constexpr static u32 TextureFlag_Unknown = 0x1;
+
+		/**
+		 * Texture does not have a palette
+		 */
+		constexpr static u32 TextureFlag_NoPalette = 0x30000;
+
+		/**
+		 * Texture uses alpha.
+		 */
+		constexpr static u32 TextureFlag_UsesAlpha = 0x1000000;
+
+		constexpr static auto ValidMagic = util::FourCC<"YATF", std::endian::big>();
+
+		u32 magic;
+
+		u32 flags;
+
+		// Always zeroed.
+		u32 zero;
+
+		u32 height;
+		u32 width;
+
+		[[nodiscard]] constexpr bool IsValid() const {
+			return magic == ValidMagic;
+		}
+	};
+
+}
+
+#endif // EUROPA_STRUCTS_YATF_H
