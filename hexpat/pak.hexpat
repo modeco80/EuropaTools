@@ -1,3 +1,10 @@
+//
+// EuropaTools
+//
+// (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+//
 
 #pragma endian little
 
