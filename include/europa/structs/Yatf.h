@@ -9,15 +9,14 @@
 #ifndef EUROPA_STRUCTS_YATF_H
 #define EUROPA_STRUCTS_YATF_H
 
+#include <europa/structs/ImHexAdapter.h>
 #include <europa/util/FourCC.h>
 
-#include <europa/structs/ImHexAdapter.h>
 #include <type_traits>
 
 namespace europa::structs {
 
 	struct [[gnu::packed]] YatfHeader {
-
 		constexpr static u32 TextureFlag_Unknown = 0x1;
 
 		/**
@@ -47,6 +46,6 @@ namespace europa::structs {
 		}
 	};
 
-}
+} // namespace europa::structs
 
 #endif // EUROPA_STRUCTS_YATF_H

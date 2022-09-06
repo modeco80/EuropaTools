@@ -6,14 +6,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
+#include <europa/io/YatfReader.h>
+#include <pixel/ImageWriter.h>
 
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-
-#include <europa/io/YatfReader.h>
-
-#include <pixel/ImageWriter.h>
 
 namespace fs = std::filesystem;
 int main(int argc, char** argv) {
@@ -38,8 +36,7 @@ int main(int argc, char** argv) {
 
 	reader.ReadImage();
 
-
-	pixel::ImageWriter writer{};
+	pixel::ImageWriter writer {};
 
 	auto outPath = fs::path(argv[1]).replace_extension(".png");
 

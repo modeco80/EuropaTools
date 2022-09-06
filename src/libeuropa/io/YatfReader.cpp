@@ -29,7 +29,6 @@ namespace europa::io {
 	void YatfReader::ReadImage() {
 		if(header.flags & structs::YatfHeader::TextureFlag_NoPalette) {
 			image.Resize({ static_cast<std::uint16_t>(header.width), static_cast<std::uint16_t>(header.height) });
-
 			stream.read(reinterpret_cast<char*>(image.GetBuffer()), (header.width * header.height) * sizeof(pixel::RgbaColor));
 		} else {
 			pixel::RgbaColor palette[256];
@@ -37,7 +36,6 @@ namespace europa::io {
 
 			// NB: sizeof() does pre-multiplication, so it's 100% ok for us to do this.
 			stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
-
 			stream.read(reinterpret_cast<char*>(&tempBuffer[0]), tempBuffer.size());
 
 			image.Resize({ static_cast<std::uint16_t>(header.width), static_cast<std::uint16_t>(header.height) });

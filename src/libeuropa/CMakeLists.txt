@@ -1,8 +1,15 @@
  
 
 add_library(libeuropa
+		# Implementation details
 		io/StreamUtils.cpp
+
+		# Pak IO
+		io/PakFile.cpp
 		io/PakReader.cpp
+		io/PakWriter.cpp
+
+		# Yatf IO
 		io/YatfReader.cpp
 		)
 
@@ -15,6 +22,5 @@ set_target_properties(libeuropa PROPERTIES
 
 # Projects which libeuropa depends on
 target_link_libraries(libeuropa PUBLIC
-
 		pixel::libpixel
 )

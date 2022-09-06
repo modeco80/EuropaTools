@@ -31,19 +31,26 @@ namespace europa::io {
 			// Read this in first.
 			auto filename = impl::ReadPString(stream);
 
-			// Then read in the rest.
-			tocData[filename] = impl::ReadStreamType<structs::PakTocEntry>(stream);
+			files[filename].GetTOCEntry() = impl::ReadStreamType<structs::PakTocEntry>(stream);
 		};
 
 		ReadHeader();
 
-		// Validate the archive magic
+		// Validate the archive header
 		if(std::strcmp(header.magic, structs::PakHeader::VALID_MAGIC) != 0) {
 			invalid = true;
 			return;
 		}
 
-		// std::cout << (int)header.headerSize << " version " << (int)header.version  << '\n';
+		switch(header.version) {
+			case structs::PakVersion::Starfighter:
+			case structs::PakVersion::Ver2:
+				break;
+
+			default:
+				invalid = true;
+				return;
+		}
 
 		stream.seekg(header.tocOffset, std::istream::beg);
 
@@ -51,39 +58,19 @@ namespace europa::io {
 		for(auto i = 0; i < header.fileCount; ++i)
 			ReadTocEntry();
 
-		//		for(auto& [ filename, data ] : tocData) {
-		//			std::cout << filename << " offset " << data.offset << " size " << data.size << '\n';
-		//		}
+		// Read all file data in
+		for(auto& [filename, file] : files) {
+			auto& toc = file.GetTOCEntry();
+			file.data.resize(toc.size);
 
-		// Read all files in
-		for(auto& [filename, data] : tocData) {
-			std::vector<std::uint8_t> dataBuffer;
-
-			dataBuffer.resize(data.size);
-			stream.seekg(data.offset, std::istream::beg);
-
-			stream.read(reinterpret_cast<char*>(&dataBuffer[0]), data.size);
-
-			File file(std::move(dataBuffer), data);
-			files.insert_or_assign(filename, file);
+			stream.seekg(toc.offset, std::istream::beg);
+			stream.read(reinterpret_cast<char*>(&file.data[0]), toc.size);
 		}
 	}
 
-	const std::unordered_map<std::string, PakReader::File>& PakReader::GetFiles() const {
+	const std::unordered_map<std::string, PakFile>& PakReader::GetFiles() const {
 		return files;
 	}
 
-	PakReader::File::File(std::vector<std::uint8_t>&& data, structs::PakTocEntry& tocData)
-		: data(std::move(data)),
-		  tocData(tocData) {
-	}
-
-	const std::vector<std::uint8_t>& PakReader::File::GetData() const {
-		return data;
-	}
-
-	const structs::PakTocEntry& PakReader::File::GetTOCEntry() const {
-		return tocData;
-	}
 
 } // namespace europa::io

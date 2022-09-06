@@ -6,11 +6,11 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
+#include <europa/io/PakReader.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-
-#include <europa/io/PakReader.h>
 
 namespace fs = std::filesystem;
 
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	for(auto& [ filename, file ] : reader.GetFiles()) {
+	for(auto& [filename, file] : reader.GetFiles()) {
 		auto nameCopy = filename;
 
 #ifndef _WIN32

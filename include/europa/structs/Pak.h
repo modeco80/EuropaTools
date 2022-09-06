@@ -9,9 +9,10 @@
 #ifndef EUROPA_STRUCTS_PAK_H
 #define EUROPA_STRUCTS_PAK_H
 
-#include <cstdint>
-
 #include <europa/structs/ImHexAdapter.h>
+
+#include <cstdint>
+#include <cstring>
 
 namespace europa::structs {
 
@@ -20,7 +21,7 @@ namespace europa::structs {
 		Ver2 = 0x5
 	};
 
-	struct [[gnu::packed]]  PakHeader {
+	struct [[gnu::packed]] PakHeader {
 		constexpr static const char VALID_MAGIC[16] = "Europa Packfile";
 
 		char magic[16]; // "Europa Packfile\0"
@@ -51,6 +52,18 @@ namespace europa::structs {
 		[[nodiscard]] constexpr std::size_t RealHeaderSize() const {
 			return sizeof(magic) + static_cast<std::size_t>(headerSize);
 		}
+
+        void Init(PakVersion ver) {
+            // clear any junk
+            memset(this, 0, sizeof(PakHeader));
+
+            // Copy important things.
+            std::memcpy(&magic[0], &VALID_MAGIC[0], sizeof(VALID_MAGIC));
+            headerSize = sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1);
+
+            // Set archive version
+            version = ver;
+        }
 	};
 
 	// A Toc entry (without string. Needs to be read in seperately)
@@ -63,10 +76,10 @@ namespace europa::structs {
 		u32 unk3;
 	};
 
-
-	static_assert(sizeof(PakHeader) == 0x29, "PakHeader wrong size!!");
+    static_assert(sizeof(PakHeader) == 0x29, "PakHeader wrong size!!");
+    static_assert(sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1) == 0x1a, "PakHeader::headerSize will be invalid");
 	static_assert(sizeof(PakTocEntry) == 0xc, "PakTocEntry wrong size!");
 
-}
+} // namespace europa::structs
 
 #endif // EUROPA_STRUCTS_PAK_H

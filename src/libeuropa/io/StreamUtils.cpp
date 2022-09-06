@@ -19,6 +19,11 @@ namespace europa::io::impl {
 			is.read(&buffer[0], size);
 		}
 
+
+		void WriteStreamTypeImpl(std::ostream& os, const char* buffer, std::size_t buffer_size) {
+			os.write(&buffer[0], buffer_size);
+		}
+
 	} // namespace detail
 
 	std::string ReadZeroTerminatedString(std::istream& is) {

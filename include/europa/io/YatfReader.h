@@ -9,9 +9,10 @@
 #ifndef EUROPA_IO_YATFREADER_H
 #define EUROPA_IO_YATFREADER_H
 
-#include <iosfwd>
 #include <europa/structs/Yatf.h>
 #include <pixel/RgbaImage.h>
+
+#include <iosfwd>
 
 namespace europa::io {
 
@@ -35,8 +36,7 @@ namespace europa::io {
 
 	   private:
 		std::istream& stream;
-		bool invalid {false};
-
+		bool invalid { false };
 
 		structs::YatfHeader header;
 
@@ -46,6 +46,6 @@ namespace europa::io {
 		pixel::RgbaImage image;
 	};
 
-}
+} // namespace europa::io
 
 #endif // EUROPA_IO_YATFREADER_H
