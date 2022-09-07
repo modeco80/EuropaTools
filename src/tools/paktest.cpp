@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 		reader.ReadData();
 
 		for(auto& [filename, file] : reader.GetFiles()) {
-			writer.AddFile(filename, file);
+			writer.GetFiles()[filename] = file;
 		}
 	}
 
