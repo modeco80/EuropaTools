@@ -9,47 +9,43 @@
 #ifndef EUROPA_IO_PAKFILE_H
 #define EUROPA_IO_PAKFILE_H
 
-#include <vector>
-#include <cstdint>
-
 #include <europa/structs/Pak.h>
+
+#include <cstdint>
+#include <vector>
 
 namespace europa::io {
 
-    struct PakReader;
-    struct PakWriter;
+	struct PakReader;
+	struct PakWriter;
 
-    struct PakFile {
+	struct PakFile {
+		using DataType = std::vector<std::uint8_t>;
 
-        using DataType = std::vector<std::uint8_t>;
+		/**
+		 * Get the file data.
+		 */
+		[[nodiscard]] const DataType& GetData() const;
 
-        /**
-         * Get the file data.
-         */
-        [[nodiscard]] const DataType& GetData() const;
+		/**
+		 * Get the TOC entry responsible.
+		 */
+		[[nodiscard]] const structs::PakTocEntry& GetTOCEntry() const;
 
-        /**
-         * Get the TOC entry responsible.
-         */
-        [[nodiscard]] const structs::PakTocEntry& GetTOCEntry() const;
+		void SetData(DataType&& data);
 
-        void SetData(DataType&& data);
+		structs::PakTocEntry& GetTOCEntry();
 
-        structs::PakTocEntry& GetTOCEntry();
+		void FillTOCEntry();
 
-        void FillTOCEntry();
+	   private:
+		friend PakReader;
+		friend PakWriter;
 
-    private:
-        friend PakReader;
-        friend PakWriter;
+		std::vector<std::uint8_t> data;
+		structs::PakTocEntry tocData;
+	};
 
+} // namespace europa::io
 
-        std::vector<std::uint8_t> data;
-        structs::PakTocEntry tocData;
-    };
-
-
-}
-
-
-#endif //EUROPA_IO_PAKFILE_H
+#endif // EUROPA_IO_PAKFILE_H

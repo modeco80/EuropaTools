@@ -7,9 +7,10 @@
 //
 
 #include <europa/io/YatfReader.h>
-#include "StreamUtils.h"
 
 #include <vector>
+
+#include "StreamUtils.h"
 
 namespace europa::io {
 
@@ -56,6 +57,4 @@ namespace europa::io {
 		return header;
 	}
 
-
-
-}
+} // namespace europa::io

@@ -7,6 +7,8 @@
 //
 
 #pragma endian little
+// Big archives need a big pattern limit
+#pragma max_patterns 0x40000
 
 namespace europa {
 
@@ -56,7 +58,7 @@ namespace europa {
 
 	struct PakFile {
 		PakHeader header;
-		//PakTocEntry toc[header.fileCount] @ header.tocOffset;
+		PakTocEntry toc[header.fileCount] @ header.tocOffset;
 	};
 
 } // namespace europa

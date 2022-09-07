@@ -23,4 +23,4 @@ set_target_properties(libeuropa PROPERTIES
 # Projects which libeuropa depends on
 target_link_libraries(libeuropa PUBLIC
 		pixel::libpixel
-)
+		)

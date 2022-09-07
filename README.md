@@ -10,9 +10,9 @@ Provides archive IO utilities and the structures.
 
 ## The Tools
 
-### `europa_pak_extractor`
+### `eupak`
 
-Extractor for .pak and .pmdl (they use 1:1 the same format) files. 
+Swiss army knife for Europa packfiles.
 
-TODO: this will be one `eupak` utility later, probably.
+Can create, extract, and show info on them.
 

@@ -16,12 +16,12 @@ namespace europa::util {
 	/**
 	 * A compile-time string. Usable as a C++20 cNTTP.
 	 */
-	template<std::size_t N>
+	template <std::size_t N>
 	struct FixedString {
-		char buf[N + 1]{};
+		char buf[N + 1] {};
 
 		constexpr FixedString(const char* s) { // NOLINT
-			for (unsigned i = 0; i != N; ++i)
+			for(unsigned i = 0; i != N; ++i)
 				buf[i] = s[i];
 		}
 
@@ -34,9 +34,9 @@ namespace europa::util {
 		}
 	};
 
-	template<std::size_t N>
+	template <std::size_t N>
 	FixedString(char const (&)[N]) -> FixedString<N - 1>;
 
-}
+} // namespace europa::util
 
 #endif // EUROPA_UTIL_FIXEDSTRING_H

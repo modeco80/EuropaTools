@@ -10,6 +10,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <indicators/cursor_control.hpp>
+#include <indicators/progress_bar.hpp>
 #include <iostream>
 
 namespace fs = std::filesystem;
@@ -38,6 +40,19 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	indicators::ProgressBar progress {
+		indicators::option::BarWidth { 50 },
+		indicators::option::ForegroundColor { indicators::Color::green },
+		indicators::option::MaxProgress { reader.GetFiles().size() },
+		indicators::option::ShowPercentage { true },
+		indicators::option::ShowElapsedTime { true },
+		indicators::option::ShowRemainingTime { true },
+
+		indicators::option::PrefixText { "Extracting archive " }
+	};
+
+	indicators::show_console_cursor(false);
+
 	for(auto& [filename, file] : reader.GetFiles()) {
 		auto nameCopy = filename;
 
@@ -50,10 +65,14 @@ int main(int argc, char** argv) {
 		}
 #endif
 
+		progress.set_option(indicators::option::PostfixText { filename });
+
 		auto outpath = (baseDirectory / nameCopy);
 
 		if(!fs::exists(outpath.parent_path()))
 			fs::create_directories(outpath.parent_path());
+
+		reader.ReadFile(filename);
 
 		std::ofstream ofs(outpath.string(), std::ofstream::binary);
 
@@ -63,10 +82,9 @@ int main(int argc, char** argv) {
 		}
 
 		ofs.write(reinterpret_cast<const char*>(file.GetData().data()), static_cast<std::streampos>(file.GetTOCEntry().size));
-		ofs.close();
-
-		std::cout << "Wrote \"" << outpath.string() << "\" to disk.\n";
+		progress.tick();
 	}
 
+	indicators::show_console_cursor(true);
 	return 0;
 }

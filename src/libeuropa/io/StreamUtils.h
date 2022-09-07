@@ -17,7 +17,7 @@ namespace europa::io::impl {
 	namespace detail {
 		void ReadStreamTypeImpl(std::istream& is, char* buffer, std::size_t size);
 		void WriteStreamTypeImpl(std::ostream& os, const char* buffer, std::size_t buffer_size);
-	}
+	} // namespace detail
 
 	// This is lame. But it works :)
 	template <class T>

@@ -7,56 +7,58 @@
 //
 
 #include <europa/io/PakWriter.h>
+
 #include <iostream>
 
 #include "StreamUtils.h"
 
 namespace europa::io {
 
+	void PakWriter::Init(structs::PakVersion version) {
+		// for now.
+		pakHeader.Init(version);
+	}
 
-    void PakWriter::Init() {
-        // for now.
-        pakHeader.Init(structs::PakVersion::Starfighter);
-    }
+	std::unordered_map<std::string, PakFile>& PakWriter::GetFiles() {
+		return archiveFiles;
+	}
 
-    void PakWriter::AddFile(const std::string &path, const PakFile& data) {
-        archiveFiles[path] = data;
-    }
+	void PakWriter::Write(std::ostream& os) {
+		// Set up the header a bit more...
+		pakHeader.fileCount = archiveFiles.size();
 
-    void PakWriter::RemoveFile(const std::string &path) {
-        archiveFiles.erase(path);
-    }
+		// Leave space for the header
+		os.seekp(sizeof(structs::PakHeader), std::ostream::beg);
 
-    void PakWriter::Write(std::ostream &os) {
-        // Set up the header a bit more...
-        pakHeader.fileCount = archiveFiles.size();
+		// Seek forwards for version 2 PAKs, as the only
+		// difference seems to be
+		if(pakHeader.version == structs::PakVersion::Ver2) {
+			os.seekp(6, std::ostream::cur);
+		}
 
-        // Leave space for the header
-        os.seekp(sizeof(structs::PakHeader), std::ostream::beg);
+		// Write file data
+		for(auto& [filename, file] : archiveFiles) {
+			file.GetTOCEntry().offset = os.tellp();
+			os.write(reinterpret_cast<const char*>(file.GetData().data()), file.GetData().size());
+		}
 
-        // Write file data
-        for (auto &[filename, file]: archiveFiles) {
-            file.GetTOCEntry().offset = os.tellp();
-            os.write(reinterpret_cast<const char *>(file.GetData().data()), file.GetData().size());
-        }
+		pakHeader.tocOffset = os.tellp();
 
-        pakHeader.tocOffset = os.tellp();
+		// Write the TOC
+		for(auto& [filename, file] : archiveFiles) {
+			file.FillTOCEntry();
 
-        // Write the TOC
-        for (auto &[filename, file]: archiveFiles) {
-            file.FillTOCEntry();
+			// Write the pstring
+			os.put(static_cast<char>(filename.length() + 1));
+			for(const auto c : filename)
+				os.put(c);
+			os.put('\0');
 
-            // Write the pstring
-            os.put(static_cast<char>(filename.length() + 1));
-            for (const auto c: filename)
-                os.put(c);
-            os.put('\0');
+			impl::WriteStreamType(os, file.GetTOCEntry());
+		}
 
-            impl::WriteStreamType(os, file.GetTOCEntry());
-        }
+		os.seekp(0, std::ostream::beg);
+		impl::WriteStreamType(os, pakHeader);
+	}
 
-        os.seekp(0, std::ostream::beg);
-        impl::WriteStreamType(os, pakHeader);
-    }
-
-}
+} // namespace europa::io

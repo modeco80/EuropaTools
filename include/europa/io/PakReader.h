@@ -10,7 +10,6 @@
 #define EUROPA_IO_PAKREADER_H
 
 #include <europa/io/PakFile.h>
-
 #include <europa/structs/Pak.h>
 
 #include <iosfwd>
@@ -20,16 +19,25 @@
 namespace europa::io {
 
 	struct PakReader {
+		using MapType = std::unordered_map<std::string, PakFile>;
 
 		explicit PakReader(std::istream& is);
 
 		void ReadData();
 
+		void ReadFiles();
+
+		/**
+		 * Read in a specific file.
+		 */
+		void ReadFile(const std::string& file);
+
 		bool Invalid() const {
 			return invalid;
 		}
 
-		const std::unordered_map<std::string, PakFile>& GetFiles() const;
+		MapType& GetFiles();
+		const MapType& GetFiles() const;
 
 	   private:
 		std::istream& stream;
@@ -37,7 +45,7 @@ namespace europa::io {
 
 		structs::PakHeader header {};
 
-		std::unordered_map<std::string, PakFile> files;
+		MapType files;
 	};
 
 } // namespace europa::io

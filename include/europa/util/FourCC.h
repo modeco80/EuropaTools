@@ -9,9 +9,9 @@
 #ifndef EUROPA_FOURCC_H
 #define EUROPA_FOURCC_H
 
-#include <bit>
-
 #include <europa/util/FixedString.h>
+
+#include <bit>
 
 namespace europa::util {
 
@@ -19,7 +19,7 @@ namespace europa::util {
 	 * A multi-endian, compile-time FourCC generator.
 	 * You love to see it.
 	 */
-	template<FixedString fccString, std::endian Endian = std::endian::little>
+	template <FixedString fccString, std::endian Endian = std::endian::little>
 	consteval std::uint32_t FourCC() {
 		static_assert(fccString.Length() == 4, "Provided string is not a FourCC");
 
@@ -36,6 +36,6 @@ namespace europa::util {
 		return 0xffffffff;
 	}
 
-}
+} // namespace europa::util
 
 #endif // EUROPA_FOURCC_H

@@ -53,20 +53,47 @@ namespace europa::structs {
 			return sizeof(magic) + static_cast<std::size_t>(headerSize);
 		}
 
-        void Init(PakVersion ver) {
-            // clear any junk
-            memset(this, 0, sizeof(PakHeader));
+		/**
+		 * Initialize this header (used when writing).
+		 */
+		void Init(PakVersion ver) noexcept {
+			// clear any junk
+			memset(this, 0, sizeof(PakHeader));
 
-            // Copy important things.
-            std::memcpy(&magic[0], &VALID_MAGIC[0], sizeof(VALID_MAGIC));
-            headerSize = sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1);
+			// Copy important things.
+			std::memcpy(&magic[0], &VALID_MAGIC[0], sizeof(VALID_MAGIC));
 
-            // Set archive version
-            version = ver;
-        }
+			// Set proper header size.
+			headerSize = sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1);
+
+			// Set archive version
+			version = ver;
+		}
+
+		[[nodiscard]] bool Valid() const noexcept {
+			// Magic must match.
+			if(std::strcmp(magic, VALID_MAGIC) != 0)
+				return false;
+
+			using enum PakVersion;
+
+			// Version must match ones we support,
+			// otherwise it's invalid.
+			switch(version) {
+				case Starfighter:
+				case Ver2:
+					break;
+
+				default:
+					return false;
+			}
+
+			// Header is okay.
+			return true;
+		}
 	};
 
-	// A Toc entry (without string. Needs to be read in seperately)
+	// A Toc entry (without string. Needs to be read in separately)
 	struct [[gnu::packed]] PakTocEntry {
 		u32 offset;
 		u32 size;
@@ -76,8 +103,8 @@ namespace europa::structs {
 		u32 unk3;
 	};
 
-    static_assert(sizeof(PakHeader) == 0x29, "PakHeader wrong size!!");
-    static_assert(sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1) == 0x1a, "PakHeader::headerSize will be invalid");
+	static_assert(sizeof(PakHeader) == 0x29, "PakHeader wrong size!!");
+	static_assert(sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1) == 0x1a, "PakHeader::headerSize will be invalid when writing archives.");
 	static_assert(sizeof(PakTocEntry) == 0xc, "PakTocEntry wrong size!");
 
 } // namespace europa::structs

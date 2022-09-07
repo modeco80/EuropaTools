@@ -10,25 +10,24 @@
 
 namespace europa::io {
 
-    const PakFile::DataType& PakFile::GetData() const {
-        return data;
-    }
+	const PakFile::DataType& PakFile::GetData() const {
+		return data;
+	}
 
-    const structs::PakTocEntry& PakFile::GetTOCEntry() const {
-        return tocData;
-    }
+	const structs::PakTocEntry& PakFile::GetTOCEntry() const {
+		return tocData;
+	}
 
+	structs::PakTocEntry& PakFile::GetTOCEntry() {
+		return tocData;
+	}
 
-    structs::PakTocEntry& PakFile::GetTOCEntry() {
-        return tocData;
-    }
+	void PakFile::SetData(PakFile::DataType&& newData) {
+		data = std::move(newData);
+	}
 
-    void PakFile::SetData(PakFile::DataType&& newData) {
-        data = std::move(newData);
-    }
+	void PakFile::FillTOCEntry() {
+		tocData.size = static_cast<std::uint32_t>(data.size());
+	}
 
-    void PakFile::FillTOCEntry() {
-        tocData.size = static_cast<std::uint32_t>(data.size());
-    }
-
-}
+} // namespace europa::io
