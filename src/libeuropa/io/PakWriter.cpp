@@ -24,14 +24,13 @@ namespace europa::io {
 	}
 
 	void PakWriter::Write(std::ostream& os) {
-		// Set up the header a bit more...
 		pakHeader.fileCount = archiveFiles.size();
 
 		// Leave space for the header
 		os.seekp(sizeof(structs::PakHeader), std::ostream::beg);
 
 		// Seek forwards for version 2 PAKs, as the only
-		// difference seems to be
+		// difference seems to be this additional bump
 		if(pakHeader.version == structs::PakVersion::Ver2) {
 			os.seekp(6, std::ostream::cur);
 		}
@@ -56,6 +55,9 @@ namespace europa::io {
 
 			impl::WriteStreamType(os, file.GetTOCEntry());
 		}
+
+		// Fill out the TOC size.
+		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
 
 		os.seekp(0, std::ostream::beg);
 		impl::WriteStreamType(os, pakHeader);

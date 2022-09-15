@@ -36,13 +36,11 @@ namespace europa::structs {
 
 		u32 tocOffset;
 
-		// Dunno what this is
-		u32 unk;
+		u32 tocSize;
 
 		u32 fileCount;
 
-		// Could be Windows FILETIME?
-		u32 unk2;
+		u32 creationUnixTime;
 
 		u32 reservedPad;
 
@@ -97,10 +95,7 @@ namespace europa::structs {
 	struct [[gnu::packed]] PakTocEntry {
 		u32 offset;
 		u32 size;
-
-		// Seems to be the same as the header's
-		// unk2?
-		u32 unk3;
+		u32 creationUnixTime;
 	};
 
 	static_assert(sizeof(PakHeader) == 0x29, "PakHeader wrong size!!");
