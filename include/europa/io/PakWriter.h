@@ -21,7 +21,7 @@ namespace europa::io {
 	 * Writer for package files.
 	 */
 	struct PakWriter {
-		void Init(structs::PakVersion version);
+		void Init(structs::PakHeader::Version version);
 
 		std::unordered_map<std::string, PakFile>& GetFiles();
 

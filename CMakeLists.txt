@@ -1,3 +1,11 @@
+#
+# EuropaTools
+#
+# (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
 cmake_minimum_required(VERSION 3.10)
 
 # Prohibit in-source tree builds.
@@ -7,7 +15,11 @@ endif()
 
 include(cmake/Policies.cmake)
 
-project(EuropaTools)
+project(EuropaTools
+        VERSION 0.0.1 # Placeholder for sem-ver usage. Replace with real value later.
+        LANGUAGES C CXX
+        DESCRIPTION "Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter)"
+        )
 
 add_subdirectory(third_party/libpixel)
 add_subdirectory(third_party/indicators)

@@ -17,7 +17,7 @@
 
 namespace europa::io {
 
-	void PakWriter::Init(structs::PakVersion version) {
+	void PakWriter::Init(structs::PakHeader::Version version) {
 		// for now.
 		pakHeader.Init(version);
 	}
@@ -87,7 +87,7 @@ namespace europa::io {
 
 		// Version 5 paks seem to have an additional bit of reserved data
 		// (which is all zeros.)
-		if(pakHeader.version == structs::PakVersion::Ver2) {
+		if(pakHeader.version == structs::PakHeader::Version::Ver5) {
 			os.seekp(6, std::ostream::cur);
 		}
 

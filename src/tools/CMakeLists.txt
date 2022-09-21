@@ -1,13 +1,16 @@
+#
+# EuropaTools
+#
+# (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
 add_executable(europa_pack_extractor europa_pack_extractor.cpp)
 
 target_link_libraries(europa_pack_extractor PUBLIC
 		libeuropa
 		indicators::indicators
-		)
-
-set_target_properties(europa_pack_extractor PROPERTIES
-		CXX_STANDARD 20
-		CXX_STANDARD_REQUIRED ON
 		)
 
 add_executable(pakcreate pakcreate.cpp)
@@ -17,30 +20,14 @@ target_link_libraries(pakcreate PUBLIC
 		indicators::indicators
 		)
 
-set_target_properties(pakcreate PROPERTIES
-		CXX_STANDARD 20
-		CXX_STANDARD_REQUIRED ON
-		)
-
-
 add_executable(texdump texdump.cpp)
 
 target_link_libraries(texdump PUBLIC
 		libeuropa
 		)
 
-set_target_properties(texdump PROPERTIES
-		CXX_STANDARD 20
-		CXX_STANDARD_REQUIRED ON
-		)
-
 add_executable(paktest paktest.cpp)
 
 target_link_libraries(paktest PUBLIC
 		libeuropa
-		)
-
-set_target_properties(paktest PROPERTIES
-		CXX_STANDARD 20
-		CXX_STANDARD_REQUIRED ON
 		)

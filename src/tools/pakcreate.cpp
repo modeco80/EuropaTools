@@ -32,11 +32,11 @@ int main(int argc, char** argv) {
 	if(argv[3] != nullptr) {
 		if(!strcmp(argv[3], "--jedi")) {
 			std::cout << "Writing Jedi Starfighter archive\n";
-			writer.Init(structs::PakVersion::Ver2);
+			writer.Init(structs::PakHeader::Version::Ver5);
 		}
 	} else {
 		std::cout << "Writing Starfighter archive\n";
-		writer.Init(structs::PakVersion::Starfighter);
+		writer.Init(structs::PakHeader::Version::Ver4);
 	}
 
 	for(auto& ent : fs::recursive_directory_iterator(argv[1])) {
