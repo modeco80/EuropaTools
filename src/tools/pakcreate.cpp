@@ -69,7 +69,9 @@ int main(int argc, char** argv) {
 		file.SetData(std::move(pakData));
 		file.FillTOCEntry();
 
-		std::cout << "Added \"" << relativePathName << "\"\n";
+		file.GetTOCEntry().creationUnixTime = 0;
+
+		//std::cout << "File \"" << relativePathName << "\"\n";
 		writer.GetFiles()[relativePathName] = std::move(file);
 	}
 

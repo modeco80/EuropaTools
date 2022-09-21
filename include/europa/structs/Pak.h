@@ -16,13 +16,13 @@
 
 namespace europa::structs {
 
-	enum class PakVersion : u16 {
-		Starfighter = 0x4,
-		Ver2 = 0x5
-	};
-
 	struct [[gnu::packed]] PakHeader {
 		constexpr static const char VALID_MAGIC[16] = "Europa Packfile";
+
+		enum class Version : u16 {
+			Ver4 = 0x4,
+			Ver5 = 0x5
+		};
 
 		char magic[16]; // "Europa Packfile\0"
 
@@ -31,7 +31,7 @@ namespace europa::structs {
 		 */
 		u16 headerSize;
 
-		PakVersion version;
+		Version version;
 		u8 pad;
 
 		u32 tocOffset;
@@ -42,6 +42,7 @@ namespace europa::structs {
 
 		u32 creationUnixTime;
 
+		// Zeroes.
 		u32 reservedPad;
 
 		/**
@@ -54,7 +55,7 @@ namespace europa::structs {
 		/**
 		 * Initialize this header (used when writing).
 		 */
-		void Init(PakVersion ver) noexcept {
+		void Init(Version ver) noexcept {
 			// clear any junk
 			memset(this, 0, sizeof(PakHeader));
 
@@ -73,21 +74,22 @@ namespace europa::structs {
 			if(std::strcmp(magic, VALID_MAGIC) != 0)
 				return false;
 
-			using enum PakVersion;
+			// Check header size.
+			if(headerSize != sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1))
+				return false;
+
+			using enum Version;
 
 			// Version must match ones we support,
 			// otherwise it's invalid.
 			switch(version) {
-				case Starfighter:
-				case Ver2:
-					break;
+				case Ver4:
+				case Ver5:
+					return true;
 
 				default:
 					return false;
 			}
-
-			// Header is okay.
-			return true;
 		}
 	};
 
@@ -97,6 +99,7 @@ namespace europa::structs {
 		u32 size;
 		u32 creationUnixTime;
 	};
+
 
 	static_assert(sizeof(PakHeader) == 0x29, "PakHeader wrong size!!");
 	static_assert(sizeof(PakHeader) - (sizeof(PakHeader::VALID_MAGIC) - 1) == 0x1a, "PakHeader::headerSize will be invalid when writing archives.");
