@@ -9,9 +9,8 @@
 #ifndef EUROPA_FOURCC_H
 #define EUROPA_FOURCC_H
 
-#include <europa/util/FixedString.h>
-
 #include <bit>
+#include <europa/util/FixedString.hpp>
 
 namespace europa::util {
 

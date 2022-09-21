@@ -9,10 +9,9 @@
 #ifndef EUROPA_STRUCTS_PAK_H
 #define EUROPA_STRUCTS_PAK_H
 
-#include <europa/structs/ImHexAdapter.h>
-
 #include <cstdint>
 #include <cstring>
+#include <europa/structs/ImHexAdapter.hpp>
 
 namespace europa::structs {
 

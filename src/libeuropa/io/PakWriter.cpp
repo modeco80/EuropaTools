@@ -6,14 +6,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
-#include <europa/io/PakWriter.h>
-
+#include <algorithm>
+#include <europa/io/PakWriter.hpp>
+#include <europa/util/TupleElement.hpp>
 #include <iostream>
 
 #include "StreamUtils.h"
-
-#include <algorithm>
-#include <europa/util/TupleElement.h>
 
 namespace europa::io {
 

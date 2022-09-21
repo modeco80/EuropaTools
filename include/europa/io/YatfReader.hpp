@@ -9,9 +9,9 @@
 #ifndef EUROPA_IO_YATFREADER_H
 #define EUROPA_IO_YATFREADER_H
 
-#include <europa/structs/Yatf.h>
 #include <pixel/RgbaImage.h>
 
+#include <europa/structs/Yatf.hpp>
 #include <iosfwd>
 
 namespace europa::io {

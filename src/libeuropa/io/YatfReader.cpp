@@ -6,8 +6,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
-#include <europa/io/YatfReader.h>
-
+#include <europa/io/YatfReader.hpp>
 #include <vector>
 
 #include "StreamUtils.h"

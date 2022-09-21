@@ -6,8 +6,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 
-#include <europa/io/PakReader.h>
-
+#include <europa/io/PakReader.hpp>
 #include <filesystem>
 #include <fstream>
 #include <indicators/cursor_control.hpp>

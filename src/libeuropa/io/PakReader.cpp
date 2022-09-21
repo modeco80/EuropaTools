@@ -6,10 +6,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
-#include <europa/io/PakReader.h>
-#include <europa/structs/Pak.h>
-
 #include <cstring>
+#include <europa/io/PakReader.hpp>
+#include <europa/structs/Pak.hpp>
 
 #include "StreamUtils.h"
 

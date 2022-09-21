@@ -9,9 +9,8 @@
 #ifndef EUROPA_IO_PAKFILE_H
 #define EUROPA_IO_PAKFILE_H
 
-#include <europa/structs/Pak.h>
-
 #include <cstdint>
+#include <europa/structs/Pak.hpp>
 #include <vector>
 
 namespace europa::io {

@@ -9,9 +9,8 @@
 #ifndef EUROPA_IO_PAKREADER_H
 #define EUROPA_IO_PAKREADER_H
 
-#include <europa/io/PakFile.h>
-#include <europa/structs/Pak.h>
-
+#include <europa/io/PakFile.hpp>
+#include <europa/structs/Pak.hpp>
 #include <iosfwd>
 #include <string>
 #include <unordered_map>

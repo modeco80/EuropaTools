@@ -9,8 +9,7 @@
 #ifndef EUROPA_IO_PAKWRITER_H
 #define EUROPA_IO_PAKWRITER_H
 
-#include <europa/io/PakFile.h>
-
+#include <europa/io/PakFile.hpp>
 #include <iosfwd>
 #include <string>
 #include <unordered_map>

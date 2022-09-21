@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
-#include <europa/io/PakFile.h>
+#include <europa/io/PakFile.hpp>
 
 namespace europa::io {
 

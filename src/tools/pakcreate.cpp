@@ -8,12 +8,11 @@
 
 // A test utility to regurgitate a pak.
 
-#include <europa/io/PakReader.h>
-#include <europa/io/PakWriter.h>
-
+#include <europa/io/PakReader.hpp>
+#include <europa/io/PakWriter.hpp>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 

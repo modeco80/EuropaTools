@@ -6,9 +6,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 
-#include <europa/io/YatfReader.h>
 #include <pixel/ImageWriter.h>
 
+#include <europa/io/YatfReader.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
