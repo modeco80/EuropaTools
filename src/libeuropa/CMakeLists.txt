@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-add_library(libeuropa
+add_library(europa
 		# Implementation details
 		io/StreamUtils.cpp
 
@@ -19,11 +19,11 @@ add_library(libeuropa
 		io/YatfReader.cpp
 		)
 
-target_include_directories(libeuropa PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(europa PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-target_compile_features(libeuropa PUBLIC cxx_std_20)
+target_compile_features(europa PUBLIC cxx_std_20)
 
 # Projects which libeuropa depends on
-target_link_libraries(libeuropa PUBLIC
+target_link_libraries(europa PUBLIC
 		pixel::libpixel
 		)

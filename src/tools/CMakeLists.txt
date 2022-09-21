@@ -9,25 +9,25 @@
 add_executable(europa_pack_extractor europa_pack_extractor.cpp)
 
 target_link_libraries(europa_pack_extractor PUBLIC
-		libeuropa
+		europa
 		indicators::indicators
 		)
 
 add_executable(pakcreate pakcreate.cpp)
 
 target_link_libraries(pakcreate PUBLIC
-		libeuropa
+		europa
 		indicators::indicators
 		)
 
 add_executable(texdump texdump.cpp)
 
 target_link_libraries(texdump PUBLIC
-		libeuropa
+		europa
 		)
 
 add_executable(paktest paktest.cpp)
 
 target_link_libraries(paktest PUBLIC
-		libeuropa
+		europa
 		)
