@@ -38,6 +38,9 @@ namespace europa::io {
 		MapType& GetFiles();
 		const MapType& GetFiles() const;
 
+		// implement in cpp later, lazy and just wanna get this out :vvv
+		const structs::PakHeader& GetHeader() const { return header; }
+
 	   private:
 		std::istream& stream;
 		bool invalid { false };

@@ -16,7 +16,7 @@ endif()
 include(cmake/Policies.cmake)
 
 project(EuropaTools
-        VERSION 0.0.1 # Placeholder for sem-ver usage. Replace with real value later.
+        VERSION 1.0.0
         LANGUAGES C CXX
         DESCRIPTION "Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter)"
         )
