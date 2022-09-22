@@ -9,13 +9,6 @@
 add_subdirectory(eupak)
 
 # Most of these utilities are being merged into eupak.
-
-add_executable(pakcreate pakcreate.cpp)
-target_link_libraries(pakcreate PUBLIC
-		europa
-		indicators::indicators
-		)
-
 add_executable(texdump texdump.cpp)
 target_link_libraries(texdump PUBLIC
 		europa

@@ -18,7 +18,7 @@
 
 namespace eupak::tasks {
 
-	int ExtractTask::Run(ExtractTask::Arguments&& args) {
+	int ExtractTask::Run(Arguments&& args) {
 		std::ifstream ifs(args.inputPath.string(), std::ifstream::binary);
 
 		if(!ifs) {

@@ -11,13 +11,21 @@
 
 #include <CommonDefs.hpp>
 
+#include <europa/structs/Pak.hpp>
+
+
 namespace eupak::tasks {
 
 		struct CreateTask {
 			struct Arguments {
+				fs::path inputDirectory;
+				fs::path outputFile;
 
+				bool verbose;
+				europa::structs::PakHeader::Version pakVersion;
 			};
 
+			int Run(Arguments&& args);
 		};
 
 } // namespace europa

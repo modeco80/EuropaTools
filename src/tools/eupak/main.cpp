@@ -10,6 +10,7 @@
 
 #include <tasks/InfoTask.hpp>
 #include <tasks/ExtractTask.hpp>
+#include <tasks/CreateTask.hpp>
 
 #include <argparse/argparse.hpp>
 
@@ -46,17 +47,24 @@ int main(int argc, char** argv) {
 	argparse::ArgumentParser createParser("create", EUPAK_VERSION_STR, argparse::default_arguments::help);
 	createParser.add_description("Create a package file.");
 	createParser.add_argument("-d", "--directory")
-			.required()
-			.metavar("DIRECTORY")
-			.help("Directory to create archive from");
+				.required()
+				.metavar("DIRECTORY")
+				.help("Directory to create archive from");
+
+	createParser.add_argument("-V","--archive-version")
+				.default_value("starfighter")
+				.help(R"(Output archive version. Either "starfighter" or "jedistarfighter".)")
+				.metavar("VERSION");
 
 	createParser.add_argument("output")
-			.help("Output archive")
-			.metavar("ARCHIVE");
+				.required()
+				.help("Output archive")
+				.metavar("ARCHIVE");
+
 	createParser.add_argument("--verbose")
-			.help("Increase creation output verbosity")
-			.default_value(false)
-			.implicit_value(true);
+				.help("Increase creation output verbosity")
+				.default_value(false)
+				.implicit_value(true);
 
 
 	parser.add_subparser(infoParser);
@@ -105,8 +113,35 @@ int main(int argc, char** argv) {
 	}
 
 	if(parser.is_subcommand_used("create")) {
-		std::cout << "Create command is currently unimplemented for now. Use pakcreate until it is\n";
-		return 1;
+		eupak::tasks::CreateTask task;
+		eupak::tasks::CreateTask::Arguments args;
+
+		args.verbose = createParser.get<bool>("--verbose");
+		args.inputDirectory = eupak::fs::path(createParser.get("--directory"));
+		args.outputFile = eupak::fs::path(createParser.get("output"));
+
+		if(createParser.is_used("--archive-version")) {
+				auto& versionStr = createParser.get("--archive-version");
+
+				if(versionStr == "starfighter") {
+					args.pakVersion = europa::structs::PakHeader::Version::Ver4;
+				} else if(versionStr == "jedistarfighter") {
+					args.pakVersion = europa::structs::PakHeader::Version::Ver5;
+				} else {
+					std::cout << "Error: Invalid version \"" << versionStr << "\"\n" << createParser;
+					return 1;
+				}
+		} else {
+			args.pakVersion = europa::structs::PakHeader::Version::Ver4;
+		}
+
+
+		if(!eupak::fs::is_directory(args.inputDirectory)) {
+			std::cout << "Error: Provided input isn't a directory\n" << createParser;
+			return 1;
+		}
+
+		return task.Run(std::move(args));
 	}
 
 	return 0;

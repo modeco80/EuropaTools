@@ -22,6 +22,9 @@ namespace europa::io {
 	struct PakWriter {
 		void Init(structs::PakHeader::Version version);
 
+		// TODO: accessor for header
+		// 		 use flattened vector format anyhow (less allocs, higher perf)
+
 		std::unordered_map<std::string, PakFile>& GetFiles();
 
 		/**
