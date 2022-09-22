@@ -6,6 +6,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+
+// MinGW bodges are cool.
+#if defined(_WIN32) && !defined(_MSC_VER)
+	#define _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+
 #include <tasks/InfoTask.hpp>
 
 #include <europa/io/PakReader.hpp>
