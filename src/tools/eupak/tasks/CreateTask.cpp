@@ -108,6 +108,9 @@ namespace eupak::tasks {
 		// TODO: use time to write in the header
 		//			also: is there any point to verbosity? could add archive written size ig
 
+		std::vector<europa::io::PakWriter::FlattenedType> files;
+		files.reserve(fileCount);
+
 		for(auto& ent : fs::recursive_directory_iterator(args.inputDirectory)) {
 			if(ent.is_directory())
 				continue;
@@ -144,8 +147,7 @@ namespace eupak::tasks {
 
 			file.GetTOCEntry().creationUnixTime = static_cast<std::uint32_t>(lastModified.time_since_epoch().count());
 
-			writer.GetFiles()[relativePathName] = std::move(file);
-
+			files.emplace_back(std::make_pair(relativePathName, std::move(file)));
 			progress.tick();
 			currFile++;
 		}
@@ -159,10 +161,9 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-
 		CreateArchiveReportSink sink(fileCount);
 
-		writer.Write(ofs, sink);
+		writer.Write(ofs, std::move(files), sink);
 		return 0;
 	}
 

@@ -20,10 +20,6 @@ namespace europa::io {
 		pakHeader.Init(version);
 	}
 
-	std::unordered_map<std::string, PakFile>& PakWriter::GetFiles() {
-		return archiveFiles;
-	}
-
 	// move to a util/ header
 
 	template<class T>
@@ -31,53 +27,17 @@ namespace europa::io {
 		return (-value) & alignment - 1;
 	}
 
-	/**
-	 * Class functor for flattening a map.
-	 */
-	template<class Map>
-	struct MapFlatten {
-		/**
-		 * Storage type to store one key -> value pair.
-		 */
-		using FlattenedType = std::pair<typename Map::key_type, typename Map::mapped_type>;
-		using ArrayType = std::vector<FlattenedType>;
-
-		constexpr explicit MapFlatten(Map& mapToFlatten)
-			: map(mapToFlatten) {
-
-		}
-
-		ArrayType operator()() const {
-			ArrayType arr;
-			arr.reserve(map.size());
-
-			for(auto& [ key, value ] : map)
-				arr.emplace_back(std::make_pair(key, value));
-
-			return arr;
-		}
-
-		private:
-		 Map& map;
-	};
-
 	// TODO:
 	// 	 - Composable operations (WriteTOC, WriteFile, WriteHeader)
-	//	 - Add IProgressReportSink reporting
 
-	void PakWriter::Write(std::ostream& os, PakProgressReportSink& sink) {
+	void PakWriter::Write(std::ostream& os,  std::vector<FlattenedType>&& vec, PakProgressReportSink& sink) {
 
-		// This essentially converts our map we use for faster insertion
-		// into a flat array we can sort easily.
-		//
-		// NB: this copies by value, so during this function we use 2x the ram.
-		// doesn't seem to be a big problem though.
-		auto sortedFiles = MapFlatten{archiveFiles}();
+		std::vector<FlattenedType> sortedFiles = std::move(vec);
 
 		// Sort the flattened array by file size, the biggest first.
 		// Doesn't seem to help (neither does name length)
-		std::ranges::sort(sortedFiles, std::greater{}, [](const decltype(MapFlatten{archiveFiles})::FlattenedType& elem) {
-			return std::get<1>(elem).GetTOCEntry().size;
+		std::ranges::sort(sortedFiles, std::greater{}, [](const FlattenedType& elem) {
+			return elem.second.GetTOCEntry().size;
 		});
 
 		// Leave space for the header
@@ -91,9 +51,6 @@ namespace europa::io {
 
 		// Write file data
 		for(auto& [filename, file] : sortedFiles) {
-			//std::cout << "PakWriteFile \"" << filename << "\"\n    Size " << file.GetTOCEntry().size << "\n";
-
-
 			sink.OnEvent({
 				PakProgressReportSink::FileEvent::Type::FileBeginWrite,
 				filename
@@ -105,7 +62,6 @@ namespace europa::io {
 			// Flush on file writing
 			os.flush();
 
-
 			sink.OnEvent({
 				PakProgressReportSink::FileEvent::Type::FileEndWrite,
 				filename
@@ -113,7 +69,6 @@ namespace europa::io {
 		}
 
 		pakHeader.tocOffset = os.tellp();
-
 
 		sink.OnEvent({
 			PakProgressReportSink::PakEvent::Type::WritingToc
@@ -139,7 +94,7 @@ namespace europa::io {
 
 
 		// Fill out the rest of the header.
-		pakHeader.fileCount = archiveFiles.size();
+		pakHeader.fileCount = sortedFiles.size();
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
 
 

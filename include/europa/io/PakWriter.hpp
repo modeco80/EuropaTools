@@ -13,7 +13,7 @@
 #include <europa/io/PakProgressReportSink.hpp>
 #include <iosfwd>
 #include <string>
-#include <unordered_map>
+#include <utility>
 
 namespace europa::io {
 
@@ -21,21 +21,19 @@ namespace europa::io {
 	 * Writer for package files.
 	 */
 	struct PakWriter {
+		using FlattenedType = std::pair<std::string, PakFile>;
+
 		void Init(structs::PakHeader::Version version);
 
-		// TODO: accessor for header
-		// 		 use flattened vector format anyhow (less allocs, higher perf)
-
-		std::unordered_map<std::string, PakFile>& GetFiles();
+		const structs::PakHeader& GetHeader() const { return pakHeader; }
 
 		/**
 		 * Write the resulting archive to the given output stream.
 		 */
-		void Write(std::ostream& os, PakProgressReportSink& sink);
+		void Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink);
 
 	   private:
 		structs::PakHeader pakHeader {};
-		std::unordered_map<std::string, PakFile> archiveFiles;
 	};
 
 } // namespace europa::io
