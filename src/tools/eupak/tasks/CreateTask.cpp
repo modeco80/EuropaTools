@@ -16,6 +16,65 @@
 
 namespace eupak::tasks {
 
+	struct CreateArchiveReportSink : public europa::io::PakProgressReportSink {
+
+		CreateArchiveReportSink(int fileCount = 0)
+			: europa::io::PakProgressReportSink() {
+			indicators::show_console_cursor(false);
+			progress.set_option(indicators::option::MaxProgress { fileCount });
+		}
+
+		~CreateArchiveReportSink() {
+			indicators::show_console_cursor(true);
+		}
+
+		void OnEvent(const PakEvent& event) override {
+			using enum PakEvent::Type;
+			switch(event.type) {
+				case WritingHeader:
+					progress.set_option(indicators::option::PostfixText {"Writing header"});
+					progress.print_progress();
+					break;
+
+				case FillInHeader:
+					progress.set_option(indicators::option::PostfixText {"Filling in header"});
+					progress.print_progress();
+					break;
+
+				case WritingToc:
+					progress.set_option(indicators::option::PostfixText {"Writing TOC"});
+					progress.print_progress();
+					break;
+			}
+		}
+
+		void OnEvent(const FileEvent& event) override {
+			using enum FileEvent::Type;
+			switch(event.type) {
+				case FileBeginWrite:
+					progress.set_option(indicators::option::PostfixText {"Writing " + event.filename});
+					progress.print_progress();
+					break;
+
+				case FileEndWrite:
+					progress.set_option(indicators::option::PostfixText {"Written " + event.filename});
+					progress.tick();
+					break;
+			}
+		}
+
+	   private:
+		indicators::ProgressBar progress {
+			indicators::option::BarWidth { 50 },
+			indicators::option::ForegroundColor { indicators::Color::yellow },
+			indicators::option::ShowPercentage { true },
+			indicators::option::ShowElapsedTime { true },
+			indicators::option::ShowRemainingTime { true },
+
+			indicators::option::PrefixText { "Writing archive " }
+		};
+	};
+
 	int CreateTask::Run(Arguments&& args) {
 		europa::io::PakWriter writer;
 
@@ -41,7 +100,7 @@ namespace eupak::tasks {
 			indicators::option::ShowElapsedTime { true },
 			indicators::option::ShowRemainingTime { true },
 
-			indicators::option::PrefixText { "Creating archive " }
+			indicators::option::PrefixText { "Adding files to archive " }
 		};
 
 		indicators::show_console_cursor(false);
@@ -91,6 +150,8 @@ namespace eupak::tasks {
 			currFile++;
 		}
 
+		indicators::show_console_cursor(true);
+
 		std::ofstream ofs(args.outputFile.string(), std::ofstream::binary);
 
 		if(!ofs) {
@@ -98,8 +159,10 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		writer.Write(ofs);
-		indicators::show_console_cursor(true);
+
+		CreateArchiveReportSink sink(fileCount);
+
+		writer.Write(ofs, sink);
 		return 0;
 	}
 

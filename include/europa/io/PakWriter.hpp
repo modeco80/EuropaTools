@@ -10,6 +10,7 @@
 #define EUROPA_IO_PAKWRITER_H
 
 #include <europa/io/PakFile.hpp>
+#include <europa/io/PakProgressReportSink.hpp>
 #include <iosfwd>
 #include <string>
 #include <unordered_map>
@@ -30,7 +31,7 @@ namespace europa::io {
 		/**
 		 * Write the resulting archive to the given output stream.
 		 */
-		void Write(std::ostream& os);
+		void Write(std::ostream& os, PakProgressReportSink& sink);
 
 	   private:
 		structs::PakHeader pakHeader {};

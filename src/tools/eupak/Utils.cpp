@@ -34,7 +34,7 @@ namespace eupak {
 
 				div *= unit;
 
-				exp++; // TODO: break if too big
+				exp++;
 			}
 		}
 

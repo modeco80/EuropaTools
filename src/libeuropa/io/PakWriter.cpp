@@ -65,7 +65,7 @@ namespace europa::io {
 	// 	 - Composable operations (WriteTOC, WriteFile, WriteHeader)
 	//	 - Add IProgressReportSink reporting
 
-	void PakWriter::Write(std::ostream& os) {
+	void PakWriter::Write(std::ostream& os, PakProgressReportSink& sink) {
 
 		// This essentially converts our map we use for faster insertion
 		// into a flat array we can sort easily.
@@ -93,14 +93,31 @@ namespace europa::io {
 		for(auto& [filename, file] : sortedFiles) {
 			//std::cout << "PakWriteFile \"" << filename << "\"\n    Size " << file.GetTOCEntry().size << "\n";
 
+
+			sink.OnEvent({
+				PakProgressReportSink::FileEvent::Type::FileBeginWrite,
+				filename
+			});
+
 			file.GetTOCEntry().offset = os.tellp();
 			os.write(reinterpret_cast<const char*>(file.GetData().data()), file.GetData().size());
 
 			// Flush on file writing
 			os.flush();
+
+
+			sink.OnEvent({
+				PakProgressReportSink::FileEvent::Type::FileEndWrite,
+				filename
+			});
 		}
 
 		pakHeader.tocOffset = os.tellp();
+
+
+		sink.OnEvent({
+			PakProgressReportSink::PakEvent::Type::WritingToc
+		});
 
 		// Write the TOC
 		for(auto& [filename, file] : sortedFiles) {
@@ -115,9 +132,20 @@ namespace europa::io {
 			impl::WriteStreamType(os, file.GetTOCEntry());
 		}
 
+
+		sink.OnEvent({
+			PakProgressReportSink::PakEvent::Type::FillInHeader
+		});
+
+
 		// Fill out the rest of the header.
 		pakHeader.fileCount = archiveFiles.size();
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
+
+
+		sink.OnEvent({
+			PakProgressReportSink::PakEvent::Type::WritingHeader
+		});
 
 		// As the last step, write it.
 		os.seekp(0, std::ostream::beg);
