@@ -14,7 +14,12 @@ target_link_libraries(texdump PUBLIC
 		europa
 		)
 
-add_executable(paktest paktest.cpp)
-target_link_libraries(paktest PUBLIC
+add_executable(jsfscramble jsfscramble.cpp)
+target_link_libraries(jsfscramble PUBLIC
 		europa
 		)
+
+#add_executable(paktest paktest.cpp)
+#target_link_libraries(paktest PUBLIC
+#		europa
+#		)

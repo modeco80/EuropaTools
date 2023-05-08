@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 		args.outputFile = eupak::fs::path(createParser.get("output"));
 
 		if(createParser.is_used("--archive-version")) {
-				auto& versionStr = createParser.get("--archive-version");
+				const auto& versionStr = createParser.get("--archive-version");
 
 				if(versionStr == "starfighter") {
 					args.pakVersion = europa::structs::PakHeader::Version::Ver4;
