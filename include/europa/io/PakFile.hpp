@@ -21,28 +21,81 @@ namespace europa::io {
 	struct PakFile {
 		using DataType = std::vector<std::uint8_t>;
 
+		template<class T>
+		void InitAs(const T& value) {
+			toc = value;
+		}
+
+		void InitAs(structs::PakVersion version) {
+			switch(version) {
+				case structs::PakVersion::Ver3:
+					toc = structs::PakHeader_V3::TocEntry{};
+					break;
+				case structs::PakVersion::Ver4:
+					toc = structs::PakHeader_V4::TocEntry{};
+					break;
+				case structs::PakVersion::Ver5:
+					toc = structs::PakHeader_V5::TocEntry{};
+					break;
+			}
+		}
+
 		/**
 		 * Get the file data.
 		 */
-		[[nodiscard]] const DataType& GetData() const;
+		[[nodiscard]] const DataType& GetData() const {
+			return data;
+		}
 
 		/**
 		 * Get the TOC entry responsible.
 		 */
-		[[nodiscard]] const structs::PakTocEntry& GetTOCEntry() const;
+		template<class T>
+		[[nodiscard]] const T& GetTOCEntry() const {
+			return std::get<T>(toc);
+		}
 
-		void SetData(DataType&& data);
+		void SetData(DataType&& data) {
+			this->data = std::move(data);
+		}
 
-		structs::PakTocEntry& GetTOCEntry();
+		std::uint32_t GetOffset() const {
+			std::uint32_t size{};
 
-		void FillTOCEntry();
+			std::visit([&](auto& entry) {
+				size = entry.offset;
+			}, toc);
+
+			return size;
+		}
+
+		std::uint32_t GetSize() const {
+			std::uint32_t size{};
+
+			std::visit([&](auto& entry) {
+				size = entry.size;
+			}, toc);
+
+			return size;
+		}
+
+		void FillTOCEntry() {
+			std::visit([&](auto& entry) {
+				entry.size = static_cast<std::uint32_t>(data.size());
+			}, toc);
+		}
+
+		template<class Cb>
+		void Visit(const Cb& cb) {
+			std::visit(cb, toc);
+		}
 
 	   private:
 		friend PakReader;
 		friend PakWriter;
 
 		std::vector<std::uint8_t> data;
-		structs::PakTocEntry tocData;
+		structs::PakTocEntryVariant toc;
 	};
 
 } // namespace europa::io

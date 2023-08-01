@@ -28,7 +28,7 @@ namespace europa::structs {
 		 */
 		constexpr static u32 TextureFlag_UsesAlpha = 0x1000000;
 
-		constexpr static auto ValidMagic = util::FourCC<"YATF", std::endian::big>();
+		constexpr static auto ValidMagic = util::FourCC<"YATF", std::endian::little>();
 
 		u32 magic;
 

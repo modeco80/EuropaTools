@@ -1,5 +1,4 @@
-/.idea
-cmake-build-*
+/.cache
 build/
 
 # swap

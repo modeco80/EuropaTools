@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <string>
 #include <utility>
+#include "europa/structs/Pak.hpp"
 
 namespace europa::io {
 
@@ -23,9 +24,11 @@ namespace europa::io {
 	struct PakWriter {
 		using FlattenedType = std::pair<std::string, PakFile>;
 
-		void Init(structs::PakHeader::Version version);
+		//void Init(structs::PakHeader::Version version);
 
-		const structs::PakHeader& GetHeader() const { return pakHeader; }
+		//const HeaderType& GetHeader() const { return pakHeader; }
+
+		void SetVersion(structs::PakVersion version);
 
 		/**
 		 * Write the resulting archive to the given output stream.
@@ -33,7 +36,12 @@ namespace europa::io {
 		void Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink);
 
 	   private:
-		structs::PakHeader pakHeader {};
+
+		template<class T>
+		void WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, bool sectorAligned = true);
+
+		structs::PakVersion version{};
+		//HeaderType pakHeader {};
 	};
 
 } // namespace europa::io

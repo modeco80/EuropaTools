@@ -7,6 +7,7 @@
 //
 
 #include "StreamUtils.h"
+#include <cstdint>
 
 namespace europa::io::impl {
 

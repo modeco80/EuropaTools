@@ -12,12 +12,13 @@
 #include <iostream>
 
 #include "StreamUtils.h"
+#include "europa/structs/Pak.hpp"
 
 namespace europa::io {
 
-	void PakWriter::Init(structs::PakHeader::Version version) {
+	void PakWriter::SetVersion(structs::PakVersion version) {
 		// for now.
-		pakHeader.Init(version);
+		this->version = version;
 	}
 
 	// move to a util/ header
@@ -27,27 +28,46 @@ namespace europa::io {
 		return (-value) & alignment - 1;
 	}
 
-	// TODO:
-	// 	 - Composable operations (WriteTOC, WriteFile, WriteHeader)
+	void PakWriter::Write(std::ostream &os, std::vector<FlattenedType> &&vec, PakProgressReportSink &sink) {
+		switch(version) {
+			case structs::PakVersion::Ver3:
+				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
+				break;
+			case structs::PakVersion::Ver4:
+				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
+				break;
+			case structs::PakVersion::Ver5:
+				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
+				break;
+		}
+	}
 
-	void PakWriter::Write(std::ostream& os,  std::vector<FlattenedType>&& vec, PakProgressReportSink& sink) {
+	template<class T>
+	void PakWriter::WriteImpl(std::ostream& os,  std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, bool sectorAligned) {
 
 		std::vector<FlattenedType> sortedFiles = std::move(vec);
+
+		T pakHeader{};
 
 		// Sort the flattened array by file size, the biggest first.
 		// Doesn't seem to help (neither does name length)
 		std::ranges::sort(sortedFiles, std::greater{}, [](const FlattenedType& elem) {
-			return elem.second.GetTOCEntry().size;
+			return elem.second.GetSize();
 		});
 
 		// Leave space for the header
-		os.seekp(sizeof(structs::PakHeader), std::ostream::beg);
+		os.seekp(sizeof(T), std::ostream::beg);
 
 		// Version 5 paks seem to have an additional bit of reserved data
 		// (which is all zeros.)
-		if(pakHeader.version == structs::PakHeader::Version::Ver5) {
+		if(T::VERSION == structs::PakVersion::Ver5) {
 			os.seekp(6, std::ostream::cur);
 		}
+
+		//os.seekp( 
+		//	AlignBy(os.tellp(), 2048),
+		//	std::istream::beg
+		//);
 
 		// Write file data
 		for(auto& [filename, file] : sortedFiles) {
@@ -56,8 +76,17 @@ namespace europa::io {
 				filename
 			});
 
-			file.GetTOCEntry().offset = os.tellp();
-			os.write(reinterpret_cast<const char*>(file.GetData().data()), file.GetData().size());
+
+			file.Visit([&](auto& tocEntry) {
+				tocEntry.offset = os.tellp();
+			});
+
+			os.write(reinterpret_cast<const char*>(file.GetData().data()), file.GetSize());
+
+			//os.seekp( 
+			//	AlignBy(os.tellp(), 2048),
+			//	std::istream::beg
+			//);
 
 			// Flush on file writing
 			os.flush();
@@ -84,14 +113,16 @@ namespace europa::io {
 				os.put(c);
 			os.put('\0');
 
-			impl::WriteStreamType(os, file.GetTOCEntry());
+			file.Visit([&](auto& tocEntry) {
+				impl::WriteStreamType(os, tocEntry);
+			});
+
 		}
 
 
 		sink.OnEvent({
 			PakProgressReportSink::PakEvent::Type::FillInHeader
 		});
-
 
 		// Fill out the rest of the header.
 		pakHeader.fileCount = sortedFiles.size();

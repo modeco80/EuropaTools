@@ -15,10 +15,13 @@
 #include <string>
 #include <unordered_map>
 
+#include <variant>
+
 namespace europa::io {
 
 	struct PakReader {
 		using MapType = std::unordered_map<std::string, PakFile>;
+
 
 		explicit PakReader(std::istream& is);
 
@@ -39,13 +42,17 @@ namespace europa::io {
 		const MapType& GetFiles() const;
 
 		// implement in cpp later, lazy and just wanna get this out :vvv
-		const structs::PakHeader& GetHeader() const { return header; }
+		const structs::PakHeaderVariant& GetHeader() const { return header; }
 
 	   private:
+	   	template<class T>
+		void ReadData_Impl();
+
 		std::istream& stream;
 		bool invalid { false };
 
-		structs::PakHeader header {};
+		structs::PakVersion version;
+		structs::PakHeaderVariant header {};
 
 		MapType files;
 	};

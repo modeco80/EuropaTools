@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
 	createParser.add_argument("-V","--archive-version")
 				.default_value("starfighter")
-				.help(R"(Output archive version. Either "starfighter" or "jedistarfighter".)")
+				.help(R"(Output archive version. Either "pmdl", "starfighter" or "jedistarfighter".)")
 				.metavar("VERSION");
 
 	createParser.add_argument("output")
@@ -123,16 +123,18 @@ int main(int argc, char** argv) {
 		if(createParser.is_used("--archive-version")) {
 				const auto& versionStr = createParser.get("--archive-version");
 
-				if(versionStr == "starfighter") {
-					args.pakVersion = europa::structs::PakHeader::Version::Ver4;
+				if(versionStr == "pmdl") {
+					args.pakVersion = europa::structs::PakVersion::Ver3;
+				} else if(versionStr == "starfighter") {
+					args.pakVersion = europa::structs::PakVersion::Ver4;
 				} else if(versionStr == "jedistarfighter") {
-					args.pakVersion = europa::structs::PakHeader::Version::Ver5;
+					args.pakVersion = europa::structs::PakVersion::Ver5;
 				} else {
 					std::cout << "Error: Invalid version \"" << versionStr << "\"\n" << createParser;
 					return 1;
 				}
 		} else {
-			args.pakVersion = europa::structs::PakHeader::Version::Ver4;
+			args.pakVersion = europa::structs::PakVersion::Ver4;
 		}
 
 

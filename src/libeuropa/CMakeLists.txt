@@ -11,7 +11,6 @@ add_library(europa
 		io/StreamUtils.cpp
 
 		# Pak IO
-		io/PakFile.cpp
 		io/PakReader.cpp
 		io/PakWriter.cpp
 

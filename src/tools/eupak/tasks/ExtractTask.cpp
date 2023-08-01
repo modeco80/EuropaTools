@@ -80,7 +80,7 @@ namespace eupak::tasks {
 				std::cerr << "Extracting file \"" << filename << "\"...\n";
 			}
 
-			ofs.write(reinterpret_cast<const char*>(file.GetData().data()), static_cast<std::streampos>(file.GetTOCEntry().size));
+			ofs.write(reinterpret_cast<const char*>(file.GetData().data()), static_cast<std::streampos>(file.GetSize()));
 			ofs.flush();
 			progress.tick();
 		}

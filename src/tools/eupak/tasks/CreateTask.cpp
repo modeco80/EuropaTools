@@ -78,7 +78,7 @@ namespace eupak::tasks {
 	int CreateTask::Run(Arguments&& args) {
 		europa::io::PakWriter writer;
 
-		writer.Init(args.pakVersion);
+		writer.SetVersion(args.pakVersion);
 
 		auto currFile = 0;
 		auto fileCount = 0;
@@ -143,9 +143,10 @@ namespace eupak::tasks {
 			ifs.read(reinterpret_cast<char*>(&pakData[0]), pakData.size());
 
 			file.SetData(std::move(pakData));
-			file.FillTOCEntry();
 
-			file.GetTOCEntry().creationUnixTime = static_cast<std::uint32_t>(lastModified.time_since_epoch().count());
+			file.InitAs(args.pakVersion);
+
+			//file.GetTOCEntry().creationUnixTime = static_cast<std::uint32_t>(lastModified.time_since_epoch().count());
 
 			files.emplace_back(std::make_pair(relativePathName, std::move(file)));
 			progress.tick();

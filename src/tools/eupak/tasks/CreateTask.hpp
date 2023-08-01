@@ -22,7 +22,7 @@ namespace eupak::tasks {
 				fs::path outputFile;
 
 				bool verbose;
-				europa::structs::PakHeader::Version pakVersion;
+				europa::structs::PakVersion pakVersion;
 			};
 
 			int Run(Arguments&& args);

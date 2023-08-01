@@ -36,23 +36,35 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		std::string version = "Version 4 (Starfighter)";
+		std::visit([&](auto& header){
+			std::string version;
+			if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver3)
+				version = "Version 3 (PMDL)";
+			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver4)
+				version = "Version 4 (Starfighter)";
+			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver5) 
+				version = "Version 5 (Jedi Starfighter)";
 
-		if(reader.GetHeader().version == europa::structs::PakHeader::Version::Ver5)
-			version = "Version 5 (Jedi Starfighter)";
 
-		std::cout << "Archive " << args.inputPath << ":\n";
-		std::cout << "    Created: " << FormatUnixTimestamp(reader.GetHeader().creationUnixTime, DATE_FORMAT) << '\n';
-		std::cout << "    Version: " << version << '\n';
-		std::cout << "    Size: " << FormatUnit(reader.GetHeader().tocOffset + reader.GetHeader().tocSize) << '\n';
-		std::cout << "    File Count: " << reader.GetHeader().fileCount << " files\n";
+			std::cout << "Archive " << args.inputPath << ":\n";
+			std::cout << "    Created: " << FormatUnixTimestamp(header.creationUnixTime, DATE_FORMAT) << '\n';
+			std::cout << "    Version: " << version << '\n';
+			std::cout << "    Size: " << FormatUnit(header.tocOffset + header.tocSize) << '\n';
+			std::cout << "    File Count: " << header.fileCount << " files\n";
+
+		}, reader.GetHeader());
+
 
 		// Print a detailed file list if verbose.
 		if(args.verbose) {
 			for(auto& [ filename, file ] : reader.GetFiles()) {
 				std::cout << "File \"" << filename << "\":\n";
-				std::cout << "    Created: " << FormatUnixTimestamp(file.GetTOCEntry().creationUnixTime, DATE_FORMAT) << '\n';
-				std::cout << "    Size: " << FormatUnit(file.GetTOCEntry().size) << '\n';
+				file.Visit([&](auto& tocEntry) {
+
+				std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
+				std::cout << "    Size: " << FormatUnit(tocEntry.size) << '\n';
+
+				});
 			}
 		}
 
