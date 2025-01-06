@@ -14,6 +14,7 @@
 #include <iostream>
 #include <tasks/CreateTask.hpp>
 #include <Utils.hpp>
+#include "europa/io/PakFile.hpp"
 
 namespace eupak::tasks {
 
@@ -125,21 +126,8 @@ namespace eupak::tasks {
 
 			progress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
 
-			std::ifstream ifs(ent.path(), std::ifstream::binary);
-
-			if(!ifs) {
-				std::cout << "Error: Couldn't open file for archive path \"" << relativePathName << "\"\n";
-				return 1;
-			}
-
 			europa::io::PakFile file;
-			europa::io::PakFile::DataType pakData;
-
-			ifs.seekg(0, std::ifstream::end);
-			pakData.resize(ifs.tellg());
-			ifs.seekg(0, std::ifstream::beg);
-
-			ifs.read(reinterpret_cast<char*>(&pakData[0]), pakData.size());
+			europa::io::PakFile::DataType pakData = europa::io::PakFileData::InitAsPath(ent.path());
 
 			file.InitAs(args.pakVersion);
 

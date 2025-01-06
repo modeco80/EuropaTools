@@ -11,6 +11,11 @@
 
 #include <cstdint>
 #include <europa/structs/Pak.hpp>
+#include <europa/util/Overloaded.hpp>
+#include <filesystem>
+#include <stdexcept>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 namespace europa::io {
@@ -18,14 +23,72 @@ namespace europa::io {
 	struct PakReader;
 	struct PakWriter;
 
+	/// sumtype
+	struct PakFileData {
+		// clang-format off
+		using Variant = std::variant<
+			// File data
+			std::vector<std::uint8_t>,
+
+			// Path
+			std::filesystem::path
+		>;
+		// clang-format on
+
+		static PakFileData InitAsBuffer(std::vector<std::uint8_t>&& buffer) {
+			return PakFileData {
+				.variant_ = Variant(std::move(buffer))
+			};
+		}
+
+		static PakFileData InitAsPath(const std::filesystem::path& path) {
+			return PakFileData {
+				.variant_ = Variant(path)
+			};
+		}
+
+		std::uint32_t GetSize() const {
+			// FIXME: make this just a overloaded lambda
+			struct SizeVisitor {
+				std::uint32_t& size;
+
+				// bleh
+				void operator()(std::vector<uint8_t>& buffer) {
+					size = static_cast<std::uint32_t>(buffer.size());
+				}
+
+				void operator()(std::filesystem::path& fsPath) {
+					if(!std::filesystem::exists(fsPath) && !std::filesystem::is_regular_file(fsPath))
+						throw std::runtime_error("invalid path in path file");
+					size = static_cast<std::uint32_t>(std::filesystem::file_size(fsPath));
+				}
+			};
+
+			std::uint32_t size {};
+			auto visitor = SizeVisitor { size };
+
+			std::visit(visitor, variant_);
+
+			return size;
+		}
+
+		template <class T>
+		const T* GetIf() const {
+			return std::get_if<T>(&variant_);
+		}
+
+		// private:
+		PakFileData::Variant variant_;
+	};
+
 	/// Repressents a package file.
 	/// FIXME: Maybe make this not hold a buffer at some point,
 	/// or a sumtype which can contain either buffer OR path to os file
 	/// (which we can then efficiently tee into)
 	struct PakFile {
-		using DataType = std::vector<std::uint8_t>;
+		using DataType = PakFileData;
 
-		template<class T>
+		template <class T>
 		void InitAs(const T& value) {
 			toc = value;
 		}
@@ -33,78 +96,88 @@ namespace europa::io {
 		void InitAs(structs::PakVersion version) {
 			switch(version) {
 				case structs::PakVersion::Ver3:
-					toc = structs::PakHeader_V3::TocEntry{};
+					toc = structs::PakHeader_V3::TocEntry {};
 					break;
 				case structs::PakVersion::Ver4:
-					toc = structs::PakHeader_V4::TocEntry{};
+					toc = structs::PakHeader_V4::TocEntry {};
 					break;
 				case structs::PakVersion::Ver5:
-					toc = structs::PakHeader_V5::TocEntry{};
+					toc = structs::PakHeader_V5::TocEntry {};
 					break;
 			}
+		}
+
+		bool HasData() const {
+			return fileData.has_value();
 		}
 
 		/**
 		 * Get the file data.
 		 */
 		[[nodiscard]] const DataType& GetData() const {
-			return data;
+			if(!fileData.has_value())
+				throw std::runtime_error("no file data to get!");
+			return fileData.value();
+		}
+
+		/// Sets data.
+		void SetData(DataType&& data) {
+			this->fileData = std::move(data);
+
+			// Update the TOC size.
+			std::visit([&](auto& entry) {
+				entry.size = this->fileData.value().GetSize();
+			},
+					   toc);
+		}
+
+		/// Purge read file data.
+		void PurgeData() {
+			this->fileData = std::nullopt;
 		}
 
 		/**
 		 * Get the TOC entry responsible.
 		 */
-		template<class T>
+		template <class T>
 		[[nodiscard]] const T& GetTOCEntry() const {
 			return std::get<T>(toc);
 		}
 
-		void SetData(DataType&& data) {
-			this->data = std::move(data);
-			
-			// Update the TOC size.
-			std::visit([&](auto& entry) {
-				entry.size = this->data.size();
-			}, toc);
-		}
-
 		std::uint32_t GetCreationUnixTime() const {
-			std::uint32_t time{};
+			std::uint32_t time {};
 
 			std::visit([&](auto& entry) {
 				time = entry.creationUnixTime;
-			}, toc);
+			},
+					   toc);
 
 			return time;
 		}
 
 		std::uint32_t GetOffset() const {
-			std::uint32_t size{};
+			std::uint32_t size {};
 
 			std::visit([&](auto& entry) {
 				size = entry.offset;
-			}, toc);
+			},
+					   toc);
 
 			return size;
 		}
 
 		std::uint32_t GetSize() const {
-			std::uint32_t size{};
+			std::uint32_t size {};
 
 			std::visit([&](auto& entry) {
 				size = entry.size;
-			}, toc);
+			},
+					   toc);
 
 			return size;
 		}
 
-		void FillTOCEntry() {
-			std::visit([&](auto& entry) {
-				entry.size = static_cast<std::uint32_t>(data.size());
-			}, toc);
-		}
-
-		template<class Cb>
+		template <class Cb>
 		void Visit(const Cb& cb) {
 			std::visit(cb, toc);
 		}
@@ -113,7 +186,7 @@ namespace europa::io {
 		friend PakReader;
 		friend PakWriter;
 
-		std::vector<std::uint8_t> data;
+		std::optional<PakFileData> fileData;
 		structs::PakTocEntryVariant toc;
 	};
 

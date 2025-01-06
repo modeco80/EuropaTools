@@ -53,6 +53,9 @@ namespace europa::io::impl {
 	std::string ReadZeroTerminatedString(std::istream& is);
 	std::string ReadPString(std::istream& is);
 
+	/// Tees a input stream to an output stream until the input stream signals EOF.
+	void TeeInOut(std::istream& is, std::ostream& os);
+
 } // namespace europa::io::impl
 
 #endif // EUROPA_TOOLS_STREAMUTILS_H

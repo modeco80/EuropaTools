@@ -7,6 +7,7 @@
 //
 
 #include "StreamUtils.h"
+
 #include <cstdint>
 
 namespace europa::io::impl {
@@ -62,6 +63,17 @@ namespace europa::io::impl {
 				return s;
 
 			s.push_back(c);
+		}
+	}
+
+	void TeeInOut(std::istream& is, std::ostream& os) {
+		std::uint8_t buffer[4096] {};
+
+		while(!is.eof()) {
+			if(!is.read(reinterpret_cast<char*>(&buffer[0]), sizeof(buffer)))
+				break;
+
+			os.write(reinterpret_cast<char*>(&buffer[0]), is.gcount());
 		}
 	}
 

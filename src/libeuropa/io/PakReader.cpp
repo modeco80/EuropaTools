@@ -6,40 +6,41 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
+#include <cstdint>
 #include <cstring>
 #include <europa/io/PakReader.hpp>
 #include <europa/structs/Pak.hpp>
+#include <stdexcept>
 
+#include "europa/io/PakFile.hpp"
 #include "StreamUtils.h"
 
 namespace europa::io {
 
-/*
-	inline std::optional<PakHeader> GetPakHeader(const PakHeader_Common& common_header) {
-		switch(common_header.version) {
-			case PakVersion::Ver3:
-				return PakHeader_V3(common_header);
+	/*
+		inline std::optional<PakHeader> GetPakHeader(const PakHeader_Common& common_header) {
+			switch(common_header.version) {
+				case PakVersion::Ver3:
+					return PakHeader_V3(common_header);
 
-			case PakVersion::Ver4:
-				return PakHeader_V4(common_header);
+				case PakVersion::Ver4:
+					return PakHeader_V4(common_header);
 
-			case PakVersion::Ver5:
-				return PakHeader_V5(common_header);
+				case PakVersion::Ver5:
+					return PakHeader_V5(common_header);
 
-			case PakVersion::Invalid:
-			default:
-				return std::nullopt;
+				case PakVersion::Invalid:
+				default:
+					return std::nullopt;
+			}
 		}
-	}
-	*/
-
-
+		*/
 
 	PakReader::PakReader(std::istream& is)
 		: stream(is) {
 	}
 
-	template<class T>
+	template <class T>
 	void PakReader::ReadData_Impl() {
 		auto header_type = impl::ReadStreamType<T>(stream);
 
@@ -47,12 +48,12 @@ namespace europa::io {
 			invalid = true;
 			return;
 		}
-		
-		bool isStreams{false};
+
+		bool isStreams { false };
 
 		if(header_type.tocOffset > 0x17000000)
 			isStreams = true;
-		
+
 		// Read the archive TOC
 		stream.seekg(header_type.tocOffset, std::istream::beg);
 		for(auto i = 0; i < header_type.fileCount; ++i) {
@@ -67,7 +68,6 @@ namespace europa::io {
 				files[filename].Visit([&](auto& tocEntry) {
 					tocEntry.creationUnixTime = impl::ReadStreamType<structs::u32>(stream);
 				});
-
 		}
 
 		header = header_type;
@@ -101,16 +101,22 @@ namespace europa::io {
 
 	void PakReader::ReadFile(const std::string& file) {
 		auto& fileObject = files[file];
+		std::vector<std::uint8_t> buffer;
+
+		buffer.resize(fileObject.GetSize());
 
 		// This file was already read in, or has data
 		// the user may not want to overwrite.
-		if(!fileObject.data.empty())
+		if(!fileObject.HasData())
 			return;
 
-		fileObject.data.resize(fileObject.GetSize());
-
 		stream.seekg(fileObject.GetOffset(), std::istream::beg);
-		stream.read(reinterpret_cast<char*>(&fileObject.data[0]), fileObject.GetSize());
+		stream.read(reinterpret_cast<char*>(&buffer[0]), buffer.size());
+		if(!stream)
+			throw std::runtime_error("Stream went bad while trying to read file");
+
+		auto data = PakFileData::InitAsBuffer(std::move(buffer));
+		fileObject.SetData(std::move(data));
 	}
 
 	PakReader::MapType& PakReader::GetFiles() {

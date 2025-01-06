@@ -6,13 +6,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 
-#include <tasks/ExtractTask.hpp>
-
 #include <europa/io/PakReader.hpp>
 #include <fstream>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
+#include <stdexcept>
+#include <tasks/ExtractTask.hpp>
 
 // this actually is pretty fast so maybe I won't bother doing crazy thread optimizations..
 
@@ -80,8 +80,19 @@ namespace eupak::tasks {
 				std::cerr << "Extracting file \"" << filename << "\"...\n";
 			}
 
-			ofs.write(reinterpret_cast<const char*>(file.GetData().data()), static_cast<std::streampos>(file.GetSize()));
-			ofs.flush();
+			{
+				auto& fileData = file.GetData();
+				if(auto* buffer = fileData.GetIf<std::vector<std::uint8_t>>(); buffer) {
+					ofs.write(reinterpret_cast<const char*>((*buffer).data()), (*buffer).size());
+					ofs.flush();
+				} else {
+					throw std::runtime_error("???? why are we getting paths here?");
+				}
+			}
+
+			// We no longer need the file data anymore, so let's purge it to save memory
+			file.PurgeData();
+
 			progress.tick();
 		}
 
@@ -89,4 +100,4 @@ namespace eupak::tasks {
 		return 0;
 	}
 
-}
+} // namespace eupak::tasks
