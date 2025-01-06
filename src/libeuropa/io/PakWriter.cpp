@@ -1,7 +1,7 @@
 //
 // EuropaTools
 //
-// (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
@@ -15,6 +15,9 @@
 #include "europa/structs/Pak.hpp"
 
 namespace europa::io {
+
+	/// The size of a CD-ROM (ISO 9660) secor.
+	constexpr auto kCDSectorSize = 0x800;
 
 	void PakWriter::SetVersion(structs::PakVersion version) {
 		// for now.
@@ -52,7 +55,7 @@ namespace europa::io {
 		// Sort the flattened array by file size, the biggest first.
 		// Doesn't seem to help (neither does name length)
 		std::ranges::sort(sortedFiles, std::greater{}, [](const FlattenedType& elem) {
-			return elem.second.GetSize();
+			return elem.second.GetCreationUnixTime();
 		});
 
 		// Leave space for the header
@@ -64,10 +67,12 @@ namespace europa::io {
 			os.seekp(6, std::ostream::cur);
 		}
 
-		//os.seekp( 
-		//	AlignBy(os.tellp(), 2048),
-		//	std::istream::beg
-		//);
+		// Align first file to sector boundary.
+		if(sectorAligned)
+			os.seekp( 
+				AlignBy(os.tellp(), kCDSectorSize),
+				std::istream::beg
+			);
 
 		// Write file data
 		for(auto& [filename, file] : sortedFiles) {
@@ -76,20 +81,21 @@ namespace europa::io {
 				filename
 			});
 
-
+			// Update the offset to where we currently are, since we will be writing the file there
 			file.Visit([&](auto& tocEntry) {
 				tocEntry.offset = os.tellp();
 			});
 
+			// FIXME: Should we rely on GetSize() when writing? Honestly, it seems like a bit of a
+			// mistake that caused a pretty glaring bug.
 			os.write(reinterpret_cast<const char*>(file.GetData().data()), file.GetSize());
 
-			//os.seekp( 
-			//	AlignBy(os.tellp(), 2048),
-			//	std::istream::beg
-			//);
-
-			// Flush on file writing
-			os.flush();
+			// Align to sector boundary.
+			if(sectorAligned)
+				os.seekp( 
+					AlignBy(os.tellp(), kCDSectorSize),
+					std::istream::beg
+				);
 
 			sink.OnEvent({
 				PakProgressReportSink::FileEvent::Type::FileEndWrite,
@@ -107,7 +113,7 @@ namespace europa::io {
 		for(auto& [filename, file] : sortedFiles) {
 			file.FillTOCEntry();
 
-			// Write the pstring
+			// Write the filename Pascal string.
 			os.put(static_cast<char>(filename.length() + 1));
 			for(const auto c : filename)
 				os.put(c);
@@ -116,7 +122,6 @@ namespace europa::io {
 			file.Visit([&](auto& tocEntry) {
 				impl::WriteStreamType(os, tocEntry);
 			});
-
 		}
 
 
@@ -127,6 +132,7 @@ namespace europa::io {
 		// Fill out the rest of the header.
 		pakHeader.fileCount = sortedFiles.size();
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
+		pakHeader.creationUnixTime = 132890732;
 
 
 		sink.OnEvent({

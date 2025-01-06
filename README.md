@@ -8,7 +8,7 @@ As per usual for lily, written in C++20.
 ## Building
 
 ```bash
-$ git clone https://github.com/modeco80/EuropaTools.git
+$ git clone https://git.crustywindo.ws/GameModding/EuropaTools.git
 $ cd EuropaTools
 $ cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
 $ cmake --build build -j $(nproc)

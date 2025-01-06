@@ -1,10 +1,14 @@
 //
 // EuropaTools
 //
-// (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
+
+// FIXME: Drop libpixel dependency. Instead
+// we should just use stbiw directly and provide our own
+// simpler/faster utilities for image buffers.
 
 #include <europa/io/YatfReader.hpp>
 #include <vector>

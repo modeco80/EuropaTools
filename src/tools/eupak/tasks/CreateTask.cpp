@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+#include <chrono>
 #include <europa/io/PakWriter.hpp>
 #include <fstream>
 #include <indicators/cursor_control.hpp>
@@ -17,7 +18,6 @@
 namespace eupak::tasks {
 
 	struct CreateArchiveReportSink : public europa::io::PakProgressReportSink {
-
 		CreateArchiveReportSink(int fileCount = 0)
 			: europa::io::PakProgressReportSink() {
 			indicators::show_console_cursor(false);
@@ -32,17 +32,17 @@ namespace eupak::tasks {
 			using enum PakEvent::Type;
 			switch(event.type) {
 				case WritingHeader:
-					progress.set_option(indicators::option::PostfixText {"Writing header"});
+					progress.set_option(indicators::option::PostfixText { "Writing header" });
 					progress.print_progress();
 					break;
 
 				case FillInHeader:
-					progress.set_option(indicators::option::PostfixText {"Filling in header"});
+					progress.set_option(indicators::option::PostfixText { "Filling in header" });
 					progress.print_progress();
 					break;
 
 				case WritingToc:
-					progress.set_option(indicators::option::PostfixText {"Writing TOC"});
+					progress.set_option(indicators::option::PostfixText { "Writing TOC" });
 					progress.print_progress();
 					break;
 			}
@@ -52,12 +52,12 @@ namespace eupak::tasks {
 			using enum FileEvent::Type;
 			switch(event.type) {
 				case FileBeginWrite:
-					progress.set_option(indicators::option::PostfixText {"Writing " + event.filename});
+					progress.set_option(indicators::option::PostfixText { "Writing " + event.filename });
 					progress.print_progress();
 					break;
 
 				case FileEndWrite:
-					progress.set_option(indicators::option::PostfixText {"Written " + event.filename});
+					progress.set_option(indicators::option::PostfixText { "Written " + event.filename });
 					progress.tick();
 					break;
 			}
@@ -123,8 +123,7 @@ namespace eupak::tasks {
 				if(c == '/')
 					c = '\\';
 
-
-			progress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")"});
+			progress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
 
 			std::ifstream ifs(ent.path(), std::ifstream::binary);
 
@@ -142,11 +141,18 @@ namespace eupak::tasks {
 
 			ifs.read(reinterpret_cast<char*>(&pakData[0]), pakData.size());
 
-			file.SetData(std::move(pakData));
-
 			file.InitAs(args.pakVersion);
 
-			//file.GetTOCEntry().creationUnixTime = static_cast<std::uint32_t>(lastModified.time_since_epoch().count());
+			// Add data
+			file.SetData(std::move(pakData));
+
+			// Setup other stuff like modtime
+			file.Visit([&](auto& tocEntry) {
+				// Need to figure out why this is broken and fucked up
+				//auto casted = std::chrono::clock_cast<std::chrono::system_clock>(lastModified);
+				auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(lastModified);
+				tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
+			});
 
 			files.emplace_back(std::make_pair(relativePathName, std::move(file)));
 			progress.tick();

@@ -13,11 +13,22 @@
 #include <string>
 #include <string_view>
 
-// Define this to enable an "interactive" mode where the scramble routine will
-// dump out whatever it does to standard out. Undefine this to make it not do so.
+/// Define this to enable an "interactive" mode where the scramble routine will
+/// dump out whatever it does to standard out. Undefine this to make it not do so.
 #define INTERACTIVE
 
-template<typename... Args>
+/// Define this to use a slower, more academic implementation of the algorithm.
+// #define SLOW
+
+#ifdef INTERACTIVE
+	// We need to use the
+	#ifndef SLOW
+		#define SLOW
+	#endif
+#endif
+
+#ifdef SLOW
+template <typename... Args>
 inline std::string StringPrintf(std::string_view format, Args&&... args) {
 	char buffer[1024];
 	auto len = std::snprintf(&buffer[0], sizeof(buffer) - 1, format.data(), static_cast<Args&&>(args)...);
@@ -36,13 +47,13 @@ std::uint32_t swsfScramble(const std::string& code) {
 	for(auto& c : copy)
 		c = tolower(c);
 
-#ifdef INTERACTIVE
+	#ifdef INTERACTIVE
 	std::printf("working with string \"%s\"\n", copy.c_str());
-#endif
+	#endif
 
 	// Now actually do the scramble. The algorithm is pretty simple.
 	for(auto* p = copy.data(); *p; ++p) {
-#ifdef INTERACTIVE
+	#ifdef INTERACTIVE
 		std::uint32_t clone = *p;
 		std::printf("load character '%c' -> 0x%08x (%d)\n", *p, clone, clone);
 
@@ -50,13 +61,17 @@ std::uint32_t swsfScramble(const std::string& code) {
 		std::printf("add (0x%08x (%d) * 5) (%d) -> 0x%08x (%d)\n", tally, tally, tally * 5, clone, clone);
 
 		tally = clone;
-#else
+	#else
 		tally = *p + (tally * 5);
-#endif
+	#endif
 	}
 
 	return tally;
 }
+
+#else
+	#error FIXME: Import fast/optimized version
+#endif
 
 int main(int argc, char** argv) {
 	if(argc < 2) {

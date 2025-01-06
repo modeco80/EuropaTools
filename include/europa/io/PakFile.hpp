@@ -18,6 +18,10 @@ namespace europa::io {
 	struct PakReader;
 	struct PakWriter;
 
+	/// Repressents a package file.
+	/// FIXME: Maybe make this not hold a buffer at some point,
+	/// or a sumtype which can contain either buffer OR path to os file
+	/// (which we can then efficiently tee into)
 	struct PakFile {
 		using DataType = std::vector<std::uint8_t>;
 
@@ -57,6 +61,21 @@ namespace europa::io {
 
 		void SetData(DataType&& data) {
 			this->data = std::move(data);
+			
+			// Update the TOC size.
+			std::visit([&](auto& entry) {
+				entry.size = this->data.size();
+			}, toc);
+		}
+
+		std::uint32_t GetCreationUnixTime() const {
+			std::uint32_t time{};
+
+			std::visit([&](auto& entry) {
+				time = entry.creationUnixTime;
+			}, toc);
+
+			return time;
 		}
 
 		std::uint32_t GetOffset() const {
