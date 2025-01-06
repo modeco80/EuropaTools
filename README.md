@@ -8,7 +8,7 @@ As per usual for lily, written in C++20.
 ## Building
 
 ```bash
-$ git clone https://git.crustywindo.ws/GameModding/EuropaTools.git
+$ git clone https://git.computernewb.com/modeco80/EuropaTools.git
 $ cd EuropaTools
 $ cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
 $ cmake --build build -j $(nproc)
@@ -25,17 +25,14 @@ Structure documentation is seperately managed as a .hexpat in [/hexpat](https://
 
 ## The Tools
 
-## `europa_pack_extractor`
+### `Adam`
 
-Staging tool to extract paks. Will be removed when eupak is ready.
+Planned to be an open-source equlivant to the `Eve` mission authoring tool used in development of Europa based games.
 
-### `pakcreate`
+Feature set:
 
-Staging tool to create paks.
-
-### `paktest`
-
-A test tool to test building paks, used during development.
+- [] working opengl imgui sex
+- ... ?
 
 ### `texdump`
 
