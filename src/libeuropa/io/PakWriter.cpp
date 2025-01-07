@@ -40,10 +40,10 @@ namespace europa::io {
 				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
 				break;
 			case structs::PakVersion::Ver4:
-				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
+				WriteImpl<structs::PakHeader_V4>(os, std::move(vec), sink);
 				break;
 			case structs::PakVersion::Ver5:
-				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
+				WriteImpl<structs::PakHeader_V5>(os, std::move(vec), sink);
 				break;
 			default:
 				throw std::invalid_argument("Invalid version");
