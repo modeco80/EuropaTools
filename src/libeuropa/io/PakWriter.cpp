@@ -97,6 +97,7 @@ namespace europa::io {
 				// tee data from the file stream efficiently
 				impl::TeeInOut(fs, os);
 			} else if(auto* buffer = fileData.template GetIf<std::vector<std::uint8_t>>(); buffer) {
+				// will eventually use this so we dont have to round trip to file IO probably
 				os.write(reinterpret_cast<const char*>((*buffer).data()), file.GetSize());
 			}
 

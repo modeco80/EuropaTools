@@ -38,7 +38,7 @@ namespace europa::io {
 	   private:
 
 		template<class T>
-		void WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, bool sectorAligned = true);
+		void WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, bool sectorAligned = false);
 
 		structs::PakVersion version{};
 		//HeaderType pakHeader {};

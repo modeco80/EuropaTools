@@ -67,7 +67,7 @@ namespace eupak::tasks {
 			if(!fs::exists(outpath.parent_path()))
 				fs::create_directories(outpath.parent_path());
 
-			reader.ReadFile(filename);
+			
 
 			std::ofstream ofs(outpath.string(), std::ofstream::binary);
 
@@ -79,6 +79,8 @@ namespace eupak::tasks {
 			if(args.verbose) {
 				std::cerr << "Extracting file \"" << filename << "\"...\n";
 			}
+
+			reader.ReadFile(filename);
 
 			{
 				auto& fileData = file.GetData();

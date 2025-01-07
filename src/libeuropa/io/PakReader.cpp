@@ -17,25 +17,6 @@
 
 namespace europa::io {
 
-	/*
-		inline std::optional<PakHeader> GetPakHeader(const PakHeader_Common& common_header) {
-			switch(common_header.version) {
-				case PakVersion::Ver3:
-					return PakHeader_V3(common_header);
-
-				case PakVersion::Ver4:
-					return PakHeader_V4(common_header);
-
-				case PakVersion::Ver5:
-					return PakHeader_V5(common_header);
-
-				case PakVersion::Invalid:
-				default:
-					return std::nullopt;
-			}
-		}
-		*/
-
 	PakReader::PakReader(std::istream& is)
 		: stream(is) {
 	}
@@ -49,10 +30,10 @@ namespace europa::io {
 			return;
 		}
 
-		bool isStreams { false };
+		//		bool isStreams { false };
 
-		if(header_type.tocOffset > 0x17000000)
-			isStreams = true;
+		//		if(header_type.tocOffset > 0x17000000)
+		//			isStreams = true;
 
 		// Read the archive TOC
 		stream.seekg(header_type.tocOffset, std::istream::beg);
@@ -62,12 +43,13 @@ namespace europa::io {
 			//
 			// Read this in first.
 			auto filename = impl::ReadPString(stream);
-			files[filename].InitAs(impl::ReadStreamType<typename T::TocEntry>(stream));
+			files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
 
-			if(isStreams)
-				files[filename].Visit([&](auto& tocEntry) {
-					tocEntry.creationUnixTime = impl::ReadStreamType<structs::u32>(stream);
-				});
+			// Don't think this is needed
+			// if(isStreams)
+			//	files[filename].Visit([&](auto& tocEntry) {
+			//		tocEntry.creationUnixTime = impl::ReadStreamType<structs::u32>(stream);
+			//	});
 		}
 
 		header = header_type;
@@ -76,8 +58,6 @@ namespace europa::io {
 	void PakReader::ReadData() {
 		auto commonHeader = impl::ReadStreamType<structs::PakHeader_Common>(stream);
 		stream.seekg(0, std::istream::beg);
-
-		std::cout << "picking version " << (int)commonHeader.version << '\n';
 
 		switch(commonHeader.version) {
 			case structs::PakVersion::Ver3:
@@ -107,11 +87,12 @@ namespace europa::io {
 
 		// This file was already read in, or has data
 		// the user may not want to overwrite.
-		if(!fileObject.HasData())
+		if(fileObject.HasData())
 			return;
 
 		stream.seekg(fileObject.GetOffset(), std::istream::beg);
 		stream.read(reinterpret_cast<char*>(&buffer[0]), buffer.size());
+
 		if(!stream)
 			throw std::runtime_error("Stream went bad while trying to read file");
 

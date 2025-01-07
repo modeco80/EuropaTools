@@ -85,7 +85,7 @@ namespace europa::io {
 		using DataType = PakFileData;
 
 		template <class T>
-		void InitAs(const T& value) {
+		void InitWithExistingTocEntry(const T& value) {
 			toc = value;
 		}
 

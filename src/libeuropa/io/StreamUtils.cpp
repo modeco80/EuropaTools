@@ -51,29 +51,43 @@ namespace europa::io::impl {
 		if(!is)
 			return "";
 
-		// should be just resizing, and refactor this loop to not do this,
-		// but .... meh. I'll get to it if it's a problem
-		std::uint8_t length = is.get();
-		s.reserve(length);
+		std::uint32_t length = static_cast<std::uint32_t>(is.get());
 
-		while(true) {
-			c = static_cast<char>(is.get());
-
-			if(c == '\0')
-				return s;
-
-			s.push_back(c);
+		if(length == 0) {
+			static_cast<void>(is.get());
+			return "";
 		}
+
+		s.resize(length - 1);
+
+		// Read the string
+		for(auto i = 0; i < length-1; ++i) {
+			s[i] = static_cast<char>(is.get());
+		}
+		static_cast<void>(is.get());
+		return s;
+	}
+
+	void WritePString(std::ostream& os, const std::string& string) {
+		auto len = static_cast<std::uint8_t>(string.length());
+
+		// Write the length, the string, and then the null terminator
+		// (that Europa code puts for some reason)
+		os.write(reinterpret_cast<char*>(&len), sizeof(len));
+		os.write(string.data(), len);
+		os.put('\0');
 	}
 
 	void TeeInOut(std::istream& is, std::ostream& os) {
-		std::uint8_t buffer[4096] {};
+		std::uint8_t buffer[1024] {};
+		int i = 0;
 
 		while(!is.eof()) {
-			if(!is.read(reinterpret_cast<char*>(&buffer[0]), sizeof(buffer)))
-				break;
-
-			os.write(reinterpret_cast<char*>(&buffer[0]), is.gcount());
+			is.read(reinterpret_cast<char*>(&buffer[0]), sizeof(buffer));
+			auto c = is.gcount();
+			fprintf(stderr, "loop %d: Read %d bytes\n", i, c);
+			os.write(reinterpret_cast<char*>(&buffer[0]), c);
+			i++;
 		}
 	}
 
