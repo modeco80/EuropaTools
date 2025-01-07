@@ -9,6 +9,7 @@
 #include "StreamUtils.h"
 
 #include <cstdint>
+#include <stdexcept>
 
 namespace europa::io::impl {
 
@@ -69,25 +70,31 @@ namespace europa::io::impl {
 	}
 
 	void WritePString(std::ostream& os, const std::string& string) {
-		auto len = static_cast<std::uint8_t>(string.length());
+		if(string.length() >= 255)
+			throw std::invalid_argument("String length too long for WritePString()");
 
-		// Write the length, the string, and then the null terminator
-		// (that Europa code puts for some reason)
+		auto len = static_cast<std::uint8_t>(string.length() + 1);
+
+		// Write the length and the string.
 		os.write(reinterpret_cast<char*>(&len), sizeof(len));
-		os.write(string.data(), len);
-		os.put('\0');
+		
+		// It might be iffy to just depend on the C++ STL's
+		// implicit NUL termination? 
+		// I mean, c_str() would be broken and the library implementation could be considered 
+		// faulty, so idk.
+		os.write(string.data(), string.length() + 1);
 	}
 
 	void TeeInOut(std::istream& is, std::ostream& os) {
 		std::uint8_t buffer[1024] {};
-		int i = 0;
+		//int i = 0;
 
 		while(!is.eof()) {
 			is.read(reinterpret_cast<char*>(&buffer[0]), sizeof(buffer));
 			auto c = is.gcount();
-			fprintf(stderr, "loop %d: Read %d bytes\n", i, c);
+			//fprintf(stderr, "loop %d: Read %d bytes\n", i, c);
 			os.write(reinterpret_cast<char*>(&buffer[0]), c);
-			i++;
+			//i++;
 		}
 	}
 

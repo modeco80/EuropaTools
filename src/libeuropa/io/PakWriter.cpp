@@ -118,10 +118,7 @@ namespace europa::io {
 		// Write the TOC
 		for(auto& [filename, file] : sortedFiles) {
 			// Write the filename Pascal string.
-			os.put(static_cast<char>(filename.length() + 1));
-			for(const auto c : filename)
-				os.put(c);
-			os.put('\0');
+			impl::WritePString(os, filename);
 
 			file.Visit([&](auto& tocEntry) {
 				impl::WriteStreamType(os, tocEntry);
