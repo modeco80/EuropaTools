@@ -55,7 +55,7 @@ namespace eupak::tasks {
 		if(args.verbose) {
 			for(auto& [filename, file] : reader.GetFiles()) {
 				std::cout << "File \"" << filename << "\":\n";
-				file.Visit([&](auto& tocEntry) {
+				file.VisitTocEntry([&](auto& tocEntry) {
 					std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
 					std::cout << "    Size: " << FormatUnit(tocEntry.size) << '\n';
 				});

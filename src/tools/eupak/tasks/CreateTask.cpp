@@ -132,10 +132,10 @@ namespace eupak::tasks {
 			file.SetData(std::move(pakData));
 
 			// Setup other stuff like modtime
-			file.Visit([&](auto& tocEntry) {
-				// Need to figure out why this is broken and fucked up
-				// auto casted = std::chrono::clock_cast<std::chrono::system_clock>(lastModified);
-				auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(lastModified);
+			file.VisitTocEntry([&](auto& tocEntry) {
+				// Kinda stupid but works
+				auto sys = std::chrono::file_clock::to_sys(lastModified);
+				auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(sys);
 				tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
 			});
 

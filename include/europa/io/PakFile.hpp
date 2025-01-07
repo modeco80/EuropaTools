@@ -180,7 +180,7 @@ namespace europa::io {
 		}
 
 		template <class Visitor>
-		auto Visit(Visitor&& cb) {
+		auto VisitTocEntry(Visitor&& cb) {
 			return std::visit(cb, toc);
 		}
 

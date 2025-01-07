@@ -14,8 +14,6 @@
 #include <stdexcept>
 #include <tasks/ExtractTask.hpp>
 
-// this actually is pretty fast so maybe I won't bother doing crazy thread optimizations..
-
 namespace eupak::tasks {
 
 	int ExtractTask::Run(Arguments&& args) {
@@ -66,8 +64,6 @@ namespace eupak::tasks {
 
 			if(!fs::exists(outpath.parent_path()))
 				fs::create_directories(outpath.parent_path());
-
-			
 
 			std::ofstream ofs(outpath.string(), std::ofstream::binary);
 

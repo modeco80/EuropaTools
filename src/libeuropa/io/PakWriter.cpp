@@ -7,6 +7,7 @@
 //
 
 #include <algorithm>
+#include <chrono>
 #include <europa/io/PakWriter.hpp>
 #include <europa/util/TupleElement.hpp>
 #include <filesystem>
@@ -61,7 +62,7 @@ namespace europa::io {
 
 		// Sort the flattened array.
 		std::ranges::sort(sortedFiles, std::greater {}, [](const FlattenedType& elem) {
-			return elem.second.GetCreationUnixTime();
+			return elem.second.GetSize();
 		});
 
 		// Leave space for the header
@@ -85,7 +86,7 @@ namespace europa::io {
 						   filename });
 
 			// Update the offset to where we currently are, since we will be writing the file there
-			file.Visit([&](auto& tocEntry) {
+			file.VisitTocEntry([&](auto& tocEntry) {
 				tocEntry.offset = os.tellp();
 			});
 
@@ -128,12 +129,19 @@ namespace europa::io {
 
 		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::WritingToc });
 
+#if 0
+		// Sort for toc stuff? idk
+		std::ranges::sort(sortedFiles, std::less {}, [](const FlattenedType& elem) {
+			return elem.second.GetCreationUnixTime();
+		});
+#endif
+
 		// Write the TOC
 		for(auto& [filename, file] : sortedFiles) {
 			// Write the filename Pascal string.
 			impl::WritePString(os, filename);
 
-			file.Visit([&](auto& tocEntry) {
+			file.VisitTocEntry([&](auto& tocEntry) {
 				impl::WriteStreamType(os, tocEntry);
 			});
 		}
@@ -143,7 +151,10 @@ namespace europa::io {
 		// Fill out the rest of the header.
 		pakHeader.fileCount = sortedFiles.size();
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
-		pakHeader.creationUnixTime = 132890732;
+
+		// Timestamp.
+		auto now = std::chrono::system_clock::now();
+		pakHeader.creationUnixTime = static_cast<std::uint32_t>(std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count());
 
 		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::WritingHeader });
 
