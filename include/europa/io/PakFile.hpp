@@ -14,7 +14,6 @@
 #include <europa/util/Overloaded.hpp>
 #include <filesystem>
 #include <stdexcept>
-#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -53,11 +52,11 @@ namespace europa::io {
 				std::uint32_t& size;
 
 				// bleh
-				void operator()(std::vector<uint8_t>& buffer) {
+				void operator()(const std::vector<uint8_t>& buffer) {
 					size = static_cast<std::uint32_t>(buffer.size());
 				}
 
-				void operator()(std::filesystem::path& fsPath) {
+				void operator()(const std::filesystem::path& fsPath) {
 					if(!std::filesystem::exists(fsPath) && !std::filesystem::is_regular_file(fsPath))
 						throw std::runtime_error("invalid path in path file");
 					size = static_cast<std::uint32_t>(std::filesystem::file_size(fsPath));
@@ -65,10 +64,7 @@ namespace europa::io {
 			};
 
 			std::uint32_t size {};
-			auto visitor = SizeVisitor { size };
-
-			std::visit(visitor, variant_);
-
+			std::visit(SizeVisitor { size }, variant_);
 			return size;
 		}
 
@@ -103,6 +99,9 @@ namespace europa::io {
 					break;
 				case structs::PakVersion::Ver5:
 					toc = structs::PakHeader_V5::TocEntry {};
+					break;
+				default:
+					throw std::invalid_argument("Invalid PAK version to initalize TOC entry");
 					break;
 			}
 		}
