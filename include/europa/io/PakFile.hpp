@@ -73,6 +73,11 @@ namespace europa::io {
 			return std::get_if<T>(&variant_);
 		}
 
+		template <class Visitor>
+		auto Visit(Visitor&& v) const {
+			return std::visit(v, variant_);
+		}
+
 		// private:
 		PakFileData::Variant variant_;
 	};

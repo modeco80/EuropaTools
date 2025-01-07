@@ -14,34 +14,35 @@
 #include <iosfwd>
 #include <string>
 #include <utility>
+
 #include "europa/structs/Pak.hpp"
 
 namespace europa::io {
 
-	/**
-	 * Writer for package files.
-	 */
+	/// A efficient writer for Europa package (.pak) files.
 	struct PakWriter {
+		/// Vocabulary type for making sector alignment stuff a bit easier to see.
+		enum class SectorAlignment {
+			DoNotAlign, /// Do not align to a sector boundary
+			Align		/// Align to a sector boundary
+		};
+
 		using FlattenedType = std::pair<std::string, PakFile>;
 
-		//void Init(structs::PakHeader::Version version);
-
-		//const HeaderType& GetHeader() const { return pakHeader; }
-
+		/// Initalize for the given package version.
 		void SetVersion(structs::PakVersion version);
 
-		/**
-		 * Write the resulting archive to the given output stream.
-		 */
-		void Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink);
+		/// Write archive to the given output stream.
+		/// [vec] is all files which should be packaged
+		/// [sink] is a implementation of PakProgressReportsSink which should get events (TODO: Make this optional)
+		/// [sectorAlignment] controls sector alignment
+		void Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment = SectorAlignment::DoNotAlign);
 
 	   private:
+		template <class T>
+		void WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment);
 
-		template<class T>
-		void WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, bool sectorAligned = false);
-
-		structs::PakVersion version{};
-		//HeaderType pakHeader {};
+		structs::PakVersion version {};
 	};
 
 } // namespace europa::io

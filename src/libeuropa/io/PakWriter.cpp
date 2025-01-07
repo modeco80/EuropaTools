@@ -15,6 +15,7 @@
 #include <stdexcept>
 
 #include "europa/structs/Pak.hpp"
+#include "europa/util/Overloaded.hpp"
 #include "StreamUtils.h"
 
 namespace europa::io {
@@ -34,16 +35,18 @@ namespace europa::io {
 		return (-value) & alignment - 1;
 	}
 
-	void PakWriter::Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink) {
+	void PakWriter::Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
+		// Depending on the version, do a mix of runtime/compile-time dispatch to the right
+		// package format version we have been told to write.
 		switch(version) {
 			case structs::PakVersion::Ver3:
-				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink);
+				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink, sectorAlignment);
 				break;
 			case structs::PakVersion::Ver4:
-				WriteImpl<structs::PakHeader_V4>(os, std::move(vec), sink);
+				WriteImpl<structs::PakHeader_V4>(os, std::move(vec), sink, sectorAlignment);
 				break;
 			case structs::PakVersion::Ver5:
-				WriteImpl<structs::PakHeader_V5>(os, std::move(vec), sink);
+				WriteImpl<structs::PakHeader_V5>(os, std::move(vec), sink, sectorAlignment);
 				break;
 			default:
 				throw std::invalid_argument("Invalid version");
@@ -51,7 +54,7 @@ namespace europa::io {
 	}
 
 	template <class THeader>
-	void PakWriter::WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, bool sectorAligned) {
+	void PakWriter::WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
 		std::vector<FlattenedType> sortedFiles = std::move(vec);
 
 		THeader pakHeader {};
@@ -71,7 +74,7 @@ namespace europa::io {
 		}
 
 		// Align first file to sector boundary.
-		if(sectorAligned)
+		if(sectorAlignment == SectorAlignment::Align)
 			os.seekp(
 			AlignBy(os.tellp(), kCDSectorSize),
 			std::istream::beg);
@@ -88,21 +91,30 @@ namespace europa::io {
 
 			auto& fileData = file.GetData();
 
-			// FIXME: use a visitor or something. For now I'm lazy and this should work
-			if(auto* path = fileData.template GetIf<std::filesystem::path>(); path) {
-				auto fs = std::ifstream((*path).string(), std::ifstream::binary);
-				if(!fs)
-					throw std::runtime_error("couldnt open input file? HOW");
+			// Visit the file data sum type and do the right operation
+			// For filesystem paths, we open the file and then tee it into the package file
+			// effiently saving a lot of memory usage when packing (trading off some IO overhead,
+			// but hey.)
 
-				// tee data from the file stream efficiently
-				impl::TeeInOut(fs, os);
-			} else if(auto* buffer = fileData.template GetIf<std::vector<std::uint8_t>>(); buffer) {
-				// will eventually use this so we dont have to round trip to file IO probably
-				os.write(reinterpret_cast<const char*>((*buffer).data()), file.GetSize());
-			}
+			// clang-format off
+			fileData.Visit(overloaded {
+				[&](const std::filesystem::path& path) {
+					auto fs = std::ifstream(path.string(), std::ifstream::binary);
+					if(!fs)
+						throw std::runtime_error("couldnt open input file? HOW");
+
+					// Tee data into the package file stream
+					impl::TeeInOut(fs, os);
+				},
+
+				[&](const std::vector<std::uint8_t>& buffer) {
+					os.write(reinterpret_cast<const char*>(buffer.data()), file.GetSize());
+				} 
+			});
+			// clang-format on
 
 			// Align to sector boundary.
-			if(sectorAligned)
+			if(sectorAlignment == SectorAlignment::Align)
 				os.seekp(
 				AlignBy(os.tellp(), kCDSectorSize),
 				std::istream::beg);
