@@ -1,7 +1,7 @@
 //
 // EuropaTools
 //
-// (C) 2021-2022 modeco80 <lily.modeco80@protonmail.ch>
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
@@ -19,22 +19,23 @@ namespace europa {
 		// Doesn't include magic
 		u16 headerSize;
 
+		// 0x3 - PMDL
 		// 0x4 - Starfighter
-		// 0x5 - other game
+		// 0x5 - Jedi Starfighter
 		u16 Version;
 		u8 pad;
 
 		u32 tocOffset;
 
-		// Dunno what this is
-		u32 unk;
+		u32 tocSize;
 
 		u32 fileCount;
 
-		// Labeled as this in the quickbms script
+		// Unix epoch timestamp (libc time()) of when the archive was created
 		u32 archiveCreationTime;
 
-		u32 reserved;//?
+		// Set to 0 in basically every file
+		u32 reserved;
 	};
 
 	// "Pascal" string used
