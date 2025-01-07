@@ -82,10 +82,8 @@ namespace europa::io {
 		PakFileData::Variant variant_;
 	};
 
-	/// Repressents a package file.
-	/// FIXME: Maybe make this not hold a buffer at some point,
-	/// or a sumtype which can contain either buffer OR path to os file
-	/// (which we can then efficiently tee into)
+	/// Repressents a package file. Can either hold a memory buffer of contents
+	/// or a filesystem path (for creating packages).
 	struct PakFile {
 		using DataType = PakFileData;
 
@@ -181,9 +179,9 @@ namespace europa::io {
 			return size;
 		}
 
-		template <class Cb>
-		void Visit(const Cb& cb) {
-			std::visit(cb, toc);
+		template <class Visitor>
+		auto Visit(Visitor&& cb) {
+			return std::visit(cb, toc);
 		}
 
 	   private:

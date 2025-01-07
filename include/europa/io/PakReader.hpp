@@ -15,14 +15,14 @@
 #include <string>
 #include <unordered_map>
 
-#include <variant>
-
 namespace europa::io {
 
+	/// Reader for Europa package files (.pak).
 	struct PakReader {
 		using MapType = std::unordered_map<std::string, PakFile>;
 
-
+		/// Constructor. Takes in a input stream to read pak data from.
+		/// This stream should only be used by the PakReader, nothing else.
 		explicit PakReader(std::istream& is);
 
 		void ReadData();
@@ -42,10 +42,12 @@ namespace europa::io {
 		const MapType& GetFiles() const;
 
 		// implement in cpp later, lazy and just wanna get this out :vvv
-		const structs::PakHeaderVariant& GetHeader() const { return header; }
+		const structs::PakHeaderVariant& GetHeader() const {
+			return header;
+		}
 
 	   private:
-	   	template<class T>
+		template <class T>
 		void ReadData_Impl();
 
 		std::istream& stream;

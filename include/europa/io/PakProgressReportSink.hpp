@@ -13,30 +13,26 @@
 
 namespace europa::io {
 
-	/**
-	 * Interface for the writer to output detailed progress information.
-	 */
+	/// Interface for [PakWriter] to output detailed progress information.
 	struct PakProgressReportSink {
-
 		struct PakEvent {
-			enum class Type {
-				FillInHeader,    	///< Filling in header
-				WritingHeader,		///< Writing header
-
-				WritingToc			///< Writing archive TOC
+			enum class EventCode {
+				FillInHeader,  /// Filling in header.
+				WritingHeader, /// Writing header.
+				WritingToc	   /// Writing archive TOC.
 			};
 
-			Type type;
+			EventCode eventCode;
 		};
 
 		struct FileEvent {
-			enum class Type {
-				FileBeginWrite,   ///< File has began write to package
-				FileEndWrite,     ///< File writing finished
+			enum class EventCode {
+				FileWriteBegin, /// File has began write to package
+				FileWriteEnd,	/// File has been written to package
 			};
 
-			Type type;
-			std::string filename;
+			EventCode eventCode;
+			const std::string& targetFileName;
 		};
 
 		virtual ~PakProgressReportSink() = default;
@@ -44,7 +40,6 @@ namespace europa::io {
 		virtual void OnEvent(const PakEvent& event) = 0;
 		virtual void OnEvent(const FileEvent& event) = 0;
 	};
-
 
 } // namespace europa::io
 

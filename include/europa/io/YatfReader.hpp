@@ -16,9 +16,7 @@
 
 namespace europa::io {
 
-	/**
-	 * Reader for PS2 Europa .tex files.
-	 */
+	/// Reader for PS2 Europa .tex files.
 	struct YatfReader {
 		explicit YatfReader(std::istream& is);
 
@@ -39,10 +37,6 @@ namespace europa::io {
 		bool invalid { false };
 
 		structs::YatfHeader header;
-
-		/**
-		 * converted image.
-		 */
 		pixel::RgbaImage image;
 	};
 

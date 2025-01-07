@@ -81,7 +81,7 @@ namespace europa::io {
 
 		// Write all the file data
 		for(auto& [filename, file] : sortedFiles) {
-			sink.OnEvent({ PakProgressReportSink::FileEvent::Type::FileBeginWrite,
+			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteBegin,
 						   filename });
 
 			// Update the offset to where we currently are, since we will be writing the file there
@@ -95,6 +95,7 @@ namespace europa::io {
 			// For filesystem paths, we open the file and then tee it into the package file
 			// effiently saving a lot of memory usage when packing (trading off some IO overhead,
 			// but hey.)
+			// For buffers, we just write the buffer.
 
 			// clang-format off
 			fileData.Visit(overloaded {
@@ -119,13 +120,13 @@ namespace europa::io {
 				AlignBy(os.tellp(), kCDSectorSize),
 				std::istream::beg);
 
-			sink.OnEvent({ PakProgressReportSink::FileEvent::Type::FileEndWrite,
+			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteEnd,
 						   filename });
 		}
 
 		pakHeader.tocOffset = os.tellp();
 
-		sink.OnEvent({ PakProgressReportSink::PakEvent::Type::WritingToc });
+		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::WritingToc });
 
 		// Write the TOC
 		for(auto& [filename, file] : sortedFiles) {
@@ -137,14 +138,14 @@ namespace europa::io {
 			});
 		}
 
-		sink.OnEvent({ PakProgressReportSink::PakEvent::Type::FillInHeader });
+		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
 		pakHeader.fileCount = sortedFiles.size();
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
 		pakHeader.creationUnixTime = 132890732;
 
-		sink.OnEvent({ PakProgressReportSink::PakEvent::Type::WritingHeader });
+		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::WritingHeader });
 
 		// As the last step, write it.
 		os.seekp(0, std::ostream::beg);

@@ -6,13 +6,11 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 
-#include <tasks/InfoTask.hpp>
-
-#include <europa/io/PakReader.hpp>
 #include <algorithm>
+#include <europa/io/PakReader.hpp>
 #include <fstream>
 #include <iostream>
-
+#include <tasks/InfoTask.hpp>
 #include <Utils.hpp>
 
 namespace eupak::tasks {
@@ -36,34 +34,30 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		std::visit([&](auto& header){
+		std::visit([&](auto& header) {
 			std::string version;
 			if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver3)
 				version = "Version 3 (PMDL)";
 			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver4)
 				version = "Version 4 (Starfighter)";
-			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver5) 
+			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver5)
 				version = "Version 5 (Jedi Starfighter)";
-
 
 			std::cout << "Archive " << args.inputPath << ":\n";
 			std::cout << "    Created: " << FormatUnixTimestamp(header.creationUnixTime, DATE_FORMAT) << '\n';
 			std::cout << "    Version: " << version << '\n';
 			std::cout << "    Size: " << FormatUnit(header.tocOffset + header.tocSize) << '\n';
 			std::cout << "    File Count: " << header.fileCount << " files\n";
-
-		}, reader.GetHeader());
-
+		},
+				   reader.GetHeader());
 
 		// Print a detailed file list if verbose.
 		if(args.verbose) {
-			for(auto& [ filename, file ] : reader.GetFiles()) {
+			for(auto& [filename, file] : reader.GetFiles()) {
 				std::cout << "File \"" << filename << "\":\n";
 				file.Visit([&](auto& tocEntry) {
-
-				std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
-				std::cout << "    Size: " << FormatUnit(tocEntry.size) << '\n';
-
+					std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
+					std::cout << "    Size: " << FormatUnit(tocEntry.size) << '\n';
 				});
 			}
 		}
@@ -71,4 +65,4 @@ namespace eupak::tasks {
 		return 0;
 	}
 
-}
+} // namespace eupak::tasks

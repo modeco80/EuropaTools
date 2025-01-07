@@ -14,6 +14,7 @@
 #include <iostream>
 #include <tasks/CreateTask.hpp>
 #include <Utils.hpp>
+
 #include "europa/io/PakFile.hpp"
 
 namespace eupak::tasks {
@@ -30,8 +31,8 @@ namespace eupak::tasks {
 		}
 
 		void OnEvent(const PakEvent& event) override {
-			using enum PakEvent::Type;
-			switch(event.type) {
+			using enum PakEvent::EventCode;
+			switch(event.eventCode) {
 				case WritingHeader:
 					progress.set_option(indicators::option::PostfixText { "Writing header" });
 					progress.print_progress();
@@ -50,15 +51,15 @@ namespace eupak::tasks {
 		}
 
 		void OnEvent(const FileEvent& event) override {
-			using enum FileEvent::Type;
-			switch(event.type) {
-				case FileBeginWrite:
-					progress.set_option(indicators::option::PostfixText { "Writing " + event.filename });
+			using enum FileEvent::EventCode;
+			switch(event.eventCode) {
+				case FileWriteBegin:
+					progress.set_option(indicators::option::PostfixText { "Writing " + event.targetFileName });
 					progress.print_progress();
 					break;
 
-				case FileEndWrite:
-					progress.set_option(indicators::option::PostfixText { "Written " + event.filename });
+				case FileWriteEnd:
+					progress.set_option(indicators::option::PostfixText { "Written " + event.targetFileName });
 					progress.tick();
 					break;
 			}
@@ -77,10 +78,6 @@ namespace eupak::tasks {
 	};
 
 	int CreateTask::Run(Arguments&& args) {
-		europa::io::PakWriter writer;
-
-		writer.SetVersion(args.pakVersion);
-
 		auto currFile = 0;
 		auto fileCount = 0;
 
@@ -137,7 +134,7 @@ namespace eupak::tasks {
 			// Setup other stuff like modtime
 			file.Visit([&](auto& tocEntry) {
 				// Need to figure out why this is broken and fucked up
-				//auto casted = std::chrono::clock_cast<std::chrono::system_clock>(lastModified);
+				// auto casted = std::chrono::clock_cast<std::chrono::system_clock>(lastModified);
 				auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(lastModified);
 				tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
 			});
@@ -156,9 +153,10 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		CreateArchiveReportSink sink(fileCount);
+		CreateArchiveReportSink reportSink(fileCount);
+		europa::io::PakWriter writer(args.pakVersion);
 
-		writer.Write(ofs, std::move(files), sink);
+		writer.Write(ofs, std::move(files), reportSink);
 		return 0;
 	}
 

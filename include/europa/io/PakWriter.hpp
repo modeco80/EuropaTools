@@ -29,6 +29,12 @@ namespace europa::io {
 
 		using FlattenedType = std::pair<std::string, PakFile>;
 
+		constexpr PakWriter() = default;
+
+		PakWriter(structs::PakVersion version) {
+			SetVersion(version);
+		}
+
 		/// Initalize for the given package version.
 		void SetVersion(structs::PakVersion version);
 
