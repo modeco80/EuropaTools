@@ -79,7 +79,10 @@ int main(int argc, char** argv) {
 	parser.add_subparser(createParser);
 
 	try {
-		// If no command was specified
+		// No command was specified, display the help and then exit with a failure code.
+		// For some reason the `argparse` library does not have something like this on its own.
+		//
+		// I guess it's simple though so I can't really complain that much
 		if(argc == 1) {
 			auto s = parser.help();
 			printf("%s\n", s.str().c_str());
@@ -127,6 +130,10 @@ int main(int argc, char** argv) {
 		return task.Run(std::move(args));
 	}
 
+	// FIXME: At some point for accurate rebuilds we should also accept a JSON manifest file
+	// that contains: Package version, sector alignment, package build time, order of all files (as original) and their modtime, so on.
+	// Then a user can just do `eupak create --manifest manifest.json` and it'll all be figured out
+	// (I have not dreamt up the schema for this yet and this relies on other FIXMEs being done so this will have to wait.)
 	if(parser.is_subcommand_used("create")) {
 		eupak::tasks::CreateTask task;
 		eupak::tasks::CreateTask::Arguments args;

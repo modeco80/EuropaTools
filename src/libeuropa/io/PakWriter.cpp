@@ -52,6 +52,10 @@ namespace europa::io {
 
 		THeader pakHeader {};
 
+		// FIXME: We should not be modifying the user provided order here
+		// Instead, a client can choose to sort however they want
+		// (Either that or we can explicitly disable this behaviour with a new argument, idk)
+
 		// Sort the flattened array.
 		std::ranges::sort(sortedFiles, std::greater {}, [](const FlattenedType& elem) {
 			return elem.second.GetSize();
