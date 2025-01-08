@@ -20,7 +20,7 @@ namespace europa::io {
 	struct YatfReader {
 		explicit YatfReader(std::istream& is);
 
-		void Init(std::istream& is);
+		void InitFromStream(std::istream& is);
 
 		void ReadImage();
 

@@ -13,13 +13,17 @@ if(" ${CMAKE_SOURCE_DIR}" STREQUAL " ${CMAKE_BINARY_DIR}")
     message(FATAL_ERROR "In-source builds are strictly prohibited.")
 endif()
 
-include(cmake/Policies.cmake)
-
 project(EuropaTools
         VERSION 1.0.0
         LANGUAGES C CXX
         DESCRIPTION "Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter)"
         )
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+include(Policies)
+include(ProjectFuncs)
+include(CompilerFlags)
 
 include(FetchContent)
 

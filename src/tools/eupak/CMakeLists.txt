@@ -29,3 +29,5 @@ configure_file(EupakConfig.hpp.in
 
 target_include_directories(eupak PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(eupak PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+europa_target(eupak)

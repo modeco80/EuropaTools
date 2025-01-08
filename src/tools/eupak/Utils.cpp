@@ -53,7 +53,7 @@ namespace eupak {
 		auto count = std::strftime(&buf[0], sizeof(buf), format.data(), &tmObject);
 
 		// an error occured, probably.
-		if(count == -1)
+		if(count == static_cast<std::size_t>(-1))
 			return "";
 
 		return { buf, count };

@@ -47,7 +47,6 @@ namespace europa::io::impl {
 
 	std::string ReadPString(std::istream& is) {
 		std::string s;
-		char c;
 
 		if(!is)
 			return "";
@@ -62,7 +61,7 @@ namespace europa::io::impl {
 		s.resize(length - 1);
 
 		// Read the string
-		for(auto i = 0; i < length-1; ++i) {
+		for(std::uint32_t i = 0; i < length-1; ++i) {
 			s[i] = static_cast<char>(is.get());
 		}
 		static_cast<void>(is.get());

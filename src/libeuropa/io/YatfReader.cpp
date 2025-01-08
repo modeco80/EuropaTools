@@ -19,12 +19,12 @@ namespace europa::io {
 
 	YatfReader::YatfReader(std::istream& is)
 		: stream(is) {
-		Init(stream);
+		InitFromStream(stream);
 	}
 
-	void YatfReader::Init(std::istream& is) {
+	void YatfReader::InitFromStream(std::istream& is) {
 		// Read the image header.
-		header = impl::ReadStreamType<structs::YatfHeader>(stream);
+		header = impl::ReadStreamType<structs::YatfHeader>(is);
 
 		if(!header.IsValid())
 			invalid = true;

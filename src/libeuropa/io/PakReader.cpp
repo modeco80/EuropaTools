@@ -37,7 +37,7 @@ namespace europa::io {
 
 		// Read the archive TOC
 		stream.seekg(header_type.tocOffset, std::istream::beg);
-		for(auto i = 0; i < header_type.fileCount; ++i) {
+		for(std::uint32_t i = 0; i < header_type.fileCount; ++i) {
 			// The first part of the TOC entry is always a VLE string,
 			// which we don't store inside the type (because we can't)
 			//

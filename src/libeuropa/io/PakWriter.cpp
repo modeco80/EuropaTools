@@ -33,7 +33,7 @@ namespace europa::io {
 
 	template <class T>
 	constexpr T AlignBy(T value, std::size_t alignment) {
-		return (-value) & alignment - 1;
+		return (-value) & (alignment - 1);
 	}
 
 	void PakWriter::Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
