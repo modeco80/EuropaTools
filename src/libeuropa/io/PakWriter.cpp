@@ -29,11 +29,11 @@ namespace europa::io {
 		this->version = version;
 	}
 
-	// move to a util/ header
+	// FIXME: It would be nice to move to a util/ header
 
 	template <class T>
 	constexpr T AlignBy(T value, std::size_t alignment) {
-		return (-value) & (alignment - 1);
+		return static_cast<T>(((value + (alignment - 1)) & ~(alignment - 1)));
 	}
 
 	void PakWriter::Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
@@ -77,7 +77,7 @@ namespace europa::io {
 		// Align first file to sector boundary.
 		if(sectorAlignment == SectorAlignment::Align)
 			os.seekp(
-			AlignBy(os.tellp(), kCDSectorSize),
+			AlignBy(static_cast<int>(os.tellp()), kCDSectorSize),
 			std::istream::beg);
 
 		// Write all the file data
@@ -118,7 +118,7 @@ namespace europa::io {
 			// Align to sector boundary.
 			if(sectorAlignment == SectorAlignment::Align)
 				os.seekp(
-				AlignBy(os.tellp(), kCDSectorSize),
+				AlignBy(static_cast<int>(os.tellp()), kCDSectorSize),
 				std::istream::beg);
 
 			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteEnd,
