@@ -9,31 +9,23 @@
 #include <algorithm>
 #include <chrono>
 #include <europa/io/PakWriter.hpp>
+#include <europa/util/AlignHelpers.hpp>
+#include <europa/util/Overloaded.hpp>
 #include <europa/util/TupleElement.hpp>
+#include <europa/util/UsefulConstants.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
 #include "europa/structs/Pak.hpp"
-#include "europa/util/Overloaded.hpp"
 #include "StreamUtils.h"
 
 namespace europa::io {
 
-	/// The size of a CD-ROM (ISO 9660) secor.
-	constexpr auto kCDSectorSize = 0x800;
-
 	void PakWriter::SetVersion(structs::PakVersion version) {
 		// for now.
 		this->version = version;
-	}
-
-	// FIXME: It would be nice to move to a util/ header
-
-	template <class T>
-	constexpr T AlignBy(T value, std::size_t alignment) {
-		return static_cast<T>(((value + (alignment - 1)) & ~(alignment - 1)));
 	}
 
 	void PakWriter::Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
@@ -74,11 +66,9 @@ namespace europa::io {
 			os.seekp(6, std::ostream::cur);
 		}
 
-		// Align first file to sector boundary.
+		// Align the first file to start on the next sector boundary.
 		if(sectorAlignment == SectorAlignment::Align)
-			os.seekp(
-			AlignBy(static_cast<int>(os.tellp()), kCDSectorSize),
-			std::istream::beg);
+			os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
 
 		// Write all the file data
 		for(auto& [filename, file] : sortedFiles) {
@@ -115,11 +105,9 @@ namespace europa::io {
 			});
 			// clang-format on
 
-			// Align to sector boundary.
+			// Align to the next sector boundary.
 			if(sectorAlignment == SectorAlignment::Align)
-				os.seekp(
-				AlignBy(static_cast<int>(os.tellp()), kCDSectorSize),
-				std::istream::beg);
+				os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
 
 			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteEnd,
 						   filename });
