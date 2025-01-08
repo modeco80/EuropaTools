@@ -24,7 +24,7 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		europa::io::PakReader reader(ifs);
+		eio::PakReader reader(ifs);
 
 		reader.ReadData();
 

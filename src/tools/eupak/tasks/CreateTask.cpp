@@ -90,6 +90,10 @@ namespace eupak::tasks {
 
 		std::cout << "Going to write " << fileCount << " files into " << args.outputFile << '\n';
 
+		if(args.sectorAligned) {
+			std::cout << "Writing a sector aligned package\n";
+		}
+
 		indicators::ProgressBar progress {
 			indicators::option::BarWidth { 50 },
 			indicators::option::ForegroundColor { indicators::Color::green },
@@ -123,8 +127,8 @@ namespace eupak::tasks {
 
 			progress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
 
-			europa::io::PakFile file;
-			europa::io::PakFile::DataType pakData = europa::io::PakFileData::InitAsPath(ent.path());
+			eio::PakFile file;
+			eio::PakFile::DataType pakData = eio::PakFileData::InitAsPath(ent.path());
 
 			file.InitAs(args.pakVersion);
 
@@ -154,9 +158,16 @@ namespace eupak::tasks {
 		}
 
 		CreateArchiveReportSink reportSink(fileCount);
-		europa::io::PakWriter writer(args.pakVersion);
+		eio::PakWriter writer(args.pakVersion);
 
-		writer.Write(ofs, std::move(files), reportSink);
+		using enum eio::PakWriter::SectorAlignment;
+
+		eio::PakWriter::SectorAlignment alignment = DoNotAlign;
+
+		if(args.sectorAligned)
+			alignment = Align;
+
+		writer.Write(ofs, std::move(files), reportSink, alignment);
 		return 0;
 	}
 

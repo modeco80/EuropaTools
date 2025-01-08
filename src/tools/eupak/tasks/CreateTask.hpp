@@ -23,6 +23,7 @@ namespace eupak::tasks {
 
 				bool verbose;
 				europa::structs::PakVersion pakVersion;
+				bool sectorAligned;
 			};
 
 			int Run(Arguments&& args);

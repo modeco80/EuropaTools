@@ -6,75 +6,90 @@
 // SPDX-License-Identifier: MIT
 //
 
-#include <EupakConfig.hpp>
-
-#include <tasks/InfoTask.hpp>
-#include <tasks/ExtractTask.hpp>
-#include <tasks/CreateTask.hpp>
-
 #include <argparse/argparse.hpp>
+#include <EupakConfig.hpp>
+#include <tasks/CreateTask.hpp>
+#include <tasks/ExtractTask.hpp>
+#include <tasks/InfoTask.hpp>
 
 int main(int argc, char** argv) {
+	// FIXME: At some point we should just have task classes register their arguments
+	// and then they will deal with all that themselves. The only thing we will do here
+	// is point them to themselves.
+	//
+	// The current design is really really bad for introducing new stuff.
+
 	argparse::ArgumentParser parser("eupak", EUPAK_VERSION_STR);
 	parser.add_description("Eupak (Europa Package Multi-Tool) v" EUPAK_VERSION_STR);
 
 	argparse::ArgumentParser infoParser("info", EUPAK_VERSION_STR, argparse::default_arguments::help);
 	infoParser.add_description("Print information about a package file.");
 	infoParser.add_argument("input")
-		.help("Input archive")
-		.metavar("ARCHIVE");
+	.help("Input archive")
+	.metavar("ARCHIVE");
 
 	infoParser.add_argument("--verbose")
-		.help("Increase information output verbosity (print a list of files).")
-		.default_value(false)
-		.implicit_value(true);
+	.help("Increase information output verbosity (print a list of files).")
+	.default_value(false)
+	.implicit_value(true);
 
 	argparse::ArgumentParser extractParser("extract", EUPAK_VERSION_STR, argparse::default_arguments::help);
 	extractParser.add_description("Extract a package file.");
 	extractParser.add_argument("-d", "--directory")
-				.default_value("")
-				.metavar("DIRECTORY")
-				.help("Directory to extract to.");
+	.default_value("")
+	.metavar("DIRECTORY")
+	.help("Directory to extract to.");
 	extractParser.add_argument("input")
-				.help("Input archive")
-				.metavar("ARCHIVE");
+	.help("Input archive")
+	.metavar("ARCHIVE");
 
 	extractParser.add_argument("--verbose")
-			.help("Increase extraction output verbosity")
-			.default_value(false)
-			.implicit_value(true);
+	.help("Increase extraction output verbosity")
+	.default_value(false)
+	.implicit_value(true);
 
 	argparse::ArgumentParser createParser("create", EUPAK_VERSION_STR, argparse::default_arguments::help);
 	createParser.add_description("Create a package file.");
 	createParser.add_argument("-d", "--directory")
-				.required()
-				.metavar("DIRECTORY")
-				.help("Directory to create archive from");
+	.required()
+	.metavar("DIRECTORY")
+	.help("Directory to create archive from");
 
-	createParser.add_argument("-V","--archive-version")
-				.default_value("starfighter")
-				.help(R"(Output archive version. Either "pmdl", "starfighter" or "jedistarfighter".)")
-				.metavar("VERSION");
+	createParser.add_argument("-V", "--archive-version")
+	.default_value("starfighter")
+	.help(R"(Output archive version. Either "pmdl", "starfighter" or "jedistarfighter".)")
+	.metavar("VERSION");
+
+	createParser.add_argument("-s", "--sector-aligned")
+	.help(R"(Aligns all files in this new package to CD-ROM sector boundaries.)")
+	.flag();
 
 	createParser.add_argument("output")
-				.required()
-				.help("Output archive")
-				.metavar("ARCHIVE");
+	.required()
+	.help("Output archive")
+	.metavar("ARCHIVE");
 
 	createParser.add_argument("--verbose")
-				.help("Increase creation output verbosity")
-				.default_value(false)
-				.implicit_value(true);
-
+	.help("Increase creation output verbosity")
+	.default_value(false)
+	.implicit_value(true);
 
 	parser.add_subparser(infoParser);
 	parser.add_subparser(extractParser);
 	parser.add_subparser(createParser);
 
 	try {
+		// If no command was specified
+		if(argc == 1) {
+			auto s = parser.help();
+			printf("%s\n", s.str().c_str());
+			return 1;
+		}
+
 		parser.parse_args(argc, argv);
 	} catch(std::runtime_error& error) {
-		std::cout << error.what() << '\n' << parser;
+		std::cout << error.what() << '\n'
+				  << parser;
 		return 1;
 	}
 
@@ -121,25 +136,28 @@ int main(int argc, char** argv) {
 		args.outputFile = eupak::fs::path(createParser.get("output"));
 
 		if(createParser.is_used("--archive-version")) {
-				const auto& versionStr = createParser.get("--archive-version");
+			const auto& versionStr = createParser.get("--archive-version");
 
-				if(versionStr == "pmdl") {
-					args.pakVersion = europa::structs::PakVersion::Ver3;
-				} else if(versionStr == "starfighter") {
-					args.pakVersion = europa::structs::PakVersion::Ver4;
-				} else if(versionStr == "jedistarfighter") {
-					args.pakVersion = europa::structs::PakVersion::Ver5;
-				} else {
-					std::cout << "Error: Invalid version \"" << versionStr << "\"\n" << createParser;
-					return 1;
-				}
+			if(versionStr == "pmdl") {
+				args.pakVersion = europa::structs::PakVersion::Ver3;
+			} else if(versionStr == "starfighter") {
+				args.pakVersion = europa::structs::PakVersion::Ver4;
+			} else if(versionStr == "jedistarfighter") {
+				args.pakVersion = europa::structs::PakVersion::Ver5;
+			} else {
+				std::cout << "Error: Invalid version \"" << versionStr << "\"\n"
+						  << createParser;
+				return 1;
+			}
 		} else {
 			args.pakVersion = europa::structs::PakVersion::Ver4;
 		}
 
+		args.sectorAligned = createParser.get<bool>("--sector-aligned");
 
 		if(!eupak::fs::is_directory(args.inputDirectory)) {
-			std::cout << "Error: Provided input isn't a directory\n" << createParser;
+			std::cout << "Error: Provided input isn't a directory\n"
+					  << createParser;
 			return 1;
 		}
 

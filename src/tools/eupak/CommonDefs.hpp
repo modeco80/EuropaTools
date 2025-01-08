@@ -11,10 +11,21 @@
 
 #include <filesystem>
 
+namespace europa {
+	namespace io {}
+	namespace util {}
+	namespace structs {}
+} // namespace europa
+
 namespace eupak {
 
 	namespace fs = std::filesystem;
 
-}
+	// Shorthands for libeuropa components
+	namespace eio = europa::io;
+	namespace eutil = europa::util;
+	namespace estructs = europa::structs;
+
+} // namespace eupak
 
 #endif // EUROPA_EUPAK_COMMONDEFS_HPP

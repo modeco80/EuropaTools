@@ -25,7 +25,7 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		europa::io::PakReader reader(ifs);
+		eio::PakReader reader(ifs);
 
 		reader.ReadData();
 
@@ -35,12 +35,14 @@ namespace eupak::tasks {
 		}
 
 		std::visit([&](auto& header) {
-			std::string version;
-			if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver3)
+			std::string_view version = "???";
+
+			// This is the best other than just duplicating the body for each pak version.. :(
+			if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver3)
 				version = "Version 3 (PMDL)";
-			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver4)
+			else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver4)
 				version = "Version 4 (Starfighter)";
-			else if constexpr(std::decay_t<decltype(header)>::VERSION == europa::structs::PakVersion::Ver5)
+			else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver5)
 				version = "Version 5 (Jedi Starfighter)";
 
 			std::cout << "Archive " << args.inputPath << ":\n";
