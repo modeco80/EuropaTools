@@ -64,15 +64,21 @@ namespace europa::io {
 		// Leave space for the header
 		os.seekp(sizeof(THeader), std::ostream::beg);
 
-		// Version 5 paks seem to have an additional bit of reserved data
-		// (which is all zeros.)
-		if(THeader::VERSION == structs::PakVersion::Ver5) {
-			os.seekp(6, std::ostream::cur);
+		if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
+			if(sectorAlignment == SectorAlignment::Align) {
+				pakHeader.sectorAlignment = util::kCDSectorSize;
+				pakHeader.sectorAlignedFlag = 1;
+			} else {
+				pakHeader.sectorAlignment = 0;
+				pakHeader.sectorAlignedFlag = 0;
+			}
 		}
 
-		// Align the first file to start on the next sector boundary.
-		if(sectorAlignment == SectorAlignment::Align)
-			os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
+		if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
+			// Align the first file to start on the next sector boundary.
+			if(sectorAlignment == SectorAlignment::Align)
+				os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
+		}
 
 		// Write all the file data
 		for(auto& [filename, file] : sortedFiles) {
@@ -83,6 +89,14 @@ namespace europa::io {
 			file.VisitTocEntry([&](auto& tocEntry) {
 				tocEntry.offset = os.tellp();
 			});
+
+			// For sector alignment.
+			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
+				if(sectorAlignment == SectorAlignment::Align) {
+					auto& toc = file.GetTOCEntry<structs::PakHeader_V5::TocEntry_SectorAligned>();
+					toc.startLBA = (os.tellp() / util::kCDSectorSize);
+				}
+			}
 
 			auto& fileData = file.GetData();
 
@@ -109,9 +123,11 @@ namespace europa::io {
 			});
 			// clang-format on
 
-			// Align to the next sector boundary.
-			if(sectorAlignment == SectorAlignment::Align)
-				os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
+			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
+				// Align to the next sector boundary.
+				if(sectorAlignment == SectorAlignment::Align)
+					os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
+			}
 
 			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteEnd,
 						   filename });

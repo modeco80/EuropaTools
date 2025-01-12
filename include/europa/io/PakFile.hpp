@@ -93,7 +93,7 @@ namespace europa::io {
 			toc = value;
 		}
 
-		void InitAs(structs::PakVersion version) {
+		void InitAs(structs::PakVersion version, bool aligned) {
 			switch(version) {
 				case structs::PakVersion::Ver3:
 					toc = structs::PakHeader_V3::TocEntry {};
@@ -102,7 +102,10 @@ namespace europa::io {
 					toc = structs::PakHeader_V4::TocEntry {};
 					break;
 				case structs::PakVersion::Ver5:
-					toc = structs::PakHeader_V5::TocEntry {};
+					if(aligned)
+						toc = structs::PakHeader_V5::TocEntry_SectorAligned {};
+					else
+						toc = structs::PakHeader_V5::TocEntry {};
 					break;
 				default:
 					throw std::invalid_argument("Invalid PAK version to initalize TOC entry");
@@ -144,6 +147,11 @@ namespace europa::io {
 		 */
 		template <class T>
 		[[nodiscard]] const T& GetTOCEntry() const {
+			return std::get<T>(toc);
+		}
+
+		template <class T>
+		[[nodiscard]] T& GetTOCEntry() {
 			return std::get<T>(toc);
 		}
 

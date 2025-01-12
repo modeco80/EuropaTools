@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 	.metavar("VERSION");
 
 	createParser.add_argument("-s", "--sector-aligned")
-	.help(R"(Aligns all files in this new package to CD-ROM sector boundaries.)")
+	.help(R"(Aligns all files in this new package to CD-ROM sector boundaries. Only valid for -V jedistarfighter.)")
 	.flag();
 
 	createParser.add_argument("output")

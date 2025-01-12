@@ -130,7 +130,7 @@ namespace eupak::tasks {
 			eio::PakFile file;
 			eio::PakFile::DataType pakData = eio::PakFileData::InitAsPath(ent.path());
 
-			file.InitAs(args.pakVersion);
+			file.InitAs(args.pakVersion, args.sectorAligned);
 
 			// Add data
 			file.SetData(std::move(pakData));
