@@ -25,13 +25,14 @@ namespace europa::io {
 		/// This stream should only be used by the PakReader, nothing else.
 		explicit PakReader(std::istream& is);
 
-		void ReadData();
+		/// Reads the header and the file TOC.
+		/// This function should be called first.
+		void ReadHeaderAndTOC();
 
+		/// Reads all files in the package.
 		void ReadFiles();
 
-		/**
-		 * Read in a specific file.
-		 */
+		/// Reads a file with the path specified as [file].
 		void ReadFile(const std::string& file);
 
 		bool Invalid() const {

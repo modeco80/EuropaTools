@@ -26,7 +26,7 @@ namespace eupak::tasks {
 
 		eio::PakReader reader(ifs);
 
-		reader.ReadData();
+		reader.ReadHeaderAndTOC();
 
 		if(reader.Invalid()) {
 			std::cout << "Error: Invalid PAK/PMDL file " << args.inputPath << ".\n";

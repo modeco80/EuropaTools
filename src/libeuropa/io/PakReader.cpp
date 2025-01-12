@@ -29,7 +29,7 @@ namespace europa::io {
 			invalid = true;
 			return;
 		}
-		
+
 		// Read the archive TOC
 		stream.seekg(header_type.tocOffset, std::istream::beg);
 		for(std::uint32_t i = 0; i < header_type.fileCount; ++i) {
@@ -55,7 +55,7 @@ namespace europa::io {
 		header = header_type;
 	}
 
-	void PakReader::ReadData() {
+	void PakReader::ReadHeaderAndTOC() {
 		auto commonHeader = impl::ReadStreamType<structs::PakHeader_Common>(stream);
 		stream.seekg(0, std::istream::beg);
 

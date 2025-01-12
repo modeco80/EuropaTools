@@ -6,12 +6,12 @@
 // SPDX-License-Identifier: MIT
 //
 
-#include <algorithm>
 #include <europa/io/PakReader.hpp>
 #include <fstream>
 #include <iostream>
 #include <tasks/InfoTask.hpp>
 #include <Utils.hpp>
+
 #include "europa/structs/Pak.hpp"
 
 namespace eupak::tasks {
@@ -28,7 +28,7 @@ namespace eupak::tasks {
 
 		eio::PakReader reader(ifs);
 
-		reader.ReadData();
+		reader.ReadHeaderAndTOC();
 
 		if(reader.Invalid()) {
 			std::cout << "Error: Invalid PAK/PMDL file " << args.inputPath << ".\n";

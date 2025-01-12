@@ -20,7 +20,7 @@ namespace europa::structs {
 
 	enum class PakVersion : u16 {
 		Invalid = 0xffff,
-		Ver3 = 0x3, ///< Typically used for PMDL files
+		Ver3 = 0x3, ///< Early PMDL files use this version
 		Ver4 = 0x4,
 		Ver5 = 0x5
 	};
@@ -152,9 +152,12 @@ namespace europa::structs {
 		// Zeroes.
 		u32 reservedPad;
 
-		//
+		// Seems to be the sector alignment value
+		// Always 0x800
 		u32 sectorAlignment;
 
+		// 0x1 - This package is sector aligned
+		// 0x0 - it is not
 		u8 sectorAlignedFlag;
 		u8 pad2;
 	};
