@@ -26,7 +26,12 @@ namespace europa {
 		// 0x4 - Starfighter
 		// 0x5 - Jedi Starfighter
 		u16 Version;
-		u8 pad2;
+
+		// Not sure what they were planning to use this extra byte for.
+		// It's always 0x0 and only present in version 4 onwards.
+		if(Version > 0x3) {
+			u8 pad2;
+		}
 
 		u32 tocOffset;
 
@@ -63,6 +68,10 @@ namespace europa {
 
 		u32 offset;
 		u32 size;
+        
+		if(parent.header.Version == 3) {
+			u16 unk; // always 0xff. idk what this is for
+		}
 
 		if(parent.header.Version == 5) {
 			if(parent.header.sectorAligned == 0x1) {

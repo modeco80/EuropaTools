@@ -83,8 +83,8 @@ namespace europa::structs {
 		struct [[gnu::packed]] TocEntry {
 			u32 offset;
 			u32 size;
-			u32 creationUnixTime; // junk on these v3 files
-			u16 junk;
+			u16 junk; // always 0xff
+			u32 creationUnixTime;
 		};
 
 		u32 tocOffset;
@@ -176,13 +176,16 @@ namespace europa::structs {
 	structs::PakHeader_V5::TocEntry,
 	structs::PakHeader_V5::TocEntry_SectorAligned>;
 
+	// Make sure all the structures defined here match observed/expected sizes.
+	// Otherwise, we will compile a broken program.
+
 	static_assert(sizeof(PakHeader_V3) == 0x28, "PakHeader_V3 wrong size");
 	static_assert(sizeof(PakHeader_V4) == 0x29, "PakHeader_V4 wrong size!!");
 	static_assert(sizeof(PakHeader_V5) == 0x2f, "PakHeader_V5 wrong size!!");
 
 	static_assert(sizeof(PakHeader_V3::TocEntry) == 0xe, "V3 TocEntry wrong size!");
-	static_assert(sizeof(PakHeader_V4::TocEntry) == 0xc, "V4 PakTocEntry wrong size!");
-	static_assert(sizeof(PakHeader_V5::TocEntry) == 0xc, "V5 PakTocEntry wrong size!");
+	static_assert(sizeof(PakHeader_V4::TocEntry) == 0xc, "V4 TocEntry wrong size!");
+	static_assert(sizeof(PakHeader_V5::TocEntry) == 0xc, "V5 TocEntry wrong size!");
 	static_assert(sizeof(PakHeader_V5::TocEntry_SectorAligned) == 0x10, "V5 TocEntry_SectorAligned wrong size!");
 
 } // namespace europa::structs
