@@ -13,6 +13,7 @@
 #include <europa/structs/Pak.hpp>
 #include <europa/util/Overloaded.hpp>
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <variant>
 #include <vector>

@@ -9,13 +9,10 @@
 #ifndef EUROPA_STRUCTS_PAK_H
 #define EUROPA_STRUCTS_PAK_H
 
-#include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <europa/structs/ImHexAdapter.hpp>
-#include <optional>
 #include <variant>
-
-#include <cstdio>
 
 namespace europa::structs {
 
@@ -34,7 +31,8 @@ namespace europa::structs {
 		/**
 		 * Header size. Doesn't include the magic.
 		 */
-		u16 headerSize;
+		u8 revision;
+		u8 padding;
 
 		PakVersion version;
 
@@ -47,13 +45,6 @@ namespace europa::structs {
 	struct [[gnu::packed]] PakHeader_Impl : PakHeader_Common {
 		constexpr static auto VERSION = Version;
 
-		/**
-		 * Get the real header size (including the magic).
-		 */
-		[[nodiscard]] constexpr std::size_t RealHeaderSize() const {
-			return sizeof(magic) + static_cast<std::size_t>(headerSize);
-		}
-
 		constexpr static u16 HeaderSize() {
 			return sizeof(Impl) - (sizeof(VALID_MAGIC) - 1);
 		}
@@ -64,24 +55,20 @@ namespace europa::structs {
 
 			version = Version;
 
-			// Copy important things & set proper header size.
+			// Copy important things & set proper revision. I guess
 			std::memcpy(&magic[0], &VALID_MAGIC[0], sizeof(VALID_MAGIC));
-			headerSize = HeaderSize();
+			revision = 0x1a;
 		}
 
 		explicit PakHeader_Impl(const PakHeader_Common& header) {
 			memcpy(&magic[0], &header.magic[0], sizeof(header.magic));
 			version = header.version;
-			headerSize = header.headerSize;
+			revision = header.revision;
 		}
 
 		[[nodiscard]] bool Valid() const noexcept {
 			// Magic must match.
 			if(!reinterpret_cast<const PakHeader_Common*>(this)->Valid())
-				return false;
-
-			// Check header size.
-			if(headerSize != HeaderSize() && headerSize != HeaderSize() + 1)
 				return false;
 
 			return version == Version;
@@ -109,7 +96,7 @@ namespace europa::structs {
 		u32 creationUnixTime;
 
 		// Zeroes.
-		u32 reservedPad{};
+		u32 reservedPad {};
 	};
 
 	struct [[gnu::packed]] PakHeader_V4 : public PakHeader_Impl<PakHeader_V4, PakVersion::Ver4> {
@@ -144,6 +131,14 @@ namespace europa::structs {
 			u32 creationUnixTime;
 		};
 
+		struct [[gnu::packed]] TocEntry_SectorAligned {
+			u32 offset;
+			u32 size;
+			// Start in LBA (offset / kCDSectorSize)
+			u32 startLBA;
+			u32 creationUnixTime;
+		};
+
 		u8 pad;
 
 		u32 tocOffset;
@@ -156,6 +151,12 @@ namespace europa::structs {
 
 		// Zeroes.
 		u32 reservedPad;
+
+		//
+		u32 sectorAlignment;
+
+		u8 sectorAlignedFlag;
+		u8 pad2;
 	};
 
 	using PakHeaderVariant = std::variant<
@@ -166,20 +167,20 @@ namespace europa::structs {
 	using PakTocEntryVariant = std::variant<
 	structs::PakHeader_V3::TocEntry,
 	structs::PakHeader_V4::TocEntry,
-	structs::PakHeader_V5::TocEntry>;
+	// PAK V5 has two kinds of toc entries:
+	// - normal
+	// - sector aligned
+	structs::PakHeader_V5::TocEntry,
+	structs::PakHeader_V5::TocEntry_SectorAligned>;
 
 	static_assert(sizeof(PakHeader_V3) == 0x28, "PakHeader_V3 wrong size");
-	// TODO: their format really seems to be wrong, 0x19 is proper, but some v3 archives have 0x1a header size
-	// ??? very weird
-	//static_assert(sizeof(PakHeader_V3) - (sizeof(VALID_MAGIC) - 1) == 0x1a, "PakHeader_V3::headerSize will be invalid when writing archives.");
 	static_assert(sizeof(PakHeader_V4) == 0x29, "PakHeader_V4 wrong size!!");
-	static_assert(sizeof(PakHeader_V4) - (sizeof(VALID_MAGIC) - 1) == 0x1a, "PakHeader_V4::headerSize will be invalid when writing archives.");
-	static_assert(sizeof(PakHeader_V5) == 0x29, "PakHeader_V5 wrong size!!");
-	static_assert(sizeof(PakHeader_V5) - (sizeof(VALID_MAGIC) - 1) == 0x1a, "PakHeader_V5::headerSize will be invalid when writing archives.");
+	static_assert(sizeof(PakHeader_V5) == 0x2f, "PakHeader_V5 wrong size!!");
 
 	static_assert(sizeof(PakHeader_V3::TocEntry) == 0xe, "V3 TocEntry wrong size!");
 	static_assert(sizeof(PakHeader_V4::TocEntry) == 0xc, "V4 PakTocEntry wrong size!");
 	static_assert(sizeof(PakHeader_V5::TocEntry) == 0xc, "V5 PakTocEntry wrong size!");
+	static_assert(sizeof(PakHeader_V5::TocEntry_SectorAligned) == 0x10, "V5 TocEntry_SectorAligned wrong size!");
 
 } // namespace europa::structs
 

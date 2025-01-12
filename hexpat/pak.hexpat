@@ -17,13 +17,16 @@ namespace europa {
 		char magic[16]; // "Europa Packfile\0"
 		
 		// Doesn't include magic
-		u16 headerSize;
+		u8 revision;
+
+		// This seems to be the start of the actual header
+		u8 pad;
 
 		// 0x3 - PMDL
 		// 0x4 - Starfighter
 		// 0x5 - Jedi Starfighter
 		u16 Version;
-		u8 pad;
+		u8 pad2;
 
 		u32 tocOffset;
 
@@ -36,6 +39,13 @@ namespace europa {
 
 		// Set to 0 in basically every file
 		u32 reserved;
+
+		// Version 5 has additional fields to support sector-alignment
+		if(Version == 5) {
+			u32 sectorSize;
+			u8 sectorAligned;
+			u8 pad3;
+		}
 	};
 
 	// "Pascal" string used
@@ -53,6 +63,13 @@ namespace europa {
 
 		u32 offset;
 		u32 size;
+
+		if(parent.header.Version == 5) {
+			if(parent.header.sectorAligned == 0x1) {
+				// Start LBA of the file
+				u32 startLBA;
+			}
+		}
 
 		// Seems to be the same as he header.
 		u32 creationTime;

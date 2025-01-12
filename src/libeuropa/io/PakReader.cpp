@@ -29,12 +29,7 @@ namespace europa::io {
 			invalid = true;
 			return;
 		}
-
-		//		bool isStreams { false };
-
-		//		if(header_type.tocOffset > 0x17000000)
-		//			isStreams = true;
-
+		
 		// Read the archive TOC
 		stream.seekg(header_type.tocOffset, std::istream::beg);
 		for(std::uint32_t i = 0; i < header_type.fileCount; ++i) {
@@ -43,13 +38,18 @@ namespace europa::io {
 			//
 			// Read this in first.
 			auto filename = impl::ReadPString(stream);
-			files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
-
-			// Don't think this is needed
-			// if(isStreams)
-			//	files[filename].Visit([&](auto& tocEntry) {
-			//		tocEntry.creationUnixTime = impl::ReadStreamType<structs::u32>(stream);
-			//	});
+			if constexpr(std::is_same_v<T, structs::PakHeader_V5>) {
+				// Version 5 supports sector aligned packages which have an additional field in them
+				// so we need to handle it here
+				// (not feeling quite as hot about all the crazy template magic here anymore)
+				if(header_type.sectorAlignedFlag) {
+					files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry_SectorAligned>(stream));
+				} else {
+					files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
+				}
+			} else {
+				files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
+			}
 		}
 
 		header = header_type;

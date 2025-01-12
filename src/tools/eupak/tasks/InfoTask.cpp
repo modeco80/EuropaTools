@@ -12,6 +12,7 @@
 #include <iostream>
 #include <tasks/InfoTask.hpp>
 #include <Utils.hpp>
+#include "europa/structs/Pak.hpp"
 
 namespace eupak::tasks {
 
@@ -60,6 +61,10 @@ namespace eupak::tasks {
 				file.VisitTocEntry([&](auto& tocEntry) {
 					std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
 					std::cout << "    Size: " << FormatUnit(tocEntry.size) << '\n';
+
+					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
+						std::cout << "    Start LBA (CD-ROM Sector): " << tocEntry.startLBA << '\n';
+					}
 				});
 			}
 		}
