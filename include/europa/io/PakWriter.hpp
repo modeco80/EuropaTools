@@ -41,7 +41,7 @@ namespace europa::io {
 		/// Write archive to the given output stream.
 		/// [vec] is all files which should be packaged
 		/// [sink] is a implementation of PakProgressReportsSink which should get events (TODO: Make this optional)
-		/// [sectorAlignment] controls sector alignment
+		/// [sectorAlignment] controls sector alignment. It is ignored unless the package's version is [structs::PakVersion::Ver5].
 		void Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment = SectorAlignment::DoNotAlign);
 
 	   private:

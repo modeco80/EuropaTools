@@ -12,6 +12,8 @@
 #include <tasks/ExtractTask.hpp>
 #include <tasks/InfoTask.hpp>
 
+#include "europa/structs/Pak.hpp"
+
 int main(int argc, char** argv) {
 	// FIXME: At some point we should just have task classes register their arguments
 	// and then they will deal with all that themselves. The only thing we will do here
@@ -161,6 +163,12 @@ int main(int argc, char** argv) {
 		}
 
 		args.sectorAligned = createParser.get<bool>("--sector-aligned");
+
+		if(args.sectorAligned && args.pakVersion != eupak::estructs::PakVersion::Ver5) {
+			std::cout << "Error: --sector-aligned is only valid for creating a package with \"-V jedistarfighter\".\n"
+					  << createParser;
+			return 1;
+		}
 
 		if(!eupak::fs::is_directory(args.inputDirectory)) {
 			std::cout << "Error: Provided input isn't a directory\n"
