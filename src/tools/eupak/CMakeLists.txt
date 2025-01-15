@@ -12,6 +12,7 @@ add_executable(eupak
 		Utils.cpp
 
 		# Tasks
+		tasks/Task.cpp
 		tasks/InfoTask.cpp
 		tasks/CreateTask.cpp
 		tasks/ExtractTask.cpp

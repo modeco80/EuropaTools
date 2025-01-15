@@ -13,6 +13,7 @@
 #include <tasks/InfoTask.hpp>
 
 #include "europa/structs/Pak.hpp"
+#include "tasks/Task.hpp"
 
 int main(int argc, char** argv) {
 	// FIXME: At some point we should just have task classes register their arguments
@@ -50,35 +51,12 @@ int main(int argc, char** argv) {
 	.default_value(false)
 	.implicit_value(true);
 
-	argparse::ArgumentParser createParser("create", EUPAK_VERSION_STR, argparse::default_arguments::help);
-	createParser.add_description("Create a package file.");
-	createParser.add_argument("-d", "--directory")
-	.required()
-	.metavar("DIRECTORY")
-	.help("Directory to create archive from");
-
-	createParser.add_argument("-V", "--archive-version")
-	.default_value("starfighter")
-	.help(R"(Output archive version. Either "pmdl", "starfighter" or "jedistarfighter".)")
-	.metavar("VERSION");
-
-	createParser.add_argument("-s", "--sector-aligned")
-	.help(R"(Aligns all files in this new package to CD-ROM sector boundaries. Only valid for -V jedistarfighter.)")
-	.flag();
-
-	createParser.add_argument("output")
-	.required()
-	.help("Output archive")
-	.metavar("ARCHIVE");
-
-	createParser.add_argument("--verbose")
-	.help("Increase creation output verbosity")
-	.default_value(false)
-	.implicit_value(true);
-
 	parser.add_subparser(infoParser);
 	parser.add_subparser(extractParser);
-	parser.add_subparser(createParser);
+
+	auto tasks = std::vector {
+		eupak::tasks::TaskFactory::CreateNamed("create", parser)
+	};
 
 	try {
 		// No command was specified, display the help and then exit with a failure code.
@@ -99,6 +77,17 @@ int main(int argc, char** argv) {
 	}
 
 	// Run the given task
+
+	for(auto task : tasks) {
+		if(task->ShouldRun(parser)) {
+			if(auto res = task->Parse(); res != 0)
+				return res;
+			
+			return task->Run();
+		}
+	}
+
+#if 0
 
 	if(parser.is_subcommand_used("extract")) {
 		eupak::tasks::ExtractTask task;
@@ -132,52 +121,15 @@ int main(int argc, char** argv) {
 		return task.Run(std::move(args));
 	}
 
-	// FIXME: At some point for accurate rebuilds we should also accept a JSON manifest file
-	// that contains: Package version, sector alignment, package build time, order of all files (as original) and their modtime, so on.
-	// Then a user can just do `eupak create --manifest manifest.json` and it'll all be figured out
-	// (I have not dreamt up the schema for this yet and this relies on other FIXMEs being done so this will have to wait.)
+	
 	if(parser.is_subcommand_used("create")) {
 		eupak::tasks::CreateTask task;
 		eupak::tasks::CreateTask::Arguments args;
 
-		args.verbose = createParser.get<bool>("--verbose");
-		args.inputDirectory = eupak::fs::path(createParser.get("--directory"));
-		args.outputFile = eupak::fs::path(createParser.get("output"));
-
-		if(createParser.is_used("--archive-version")) {
-			const auto& versionStr = createParser.get("--archive-version");
-
-			if(versionStr == "pmdl") {
-				args.pakVersion = europa::structs::PakVersion::Ver3;
-			} else if(versionStr == "starfighter") {
-				args.pakVersion = europa::structs::PakVersion::Ver4;
-			} else if(versionStr == "jedistarfighter") {
-				args.pakVersion = europa::structs::PakVersion::Ver5;
-			} else {
-				std::cout << "Error: Invalid version \"" << versionStr << "\"\n"
-						  << createParser;
-				return 1;
-			}
-		} else {
-			args.pakVersion = europa::structs::PakVersion::Ver4;
-		}
-
-		args.sectorAligned = createParser.get<bool>("--sector-aligned");
-
-		if(args.sectorAligned && args.pakVersion != eupak::estructs::PakVersion::Ver5) {
-			std::cout << "Error: --sector-aligned is only valid for creating a package with \"-V jedistarfighter\".\n"
-					  << createParser;
-			return 1;
-		}
-
-		if(!eupak::fs::is_directory(args.inputDirectory)) {
-			std::cout << "Error: Provided input isn't a directory\n"
-					  << createParser;
-			return 1;
-		}
-
+		
 		return task.Run(std::move(args));
 	}
+#endif
 
 	return 0;
 }

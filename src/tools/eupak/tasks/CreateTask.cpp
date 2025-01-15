@@ -7,6 +7,7 @@
 //
 
 #include <chrono>
+#include <EupakConfig.hpp>
 #include <europa/io/PakWriter.hpp>
 #include <fstream>
 #include <indicators/cursor_control.hpp>
@@ -15,7 +16,10 @@
 #include <tasks/CreateTask.hpp>
 #include <Utils.hpp>
 
+#include "argparse/argparse.hpp"
 #include "europa/io/PakFile.hpp"
+#include "europa/structs/Pak.hpp"
+#include "tasks/Task.hpp"
 
 namespace eupak::tasks {
 
@@ -77,7 +81,105 @@ namespace eupak::tasks {
 		};
 	};
 
-	int CreateTask::Run(Arguments&& args) {
+	std::optional<estructs::PakVersion> ParsePakVersion(const std::string& str) {
+		// FIXME: PMDL should be "starfighter-prerelease"
+		if(str == "pmdl") {
+			return estructs::PakVersion::Ver3;
+		} else if(str == "starfighter") {
+			return estructs::PakVersion::Ver4;
+		} else if(str == "jedistarfighter") {
+			return estructs::PakVersion::Ver5;
+		}
+
+		return std::nullopt;
+	}
+
+	CreateTask::CreateTask()
+		: parser("create", EUPAK_VERSION_STR, argparse::default_arguments::help) {
+		// Setup argparse
+		// clang-format off
+		parser.add_description("Create a package file.");
+		parser.add_argument("-d", "--directory")
+			.required()
+			.metavar("DIRECTORY")
+			.help("Directory to create archive from");
+
+		parser.add_argument("-V", "--archive-version")
+			.default_value("starfighter")
+			.help(R"(Output archive version. Either "pmdl", "starfighter" or "jedistarfighter".)")
+			.metavar("VERSION");
+
+		parser.add_argument("-s", "--sector-aligned")
+			.help(R"(Aligns all files in this new package to CD-ROM sector boundaries. Only valid for -V jedistarfighter.)")
+			.flag();
+
+		parser.add_argument("output")
+			.required()
+			.help("Output archive")
+			.metavar("ARCHIVE");
+
+		parser.add_argument("--verbose")
+			.help("Increase creation output verbosity")
+			.default_value(false)
+			.implicit_value(true);
+
+		// FIXME: At some point for accurate rebuilds we should also accept a JSON manifest file
+		// that contains: Package version, sector alignment, package build time, order of all files (as original) and their modtime, so on.
+		// Then a user can just do `eupak create --manifest manifest.json` and it'll all be figured out
+		// (I have not dreamt up the schema for this yet and this relies on other FIXMEs being done so this will have to wait.)
+
+		// clang-format on
+	}
+
+	void CreateTask::Init(argparse::ArgumentParser& parentParser) {
+		parentParser.add_subparser(parser);
+	}
+
+	bool CreateTask::ShouldRun(argparse::ArgumentParser& parentParser) const {
+		return parentParser.is_subcommand_used("create");
+	}
+
+	int CreateTask::Parse() {
+		auto& args = currentArgs;
+
+		args.verbose = parser.get<bool>("--verbose");
+		args.inputDirectory = eupak::fs::path(parser.get("--directory"));
+		args.outputFile = eupak::fs::path(parser.get("output"));
+
+		if(parser.is_used("--archive-version")) {
+			const auto& versionStr = parser.get("--archive-version");
+
+			if(auto opt = ParsePakVersion(versionStr); opt.has_value()) {
+			} else {
+				std::cout << "Error: Invalid version \"" << versionStr << "\"\n"
+						  << parser;
+				return 1;
+			}
+		} else {
+			args.pakVersion = europa::structs::PakVersion::Ver4;
+		}
+
+		args.sectorAligned = parser.get<bool>("--sector-aligned");
+
+		if(args.sectorAligned && args.pakVersion != eupak::estructs::PakVersion::Ver5) {
+			std::cout << "Error: --sector-aligned is only valid for creating a package with \"-V jedistarfighter\".\n"
+					  << parser;
+			return 1;
+		}
+
+		if(!eupak::fs::is_directory(args.inputDirectory)) {
+			std::cout << "Error: Provided input isn't a directory\n"
+					  << parser;
+			return 1;
+		}
+
+		return 0;
+	}
+
+	int CreateTask::Run() {
+		// we should not be modifying arguments past this point
+		const auto& args = currentArgs;
+
 		auto currFile = 0;
 		auto fileCount = 0;
 
@@ -170,5 +272,7 @@ namespace eupak::tasks {
 		writer.Write(ofs, std::move(files), reportSink, alignment);
 		return 0;
 	}
+
+	EUPAK_REGISTER_TASK("create", CreateTask);
 
 } // namespace eupak::tasks
