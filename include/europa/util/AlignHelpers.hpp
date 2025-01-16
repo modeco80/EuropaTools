@@ -13,7 +13,7 @@
 
 namespace europa::util {
 
-    /// Aligns a integral (e.g: file offset) to the provided value.
+    /// Aligns a integral value (e.g: file offset) by the provided alignment.
 	template <class T>
 	constexpr T AlignBy(T value, std::size_t alignment) {
 		return static_cast<T>(((value + (alignment - 1)) & ~(alignment - 1)));

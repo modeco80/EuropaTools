@@ -14,12 +14,12 @@
 
 namespace europa::util {
 
-	/**
-	 * A multi-endian, compile-time FourCC generator.
-	 * You love to see it.
-	 */
+	/// Compile-time endian-safe FourCC.
 	template <FixedString fccString, std::endian Endian = std::endian::little>
 	consteval std::uint32_t FourCC() {
+		// FIXME: It may be useful to *optionally* add policy support
+		// some FourCC clients prefer '\0' padding, some prefer ' ' (0x20) padding
+		// Idk. Pretty useless here though so idk
 		static_assert(fccString.Length() == 4, "Provided string is not a FourCC");
 
 		switch(Endian) {
@@ -30,9 +30,9 @@ namespace europa::util {
 				return (fccString[0] << 24) | (fccString[1] << 16) | (fccString[2] << 8) | fccString[3];
 		}
 
-		// Just return something with all possible bits set, if the user somehow
-		// got around the above switch (which shouldn't happen).
-		return 0xffffffff;
+		// If the user provided an invalid case, do something which is
+		// constexpr-unsafe to indicate user error.
+		throw 0xffffffff; // You passed an invalid Endian to FourCC()?
 	}
 
 } // namespace europa::util

@@ -12,7 +12,6 @@
 #include <europa/structs/Pak.hpp>
 #include <europa/util/AlignHelpers.hpp>
 #include <europa/util/Overloaded.hpp>
-#include <europa/util/TupleElement.hpp>
 #include <europa/util/UsefulConstants.hpp>
 #include <filesystem>
 #include <fstream>
