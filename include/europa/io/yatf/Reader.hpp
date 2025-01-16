@@ -22,6 +22,7 @@ namespace europa::io::yatf {
 	struct Reader {
 		explicit Reader(std::istream& is);
 
+		/// Read image. The image output to [surface] is converted to RGBA8888 implicitly.
 		bool ReadImage(structs::YatfHeader& header, util::ImageSurface& surface);
 
 	   private:
