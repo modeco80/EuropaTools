@@ -17,21 +17,28 @@ namespace europa::structs {
 
 	struct [[gnu::packed]] YatfHeader {
 		enum class TextureFormat : u8 {
-			kTextureFormat8Bpp = 0,
-			kTextureFormatUnknown = 1, // possibly 16bpp?
-			kTextureFormat24Bpp = 2,
-			kTextureFormat32Bpp = 3
+			kTextureFormatV1_8Bpp = 0,
+			kTextureFormatV1_24Bpp = 2,
+			kTextureFormatV1_32Bpp = 3,
+
+			// V2/jsf uses these
+			kTextureFormatV2_8Bpp = 1,
+			kTextureFormatV2_24Bpp = 3,
+			kTextureFormatV2_32Bpp = 4,
+			kTextureFormatV2_4Bpp = 5
 		};
 
-		constexpr static auto ValidMagic = util::FourCC<"YATF", std::endian::big>();
+		// For some reason Jedi Starfighter YATFs use a different fourcc. ???
+		constexpr static auto ValidMagicSF = util::FourCC<"YATF", std::endian::big>();
+		constexpr static auto ValidMagicJSF = util::FourCC<"YATF", std::endian::little>();
 
 		u32 magic;
 
-		u16 unkThing; // always 0x1
+		u16 version; // 0x1 for starfighter, 0x2 for jsf
 
 		TextureFormat format;
 
-		u8 unkThing2; // flags?
+		u8 unkThing2; // flags? some palbpp?
 
 		// Always zeroed.
 		u32 zero;
@@ -40,7 +47,7 @@ namespace europa::structs {
 		u32 width;
 
 		[[nodiscard]] constexpr bool IsValid() const {
-			return magic == ValidMagic;
+			return magic == ValidMagicSF || magic == ValidMagicJSF;
 		}
 	};
 

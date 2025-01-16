@@ -40,6 +40,9 @@ int main(int argc, char** argv) {
 	europa::structs::YatfHeader yatfHeader;
 	eutil::ImageSurface surface;
 
+
+	std::cout << "Opening \"" << argv[1] << "\"\n";
+
 	if(!reader.ReadImage(yatfHeader, surface)) {
 		std::cout << "Invalid YATF file \"" << argv[1] << "\"\n";
 		return 1;
