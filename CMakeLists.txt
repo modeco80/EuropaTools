@@ -36,14 +36,9 @@ FetchContent_Declare(argparse
         GIT_REPOSITORY https://github.com/p-ranav/argparse.git
         )
 
-# Future (maybe when libpixel has provisioning for installs :v)
-#FetchContent_Declare(libpixel
-#        GIT_REPOSITORY https://github.com/modeco80/libpixel.git
-#        )
-
 FetchContent_MakeAvailable(indicators argparse)
 
-add_subdirectory(third_party/libpixel)
+add_subdirectory(third_party)
 
 add_subdirectory(src/libeuropa)
 add_subdirectory(src/tools)

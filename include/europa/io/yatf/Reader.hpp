@@ -9,10 +9,12 @@
 #ifndef EUROPA_IO_YATFREADER_H
 #define EUROPA_IO_YATFREADER_H
 
-#include <pixel/RgbaImage.h>
-
 #include <europa/structs/Yatf.hpp>
 #include <iosfwd>
+
+namespace europa::util {
+	struct ImageSurface;
+}
 
 namespace europa::io::yatf {
 
@@ -20,26 +22,12 @@ namespace europa::io::yatf {
 	struct Reader {
 		explicit Reader(std::istream& is);
 
-		void InitFromStream(std::istream& is);
-
-		void ReadImage();
-
-		pixel::RgbaImage& GetImage();
-
-		const structs::YatfHeader& GetHeader() const;
-
-		[[nodiscard]] bool Invalid() const {
-			return invalid;
-		}
+		bool ReadImage(structs::YatfHeader& header, util::ImageSurface& surface);
 
 	   private:
 		std::istream& stream;
-		bool invalid { false };
-
-		structs::YatfHeader header;
-		pixel::RgbaImage image;
 	};
 
-} // namespace europa::io
+} // namespace europa::io::yatf
 
 #endif // EUROPA_IO_YATFREADER_H
