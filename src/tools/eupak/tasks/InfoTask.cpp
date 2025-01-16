@@ -8,6 +8,7 @@
 
 #include <EupakConfig.hpp>
 #include <europa/io/PakReader.hpp>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <tasks/InfoTask.hpp>
@@ -50,6 +51,12 @@ namespace eupak::tasks {
 		try {
 			args.verbose = parser.get<bool>("--verbose");
 			args.inputPath = eupak::fs::path(parser.get("input"));
+
+			if(fs::is_directory(args.inputPath)) {
+				std::cout << "Error: " << args.inputPath << " appears to be a directory, not a file.\n";
+				return 1;
+			}
+
 		} catch(...) {
 			return 1;
 		}
@@ -63,6 +70,7 @@ namespace eupak::tasks {
 
 	int InfoTask::Run() {
 		const auto& args = currentArgs;
+
 		std::ifstream ifs(args.inputPath.string(), std::ifstream::binary);
 
 		if(!ifs) {
