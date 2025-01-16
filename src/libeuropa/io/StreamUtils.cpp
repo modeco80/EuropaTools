@@ -54,17 +54,16 @@ namespace europa::io::impl {
 		std::uint32_t length = static_cast<std::uint32_t>(is.get());
 
 		if(length == 0) {
+			// TODO: is this even possible/valid?
 			static_cast<void>(is.get());
 			return "";
 		}
 
+		// Read the string.
 		s.resize(length - 1);
-
-		// Read the string
-		for(std::uint32_t i = 0; i < length - 1; ++i) {
-			s[i] = static_cast<char>(is.get());
-		}
+		is.read(&s[0], length-1);
 		static_cast<void>(is.get());
+
 		return s;
 	}
 
