@@ -52,33 +52,30 @@ namespace eupak::tasks {
 
 	int ExtractTask::Parse() {
 		eupak::tasks::ExtractTask task;
-		eupak::tasks::ExtractTask::Arguments args;
 
-		args.verbose = parser.get<bool>("--verbose");
-		args.inputPath = eupak::fs::path(parser.get("input"));
+		currentArgs.verbose = parser.get<bool>("--verbose");
+		currentArgs.inputPath = eupak::fs::path(parser.get("input"));
 
 		if(parser.is_used("--directory")) {
-			args.outputDirectory = eupak::fs::path(parser.get("--directory"));
+			currentArgs.outputDirectory = eupak::fs::path(parser.get("--directory"));
 		} else {
 			// Default to the basename appended to current path
 			// as a "relatively sane" default path to extract to.
 			// Should be okay.
-			args.outputDirectory = eupak::fs::current_path() / args.inputPath.stem();
+			currentArgs.outputDirectory = eupak::fs::current_path() / currentArgs.inputPath.stem();
 		}
 
 		return 0;
 	}
 
 	int ExtractTask::Run() {
-		const auto& args = currentArgs;
+		std::cout << "Input PAK/PMDL: " << currentArgs.inputPath << '\n';
+		std::cout << "Output Directory: " << currentArgs.outputDirectory << '\n';
 
-		std::cout << "Input PAK/PMDL: " << args.inputPath << '\n';
-		std::cout << "Output Directory: " << args.outputDirectory << '\n';
-
-		std::ifstream ifs(args.inputPath.string(), std::ifstream::binary);
+		std::ifstream ifs(currentArgs.inputPath.string(), std::ifstream::binary);
 
 		if(!ifs) {
-			std::cout << "Error: Could not open file " << args.inputPath << ".\n";
+			std::cout << "Error: Could not open file " << currentArgs.inputPath << ".\n";
 			return 1;
 		}
 
@@ -87,7 +84,7 @@ namespace eupak::tasks {
 		reader.ReadHeaderAndTOC();
 
 		if(reader.Invalid()) {
-			std::cout << "Error: Invalid PAK/PMDL file " << args.inputPath << ".\n";
+			std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
 			return 1;
 		}
 
@@ -118,7 +115,7 @@ namespace eupak::tasks {
 
 			progress.set_option(indicators::option::PostfixText { filename });
 
-			auto outpath = (args.outputDirectory / nameCopy);
+			auto outpath = (currentArgs.outputDirectory / nameCopy);
 
 			if(!fs::exists(outpath.parent_path()))
 				fs::create_directories(outpath.parent_path());
@@ -130,7 +127,7 @@ namespace eupak::tasks {
 				continue;
 			}
 
-			if(args.verbose) {
+			if(currentArgs.verbose) {
 				std::cerr << "Extracting file \"" << filename << "\"...\n";
 			}
 
