@@ -6,16 +6,14 @@
 // SPDX-License-Identifier: MIT
 //
 
+#include <argparse/argparse.hpp>
 #include <EupakConfig.hpp>
-#include <europa/io/PakReader.hpp>
+#include <europa/io/pak/Reader.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <tasks/InfoTask.hpp>
 #include <Utils.hpp>
-
-#include "argparse/argparse.hpp"
-#include "europa/structs/Pak.hpp"
 
 namespace eupak::tasks {
 
@@ -78,7 +76,7 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		eio::PakReader reader(ifs);
+		eio::pak::Reader reader(ifs);
 
 		reader.ReadHeaderAndTOC();
 
@@ -120,10 +118,9 @@ namespace eupak::tasks {
 					}
 				});
 			} else {
-
 				file.VisitTocEntry([&](auto& tocEntry) {
 					std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
-					
+
 					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
 						std::printf(" (LBA %u)", tocEntry.startLBA);
 					}

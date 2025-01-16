@@ -11,10 +11,10 @@
 
 #include <string>
 
-namespace europa::io {
+namespace europa::io::pak {
 
 	/// Interface for [PakWriter] to output detailed progress information.
-	struct PakProgressReportSink {
+	struct WriterProgressReportSink {
 		struct PakEvent {
 			enum class EventCode {
 				FillInHeader,  /// Filling in header.
@@ -35,7 +35,7 @@ namespace europa::io {
 			const std::string& targetFileName;
 		};
 
-		virtual ~PakProgressReportSink() = default;
+		virtual ~WriterProgressReportSink() = default;
 
 		virtual void OnEvent(const PakEvent& event) = 0;
 		virtual void OnEvent(const FileEvent& event) = 0;

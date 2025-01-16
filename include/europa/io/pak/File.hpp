@@ -18,13 +18,13 @@
 #include <variant>
 #include <vector>
 
-namespace europa::io {
+namespace europa::io::pak {
 
-	struct PakReader;
-	struct PakWriter;
+	struct Reader;
+	struct Writer;
 
-	/// sumtype
-	struct PakFileData {
+	/// sumtype for package file data
+	struct FileData {
 		// clang-format off
 		using Variant = std::variant<
 			// File data
@@ -35,14 +35,14 @@ namespace europa::io {
 		>;
 		// clang-format on
 
-		static PakFileData InitAsBuffer(std::vector<std::uint8_t>&& buffer) {
-			return PakFileData {
+		static FileData InitAsBuffer(std::vector<std::uint8_t>&& buffer) {
+			return FileData {
 				.variant_ = Variant(std::move(buffer))
 			};
 		}
 
-		static PakFileData InitAsPath(const std::filesystem::path& path) {
-			return PakFileData {
+		static FileData InitAsPath(const std::filesystem::path& path) {
+			return FileData {
 				.variant_ = Variant(path)
 			};
 		}
@@ -80,13 +80,13 @@ namespace europa::io {
 		}
 
 		// private:
-		PakFileData::Variant variant_;
+		FileData::Variant variant_;
 	};
 
 	/// Repressents a package file. Can either hold a memory buffer of contents
 	/// or a filesystem path (for creating packages).
-	struct PakFile {
-		using DataType = PakFileData;
+	struct File {
+		using DataType = FileData;
 
 		template <class T>
 		void InitWithExistingTocEntry(const T& value) {
@@ -194,13 +194,15 @@ namespace europa::io {
 		}
 
 	   private:
-		friend PakReader;
-		friend PakWriter;
+		// FIXME: Are these `friend`s required? I don't think so,
+		// we use public APIs now.
+		friend Reader;
+		friend Writer;
 
-		std::optional<PakFileData> fileData;
+		std::optional<FileData> fileData;
 		structs::PakTocEntryVariant toc;
 	};
 
-} // namespace europa::io
+} // namespace europa::io::pak
 
 #endif // EUROPA_IO_PAKFILE_H

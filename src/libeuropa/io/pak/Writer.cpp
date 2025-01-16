@@ -8,7 +8,8 @@
 
 #include <algorithm>
 #include <chrono>
-#include <europa/io/PakWriter.hpp>
+#include <europa/io/pak/Writer.hpp>
+#include <europa/structs/Pak.hpp>
 #include <europa/util/AlignHelpers.hpp>
 #include <europa/util/Overloaded.hpp>
 #include <europa/util/TupleElement.hpp>
@@ -18,17 +19,16 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "europa/structs/Pak.hpp"
-#include "StreamUtils.h"
+#include "../StreamUtils.h"
 
-namespace europa::io {
+namespace europa::io::pak {
 
-	void PakWriter::SetVersion(structs::PakVersion version) {
+	void Writer::SetVersion(structs::PakVersion version) {
 		// for now.
 		this->version = version;
 	}
 
-	void PakWriter::Write(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
+	void Writer::Write(std::ostream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment) {
 		// Depending on the version, do a mix of runtime/compile-time dispatch to the right
 		// package format version we have been told to write.
 		switch(version) {
@@ -47,7 +47,7 @@ namespace europa::io {
 	}
 
 	template <class THeader>
-	void PakWriter::WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, PakProgressReportSink& sink, SectorAlignment sectorAlignment) {
+	void Writer::WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment) {
 		std::vector<FlattenedType> sortedFiles = std::move(vec);
 
 		THeader pakHeader {};
@@ -82,7 +82,7 @@ namespace europa::io {
 
 		// Write all the file data
 		for(auto& [filename, file] : sortedFiles) {
-			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteBegin,
+			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteBegin,
 						   filename });
 
 			// Update the offset to where we currently are, since we will be writing the file there
@@ -129,13 +129,13 @@ namespace europa::io {
 					os.seekp(util::AlignBy(static_cast<std::size_t>(os.tellp()), util::kCDSectorSize), std::istream::beg);
 			}
 
-			sink.OnEvent({ PakProgressReportSink::FileEvent::EventCode::FileWriteEnd,
+			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteEnd,
 						   filename });
 		}
 
 		pakHeader.tocOffset = os.tellp();
 
-		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::WritingToc });
+		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
 #if 0
 		// Sort for toc stuff? idk
@@ -154,7 +154,7 @@ namespace europa::io {
 			});
 		}
 
-		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::FillInHeader });
+		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
 		pakHeader.fileCount = sortedFiles.size();
@@ -164,11 +164,11 @@ namespace europa::io {
 		auto now = std::chrono::system_clock::now();
 		pakHeader.creationUnixTime = static_cast<std::uint32_t>(std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count());
 
-		sink.OnEvent({ PakProgressReportSink::PakEvent::EventCode::WritingHeader });
+		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
 
 		// As the last step, write it.
 		os.seekp(0, std::ostream::beg);
 		impl::WriteStreamType(os, pakHeader);
 	}
 
-} // namespace europa::io
+} // namespace europa::io::pak

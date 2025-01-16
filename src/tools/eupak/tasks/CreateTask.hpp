@@ -9,11 +9,10 @@
 #ifndef EUROPA_EUPAK_TASKS_CREATETASK_HPP
 #define EUROPA_EUPAK_TASKS_CREATETASK_HPP
 
+#include <argparse/argparse.hpp>
 #include <CommonDefs.hpp>
 #include <europa/structs/Pak.hpp>
 #include <tasks/Task.hpp>
-
-#include "argparse/argparse.hpp"
 
 namespace eupak::tasks {
 

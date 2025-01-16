@@ -7,7 +7,7 @@
 //
 
 #include <EupakConfig.hpp>
-#include <europa/io/PakReader.hpp>
+#include <europa/io/pak/Reader.hpp>
 #include <fstream>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
@@ -82,7 +82,7 @@ namespace eupak::tasks {
 			return 1;
 		}
 
-		eio::PakReader reader(ifs);
+		eio::pak::Reader reader(ifs);
 
 		reader.ReadHeaderAndTOC();
 

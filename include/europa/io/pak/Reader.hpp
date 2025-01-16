@@ -9,22 +9,21 @@
 #ifndef EUROPA_IO_PAKREADER_H
 #define EUROPA_IO_PAKREADER_H
 
-#include <europa/io/PakFile.hpp>
+#include <europa/io/pak/File.hpp>
 #include <europa/structs/Pak.hpp>
 #include <iosfwd>
 #include <string>
-#include <map>
 
-namespace europa::io {
+namespace europa::io::pak {
 
 	/// Reader for Europa package files (.pak).
-	struct PakReader {
-		using FlatType = std::pair<std::string, PakFile>;
+	struct Reader {
+		using FlatType = std::pair<std::string, File>;
 		using MapType = std::vector<FlatType>;
 
 		/// Constructor. Takes in a input stream to read pak data from.
 		/// This stream should only be used by the PakReader, nothing else.
-		explicit PakReader(std::istream& is);
+		explicit Reader(std::istream& is);
 
 		/// Reads the header and the file TOC.
 		/// This function should be called first.
@@ -61,6 +60,6 @@ namespace europa::io {
 		MapType files;
 	};
 
-} // namespace europa::io
+} // namespace europa::io::pak
 
 #endif // EUROPA_IO_PAKREADER_H

@@ -7,11 +7,10 @@
 //
 
 #pragma once
+#include <argparse/argparse.hpp>
 #include <CommonDefs.hpp>
 #include <type_traits>
 #include <unordered_map>
-
-#include "argparse/argparse.hpp"
 
 namespace eupak::tasks {
 
@@ -49,7 +48,7 @@ namespace eupak::tasks {
 		}
 	};
 
-    /// Helper template to register into the [TaskFactory].
+	/// Helper template to register into the [TaskFactory].
 	template <class T>
 	struct TaskFactoryRegister {
 		TaskFactoryRegister(const std::string& name) {
@@ -61,8 +60,8 @@ namespace eupak::tasks {
 		}
 	};
 
-    /// Registers a task. Should be put in the .cpp implementation source file of the 
-    /// task object itself.
+	/// Registers a task. Should be put in the .cpp implementation source file of the
+	/// task object itself.
 #define EUPAK_REGISTER_TASK(Name, TTask) \
 	static ::eupak::tasks::TaskFactoryRegister<TTask> __register__##TTask(Name)
 

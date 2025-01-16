@@ -9,21 +9,21 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <europa/io/PakReader.hpp>
+#include <europa/io/pak/File.hpp>
+#include <europa/io/pak/Reader.hpp>
 #include <europa/structs/Pak.hpp>
 #include <stdexcept>
 
-#include "europa/io/PakFile.hpp"
-#include "StreamUtils.h"
+#include "../StreamUtils.h"
 
-namespace europa::io {
+namespace europa::io::pak {
 
-	PakReader::PakReader(std::istream& is)
+	Reader::Reader(std::istream& is)
 		: stream(is) {
 	}
 
 	template <class T>
-	void PakReader::ReadData_Impl() {
+	void Reader::ReadData_Impl() {
 		auto header_type = impl::ReadStreamType<T>(stream);
 
 		if(!header_type.Valid()) {
@@ -39,7 +39,7 @@ namespace europa::io {
 			//
 			// Read this in first.
 			auto filename = impl::ReadPString(stream);
-			auto file = PakFile {};
+			auto file = File {};
 			if constexpr(std::is_same_v<T, structs::PakHeader_V5>) {
 				// Version 5 supports sector aligned packages which have an additional field in them
 				// so we need to handle it here
@@ -59,7 +59,7 @@ namespace europa::io {
 		header = header_type;
 	}
 
-	void PakReader::ReadHeaderAndTOC() {
+	void Reader::ReadHeaderAndTOC() {
 		auto commonHeader = impl::ReadStreamType<structs::PakHeader_Common>(stream);
 		stream.seekg(0, std::istream::beg);
 
@@ -78,13 +78,13 @@ namespace europa::io {
 		}
 	}
 
-	void PakReader::ReadFiles() {
+	void Reader::ReadFiles() {
 		for(auto& [filename, file] : files)
 			ReadFile(filename);
 	}
 
-	void PakReader::ReadFile(const std::string& file) {
-		auto it = std::find_if(files.begin(), files.end(), [&file](PakReader::FlatType& fl) { return fl.first == file; });
+	void Reader::ReadFile(const std::string& file) {
+		auto it = std::find_if(files.begin(), files.end(), [&file](Reader::FlatType& fl) { return fl.first == file; });
 		if(it == files.end())
 			return;
 
@@ -104,16 +104,16 @@ namespace europa::io {
 		if(!stream)
 			throw std::runtime_error("Stream went bad while trying to read file");
 
-		auto data = PakFileData::InitAsBuffer(std::move(buffer));
+		auto data = FileData::InitAsBuffer(std::move(buffer));
 		fileObject.SetData(std::move(data));
 	}
 
-	PakReader::MapType& PakReader::GetFiles() {
+	Reader::MapType& Reader::GetFiles() {
 		return files;
 	}
 
-	const PakReader::MapType& PakReader::GetFiles() const {
+	const Reader::MapType& Reader::GetFiles() const {
 		return files;
 	}
 
-} // namespace europa::io
+} // namespace europa::io::pak

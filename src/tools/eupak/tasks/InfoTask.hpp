@@ -10,8 +10,7 @@
 #define EUROPA_EUPAK_TASKS_INFOTASK_HPP
 
 #include <CommonDefs.hpp>
-
-#include "tasks/Task.hpp"
+#include <tasks/Task.hpp>
 
 namespace eupak::tasks {
 

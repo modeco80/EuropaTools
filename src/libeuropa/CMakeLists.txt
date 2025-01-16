@@ -11,8 +11,8 @@ add_library(europa
 		io/StreamUtils.cpp
 
 		# Pak IO
-		io/PakReader.cpp
-		io/PakWriter.cpp
+		io/pak/Reader.cpp
+		io/pak/Writer.cpp
 
 		# Yatf IO
 		io/YatfReader.cpp

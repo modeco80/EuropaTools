@@ -8,7 +8,9 @@
 
 #include <chrono>
 #include <EupakConfig.hpp>
-#include <europa/io/PakWriter.hpp>
+#include <europa/io/pak/File.hpp>
+#include <europa/io/pak/Writer.hpp>
+#include <europa/io/pak/WriterProgressReportSink.hpp>
 #include <fstream>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
@@ -17,15 +19,14 @@
 #include <Utils.hpp>
 
 #include "argparse/argparse.hpp"
-#include "europa/io/PakFile.hpp"
 #include "europa/structs/Pak.hpp"
 #include "tasks/Task.hpp"
 
 namespace eupak::tasks {
 
-	struct CreateArchiveReportSink : public europa::io::PakProgressReportSink {
+	struct CreateArchiveReportSink : public eio::pak::WriterProgressReportSink {
 		CreateArchiveReportSink(int fileCount = 0)
-			: europa::io::PakProgressReportSink() {
+			: eio::pak::WriterProgressReportSink() {
 			indicators::show_console_cursor(false);
 			progress.set_option(indicators::option::MaxProgress { fileCount });
 		}
@@ -143,8 +144,8 @@ namespace eupak::tasks {
 		auto& args = currentArgs;
 
 		args.verbose = parser.get<bool>("--verbose");
-		args.inputDirectory = eupak::fs::path(parser.get("--directory"));
-		args.outputFile = eupak::fs::path(parser.get("output"));
+		args.inputDirectory = fs::path(parser.get("--directory"));
+		args.outputFile = fs::path(parser.get("output"));
 
 		if(parser.is_used("--archive-version")) {
 			const auto& versionStr = parser.get("--archive-version");
@@ -156,12 +157,12 @@ namespace eupak::tasks {
 				return 1;
 			}
 		} else {
-			args.pakVersion = europa::structs::PakVersion::Ver4;
+			args.pakVersion = estructs::PakVersion::Ver4;
 		}
 
 		args.sectorAligned = parser.get<bool>("--sector-aligned");
 
-		if(args.sectorAligned && args.pakVersion != eupak::estructs::PakVersion::Ver5) {
+		if(args.sectorAligned && args.pakVersion != estructs::PakVersion::Ver5) {
 			std::cout << "Error: --sector-aligned is only valid for creating a package with \"-V jedistarfighter\".\n"
 					  << parser;
 			return 1;
@@ -212,7 +213,7 @@ namespace eupak::tasks {
 		// TODO: use time to write in the header
 		//			also: is there any point to verbosity? could add archive written size ig
 
-		std::vector<europa::io::PakWriter::FlattenedType> files;
+		std::vector<eio::pak::Writer::FlattenedType> files;
 		files.reserve(fileCount);
 
 		for(auto& ent : fs::recursive_directory_iterator(args.inputDirectory)) {
@@ -229,8 +230,8 @@ namespace eupak::tasks {
 
 			progress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
 
-			eio::PakFile file;
-			eio::PakFile::DataType pakData = eio::PakFileData::InitAsPath(ent.path());
+			eio::pak::File file;
+			eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.path());
 
 			file.InitAs(args.pakVersion, args.sectorAligned);
 
@@ -260,11 +261,11 @@ namespace eupak::tasks {
 		}
 
 		CreateArchiveReportSink reportSink(fileCount);
-		eio::PakWriter writer(args.pakVersion);
+		eio::pak::Writer writer(args.pakVersion);
 
-		using enum eio::PakWriter::SectorAlignment;
+		using enum eio::pak::Writer::SectorAlignment;
 
-		eio::PakWriter::SectorAlignment alignment = DoNotAlign;
+		eio::pak::Writer::SectorAlignment alignment = DoNotAlign;
 
 		if(args.sectorAligned)
 			alignment = Align;
