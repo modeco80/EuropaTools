@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <europa/io/PakReader.hpp>
@@ -38,18 +39,21 @@ namespace europa::io {
 			//
 			// Read this in first.
 			auto filename = impl::ReadPString(stream);
+			auto file = PakFile {};
 			if constexpr(std::is_same_v<T, structs::PakHeader_V5>) {
 				// Version 5 supports sector aligned packages which have an additional field in them
 				// so we need to handle it here
 				// (not feeling quite as hot about all the crazy template magic here anymore)
 				if(header_type.sectorAlignedFlag) {
-					files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry_SectorAligned>(stream));
+					file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry_SectorAligned>(stream));
 				} else {
-					files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
+					file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
 				}
 			} else {
-				files[filename].InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
+				file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
 			}
+
+			files.emplace_back(filename, std::move(file));
 		}
 
 		header = header_type;
@@ -80,7 +84,11 @@ namespace europa::io {
 	}
 
 	void PakReader::ReadFile(const std::string& file) {
-		auto& fileObject = files[file];
+		auto it = std::find_if(files.begin(), files.end(), [&file](PakReader::FlatType& fl) { return fl.first == file; });
+		if(it == files.end())
+			return;
+
+		auto& fileObject = it->second;
 		std::vector<std::uint8_t> buffer;
 
 		buffer.resize(fileObject.GetSize());

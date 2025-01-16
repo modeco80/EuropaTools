@@ -13,13 +13,14 @@
 #include <europa/structs/Pak.hpp>
 #include <iosfwd>
 #include <string>
-#include <unordered_map>
+#include <map>
 
 namespace europa::io {
 
 	/// Reader for Europa package files (.pak).
 	struct PakReader {
-		using MapType = std::unordered_map<std::string, PakFile>;
+		using FlatType = std::pair<std::string, PakFile>;
+		using MapType = std::vector<FlatType>;
 
 		/// Constructor. Takes in a input stream to read pak data from.
 		/// This stream should only be used by the PakReader, nothing else.
