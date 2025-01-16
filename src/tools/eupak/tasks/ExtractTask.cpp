@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
+#include <EupakConfig.hpp>
 #include <europa/io/PakReader.hpp>
 #include <fstream>
 #include <indicators/cursor_control.hpp>
@@ -14,9 +15,66 @@
 #include <stdexcept>
 #include <tasks/ExtractTask.hpp>
 
-namespace eupak::tasks {
+#include "tasks/Task.hpp"
 
-	int ExtractTask::Run(Arguments&& args) {
+namespace eupak::tasks {
+	ExtractTask::ExtractTask()
+		: parser("extract", EUPAK_VERSION_STR, argparse::default_arguments::help) {
+		// clang-format off
+		parser
+			.add_description("Extract a package file.");
+		parser
+			.add_argument("-d", "--directory")
+			.default_value("")
+			.metavar("DIRECTORY")
+			.help("Directory to extract to.");
+
+		parser
+			.add_argument("input")
+			.help("Input archive")
+			.metavar("ARCHIVE");
+
+		parser
+			.add_argument("--verbose")
+			.help("Increase extraction output verbosity")
+			.default_value(false)
+			.implicit_value(true);
+		// clang-format on
+	}
+
+	void ExtractTask::Init(argparse::ArgumentParser& parentParser) {
+		parentParser.add_subparser(parser);
+	}
+
+	bool ExtractTask::ShouldRun(argparse::ArgumentParser& parentParser) const {
+		return parentParser.is_subcommand_used("extract");
+	};
+
+	int ExtractTask::Parse() {
+		eupak::tasks::ExtractTask task;
+		eupak::tasks::ExtractTask::Arguments args;
+
+		args.verbose = parser.get<bool>("--verbose");
+		args.inputPath = eupak::fs::path(parser.get("input"));
+
+		if(parser.is_used("--directory")) {
+			args.outputDirectory = eupak::fs::path(parser.get("--directory"));
+		} else {
+			// Default to the basename appended to current path
+			// as a "relatively sane" default path to extract to.
+			// Should be okay.
+			args.outputDirectory = eupak::fs::current_path() / args.inputPath.stem();
+		}
+
+		return 0;
+	}
+
+	int ExtractTask::Run() {
+		const auto& args = currentArgs;
+
+		std::cout << "Input PAK/PMDL: " << args.inputPath << '\n';
+		std::cout << "Output Directory: " << args.outputDirectory << '\n';
+
 		std::ifstream ifs(args.inputPath.string(), std::ifstream::binary);
 
 		if(!ifs) {
@@ -98,4 +156,5 @@ namespace eupak::tasks {
 		return 0;
 	}
 
+	EUPAK_REGISTER_TASK("extract", ExtractTask);
 } // namespace eupak::tasks

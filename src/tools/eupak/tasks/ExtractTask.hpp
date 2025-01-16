@@ -11,20 +11,32 @@
 
 #include <CommonDefs.hpp>
 
+#include "tasks/Task.hpp"
+
 namespace eupak::tasks {
 
-	struct ExtractTask {
+	struct ExtractTask : ITask {
+		ExtractTask();
 
+		void Init(argparse::ArgumentParser& parentParser) override;
+
+		bool ShouldRun(argparse::ArgumentParser& parentParser) const override;
+
+		int Parse() override;
+
+		int Run() override;
+
+	   private:
 		struct Arguments {
 			fs::path inputPath;
 			fs::path outputDirectory;
 			bool verbose;
 		};
 
-		int Run(Arguments&& args);
+		argparse::ArgumentParser parser;
+		Arguments currentArgs;
 	};
 
-
-}
+} // namespace eupak::tasks
 
 #endif // EUROPATOOLS_EXTRACTTASK_H
