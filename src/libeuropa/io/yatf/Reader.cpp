@@ -6,10 +6,6 @@
 // SPDX-License-Identifier: MIT
 //
 
-// FIXME: Drop libpixel dependency. Instead
-// we should just use stbiw directly and provide our own
-// simpler/faster utilities for image buffers.
-
 #include <europa/io/yatf/Reader.hpp>
 #include <format>
 #include <stdexcept>
