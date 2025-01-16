@@ -23,7 +23,7 @@ namespace europa::io::pak {
 	}
 
 	template <class T>
-	void Reader::ReadData_Impl() {
+	void Reader::ReadHeaderAndTOCImpl() {
 		auto header_type = impl::ReadStreamType<T>(stream);
 
 		if(!header_type.Valid()) {
@@ -41,9 +41,8 @@ namespace europa::io::pak {
 			auto filename = impl::ReadPString(stream);
 			auto file = File {};
 			if constexpr(std::is_same_v<T, structs::PakHeader_V5>) {
-				// Version 5 supports sector aligned packages which have an additional field in them
-				// so we need to handle it here
-				// (not feeling quite as hot about all the crazy template magic here anymore)
+				// Version 5 supports sector aligned packages, which have an additional field in them
+				// (the start LBA of the file), so we need to handle that here.
 				if(header_type.sectorAlignedFlag) {
 					file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry_SectorAligned>(stream));
 				} else {
@@ -65,13 +64,13 @@ namespace europa::io::pak {
 
 		switch(commonHeader.version) {
 			case structs::PakVersion::Ver3:
-				ReadData_Impl<structs::PakHeader_V3>();
+				ReadHeaderAndTOCImpl<structs::PakHeader_V3>();
 				break;
 			case structs::PakVersion::Ver4:
-				ReadData_Impl<structs::PakHeader_V4>();
+				ReadHeaderAndTOCImpl<structs::PakHeader_V4>();
 				break;
 			case structs::PakVersion::Ver5:
-				ReadData_Impl<structs::PakHeader_V5>();
+				ReadHeaderAndTOCImpl<structs::PakHeader_V5>();
 				break;
 			default:
 				return;

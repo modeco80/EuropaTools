@@ -42,21 +42,18 @@ namespace europa::io::pak {
 		MapType& GetFiles();
 		const MapType& GetFiles() const;
 
-		// implement in cpp later, lazy and just wanna get this out :vvv
 		const structs::PakHeaderVariant& GetHeader() const {
 			return header;
 		}
 
 	   private:
 		template <class T>
-		void ReadData_Impl();
+		void ReadHeaderAndTOCImpl();
 
 		std::istream& stream;
 		bool invalid { false };
 
-		structs::PakVersion version;
 		structs::PakHeaderVariant header {};
-
 		MapType files;
 	};
 
