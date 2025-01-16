@@ -156,6 +156,7 @@ namespace eupak::tasks {
 			const auto& versionStr = parser.get("--archive-version");
 
 			if(auto opt = ParsePakVersion(versionStr); opt.has_value()) {
+				currentArgs.pakVersion = *opt;
 			} else {
 				std::cout << "Error: Invalid version \"" << versionStr << "\"\n"
 						  << parser;
