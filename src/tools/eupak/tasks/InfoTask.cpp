@@ -44,14 +44,12 @@ namespace eupak::tasks {
 	}
 
 	int InfoTask::Parse() {
-		auto& args = currentArgs;
-
 		try {
-			args.verbose = parser.get<bool>("--verbose");
-			args.inputPath = eupak::fs::path(parser.get("input"));
+			currentArgs.verbose = parser.get<bool>("--verbose");
+			currentArgs.inputPath = eupak::fs::path(parser.get("input"));
 
-			if(fs::is_directory(args.inputPath)) {
-				std::cout << "Error: " << args.inputPath << " appears to be a directory, not a file.\n";
+			if(fs::is_directory(currentArgs.inputPath)) {
+				std::cout << "Error: " << currentArgs.inputPath << " appears to be a directory, not a file.\n";
 				return 1;
 			}
 
@@ -67,12 +65,10 @@ namespace eupak::tasks {
 	}
 
 	int InfoTask::Run() {
-		const auto& args = currentArgs;
-
-		std::ifstream ifs(args.inputPath.string(), std::ifstream::binary);
+		std::ifstream ifs(currentArgs.inputPath.string(), std::ifstream::binary);
 
 		if(!ifs) {
-			std::cout << "Error: Could not open file " << args.inputPath << ".\n";
+			std::cout << "Error: Could not open file " << currentArgs.inputPath << ".\n";
 			return 1;
 		}
 
@@ -81,7 +77,7 @@ namespace eupak::tasks {
 		reader.ReadHeaderAndTOC();
 
 		if(reader.Invalid()) {
-			std::cout << "Error: Invalid PAK/PMDL file " << args.inputPath << ".\n";
+			std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
 			return 1;
 		}
 
@@ -90,13 +86,13 @@ namespace eupak::tasks {
 
 			// This is the best other than just duplicating the body for each pak version.. :(
 			if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver3)
-				version = "Version 3 (PMDL)";
+				version = "Version 3 (Starfighter/Europa pre-release, May-July 2000?)";
 			else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver4)
 				version = "Version 4 (Starfighter)";
 			else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver5)
 				version = "Version 5 (Jedi Starfighter)";
 
-			std::cout << "Archive " << args.inputPath << ":\n";
+			std::cout << "Archive " << currentArgs.inputPath << ":\n";
 			std::cout << "    Created: " << FormatUnixTimestamp(header.creationUnixTime, DATE_FORMAT) << '\n';
 			std::cout << "    Version: " << version << '\n';
 			std::cout << "    Size: " << FormatUnit(header.tocOffset + header.tocSize) << '\n';
@@ -107,7 +103,7 @@ namespace eupak::tasks {
 		// Print a detailed file list if verbose.
 
 		for(auto& [filename, file] : reader.GetFiles()) {
-			if(args.verbose) {
+			if(currentArgs.verbose) {
 				std::cout << "File \"" << filename << "\":\n";
 				file.VisitTocEntry([&](auto& tocEntry) {
 					std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';

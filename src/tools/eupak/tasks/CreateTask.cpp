@@ -83,8 +83,7 @@ namespace eupak::tasks {
 	};
 
 	std::optional<estructs::PakVersion> ParsePakVersion(const std::string& str) {
-		// FIXME: PMDL should be "starfighter-prerelease"
-		if(str == "pmdl") {
+		if(str == "europa-prerelease") {
 			return estructs::PakVersion::Ver3;
 		} else if(str == "starfighter") {
 			return estructs::PakVersion::Ver4;
@@ -107,7 +106,7 @@ namespace eupak::tasks {
 
 		parser.add_argument("-V", "--archive-version")
 			.default_value("starfighter")
-			.help(R"(Output archive version. Either "pmdl", "starfighter" or "jedistarfighter".)")
+			.help(R"(Output archive version. Either "europa-prerelease", "starfighter" or "jedistarfighter".)")
 			.metavar("VERSION");
 
 		parser.add_argument("-s", "--sector-aligned")
@@ -124,9 +123,17 @@ namespace eupak::tasks {
 			.default_value(false)
 			.implicit_value(true);
 
-		// FIXME: At some point for accurate rebuilds we should also accept a JSON manifest file
-		// that contains: Package version, sector alignment, package build time, order of all files (as original) and their modtime, so on.
-		// Then a user can just do `eupak create --manifest manifest.json` and it'll all be figured out
+		// FIXME: At some point for bit-accurate rebuilds we should also accept a JSON manifest file
+		// that contains: 
+		// 	- Package version, 
+		//	- sector alignment (for v5), 
+		//	- package build time, 
+		//	- data order of all files
+		//	- TOC order of all files
+		//	- file TOC data (modtime, TOC index, so on)
+		// Then a user can just do `eupak create --manifest manifest.json` and it'll all be done for them
+		//
+		// `eupak extract` should optionally generate this manifest for the user
 		// (I have not dreamt up the schema for this yet and this relies on other FIXMEs being done so this will have to wait.)
 
 		// clang-format on
@@ -141,11 +148,9 @@ namespace eupak::tasks {
 	}
 
 	int CreateTask::Parse() {
-		auto& args = currentArgs;
-
-		args.verbose = parser.get<bool>("--verbose");
-		args.inputDirectory = fs::path(parser.get("--directory"));
-		args.outputFile = fs::path(parser.get("output"));
+		currentArgs.verbose = parser.get<bool>("--verbose");
+		currentArgs.inputDirectory = fs::path(parser.get("--directory"));
+		currentArgs.outputFile = fs::path(parser.get("output"));
 
 		if(parser.is_used("--archive-version")) {
 			const auto& versionStr = parser.get("--archive-version");
@@ -157,18 +162,18 @@ namespace eupak::tasks {
 				return 1;
 			}
 		} else {
-			args.pakVersion = estructs::PakVersion::Ver4;
+			currentArgs.pakVersion = estructs::PakVersion::Ver4;
 		}
 
-		args.sectorAligned = parser.get<bool>("--sector-aligned");
+		currentArgs.sectorAligned = parser.get<bool>("--sector-aligned");
 
-		if(args.sectorAligned && args.pakVersion != estructs::PakVersion::Ver5) {
+		if(currentArgs.sectorAligned && currentArgs.pakVersion != estructs::PakVersion::Ver5) {
 			std::cout << "Error: --sector-aligned is only valid for creating a package with \"-V jedistarfighter\".\n"
 					  << parser;
 			return 1;
 		}
 
-		if(!eupak::fs::is_directory(args.inputDirectory)) {
+		if(!eupak::fs::is_directory(currentArgs.inputDirectory)) {
 			std::cout << "Error: Provided input isn't a directory\n"
 					  << parser;
 			return 1;
@@ -178,22 +183,19 @@ namespace eupak::tasks {
 	}
 
 	int CreateTask::Run() {
-		// we should not be modifying arguments past this point
-		const auto& args = currentArgs;
-
 		auto currFile = 0;
 		auto fileCount = 0;
 
 		// Count how many files we're gonna add to the archive
-		for(auto& ent : fs::recursive_directory_iterator(args.inputDirectory)) {
+		for(auto& ent : fs::recursive_directory_iterator(currentArgs.inputDirectory)) {
 			if(ent.is_directory())
 				continue;
 			fileCount++;
 		}
 
-		std::cout << "Going to write " << fileCount << " files into " << args.outputFile << '\n';
+		std::cout << "Going to write " << fileCount << " files into " << currentArgs.outputFile << '\n';
 
-		if(args.sectorAligned) {
+		if(currentArgs.sectorAligned) {
 			std::cout << "Writing a sector aligned package\n";
 		}
 
@@ -216,11 +218,11 @@ namespace eupak::tasks {
 		std::vector<eio::pak::Writer::FlattenedType> files;
 		files.reserve(fileCount);
 
-		for(auto& ent : fs::recursive_directory_iterator(args.inputDirectory)) {
+		for(auto& ent : fs::recursive_directory_iterator(currentArgs.inputDirectory)) {
 			if(ent.is_directory())
 				continue;
 
-			auto relativePathName = fs::relative(ent.path(), args.inputDirectory).string();
+			auto relativePathName = fs::relative(ent.path(), currentArgs.inputDirectory).string();
 			auto lastModified = fs::last_write_time(ent.path());
 
 			// Convert to Windows path separator always (that's what the game wants, after all)
@@ -233,7 +235,7 @@ namespace eupak::tasks {
 			eio::pak::File file;
 			eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.path());
 
-			file.InitAs(args.pakVersion, args.sectorAligned);
+			file.InitAs(currentArgs.pakVersion, currentArgs.sectorAligned);
 
 			// Add data
 			file.SetData(std::move(pakData));
@@ -253,21 +255,21 @@ namespace eupak::tasks {
 
 		indicators::show_console_cursor(true);
 
-		std::ofstream ofs(args.outputFile.string(), std::ofstream::binary);
+		std::ofstream ofs(currentArgs.outputFile.string(), std::ofstream::binary);
 
 		if(!ofs) {
-			std::cout << "Error: Couldn't open " << args.outputFile << " for writing\n";
+			std::cout << "Error: Couldn't open " << currentArgs.outputFile << " for writing\n";
 			return 1;
 		}
 
 		CreateArchiveReportSink reportSink(fileCount);
-		eio::pak::Writer writer(args.pakVersion);
+		eio::pak::Writer writer(currentArgs.pakVersion);
 
 		using enum eio::pak::Writer::SectorAlignment;
 
 		eio::pak::Writer::SectorAlignment alignment = DoNotAlign;
 
-		if(args.sectorAligned)
+		if(currentArgs.sectorAligned)
 			alignment = Align;
 
 		writer.Write(ofs, std::move(files), reportSink, alignment);
