@@ -11,20 +11,31 @@
 
 #include <CommonDefs.hpp>
 
+#include "tasks/Task.hpp"
+
 namespace eupak::tasks {
 
-		struct InfoTask {
-
-			struct Arguments {
-				fs::path inputPath;
-				bool verbose;
-			};
-
-			
-
-			int Run(Arguments&& args);
+	struct InfoTask : ITask {
+		struct Arguments {
+			fs::path inputPath;
+			bool verbose;
 		};
 
-}
+		InfoTask();
+
+		void Init(argparse::ArgumentParser& parentParser) override;
+
+		bool ShouldRun(argparse::ArgumentParser& parentParser) const override;
+
+		int Parse() override;
+
+		int Run() override;
+
+	   private:
+		argparse::ArgumentParser parser;
+		Arguments currentArgs;
+	};
+
+} // namespace eupak::tasks
 
 #endif // EUROPA_EUPAK_TASKS_INFOTASK_HPP

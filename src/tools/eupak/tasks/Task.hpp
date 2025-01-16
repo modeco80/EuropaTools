@@ -32,7 +32,7 @@ namespace eupak::tasks {
 		virtual int Run() = 0;
 	};
 
-	/// Creates tasks.
+	/// Creates ITask instances for clients.
 	struct TaskFactory {
 		using FactoryMethod = std::shared_ptr<ITask> (*)();
 
@@ -49,6 +49,7 @@ namespace eupak::tasks {
 		}
 	};
 
+    /// Helper template to register into the [TaskFactory].
 	template <class T>
 	struct TaskFactoryRegister {
 		TaskFactoryRegister(const std::string& name) {
@@ -60,6 +61,8 @@ namespace eupak::tasks {
 		}
 	};
 
+    /// Registers a task. Should be put in the .cpp implementation source file of the 
+    /// task object itself.
 #define EUPAK_REGISTER_TASK(Name, TTask) \
 	static ::eupak::tasks::TaskFactoryRegister<TTask> __register__##TTask(Name)
 

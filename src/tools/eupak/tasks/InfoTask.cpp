@@ -6,19 +6,63 @@
 // SPDX-License-Identifier: MIT
 //
 
+#include <EupakConfig.hpp>
 #include <europa/io/PakReader.hpp>
 #include <fstream>
 #include <iostream>
 #include <tasks/InfoTask.hpp>
 #include <Utils.hpp>
 
+#include "argparse/argparse.hpp"
 #include "europa/structs/Pak.hpp"
 
 namespace eupak::tasks {
 
 	constexpr static auto DATE_FORMAT = "%m/%d/%Y %r";
 
-	int InfoTask::Run(Arguments&& args) {
+	InfoTask::InfoTask()
+		: parser("info", EUPAK_VERSION_STR, argparse::default_arguments::help) {
+		// clang-format off
+		parser
+			.add_description("Print information about a package file.");
+		parser
+			.add_argument("input")
+			.help("Input archive")
+			.metavar("ARCHIVE");
+
+		// FIXME: Probably just print this always, in a thinner format, but use
+		// the existing thicker format for verbosity.
+		parser
+			.add_argument("--verbose")
+			.help("Increase information output verbosity (print a list of files).")
+			.default_value(false)
+			.implicit_value(true);
+		// clang-format on
+	}
+
+	void InfoTask::Init(argparse::ArgumentParser& parentParser) {
+		parentParser.add_subparser(parser);
+	}
+
+	int InfoTask::Parse() {
+		auto& args = currentArgs;
+
+		try {
+			args.verbose = parser.get<bool>("--verbose");
+			args.inputPath = eupak::fs::path(parser.get("input"));
+		} catch(...) {
+			return 1;
+		}
+
+		return 0;
+	}
+
+	bool InfoTask::ShouldRun(argparse::ArgumentParser& parentParser) const {
+		return parentParser.is_subcommand_used("info");
+	}
+
+	int InfoTask::Run() {
+		const auto& args = currentArgs;
 		std::ifstream ifs(args.inputPath.string(), std::ifstream::binary);
 
 		if(!ifs) {
@@ -71,5 +115,7 @@ namespace eupak::tasks {
 
 		return 0;
 	}
+
+	EUPAK_REGISTER_TASK("info", InfoTask);
 
 } // namespace eupak::tasks

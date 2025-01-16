@@ -25,16 +25,6 @@ int main(int argc, char** argv) {
 	argparse::ArgumentParser parser("eupak", EUPAK_VERSION_STR);
 	parser.add_description("Eupak (Europa Package Multi-Tool) v" EUPAK_VERSION_STR);
 
-	argparse::ArgumentParser infoParser("info", EUPAK_VERSION_STR, argparse::default_arguments::help);
-	infoParser.add_description("Print information about a package file.");
-	infoParser.add_argument("input")
-	.help("Input archive")
-	.metavar("ARCHIVE");
-
-	infoParser.add_argument("--verbose")
-	.help("Increase information output verbosity (print a list of files).")
-	.default_value(false)
-	.implicit_value(true);
 
 	argparse::ArgumentParser extractParser("extract", EUPAK_VERSION_STR, argparse::default_arguments::help);
 	extractParser.add_description("Extract a package file.");
@@ -51,11 +41,11 @@ int main(int argc, char** argv) {
 	.default_value(false)
 	.implicit_value(true);
 
-	parser.add_subparser(infoParser);
 	parser.add_subparser(extractParser);
 
 	auto tasks = std::vector {
-		eupak::tasks::TaskFactory::CreateNamed("create", parser)
+		eupak::tasks::TaskFactory::CreateNamed("create", parser),
+		eupak::tasks::TaskFactory::CreateNamed("info", parser)
 	};
 
 	try {
@@ -82,7 +72,7 @@ int main(int argc, char** argv) {
 		if(task->ShouldRun(parser)) {
 			if(auto res = task->Parse(); res != 0)
 				return res;
-			
+
 			return task->Run();
 		}
 	}
@@ -115,9 +105,7 @@ int main(int argc, char** argv) {
 		eupak::tasks::InfoTask task;
 		eupak::tasks::InfoTask::Arguments args;
 
-		args.verbose = infoParser.get<bool>("--verbose");
-		args.inputPath = eupak::fs::path(infoParser.get("input"));
-
+		
 		return task.Run(std::move(args));
 	}
 
