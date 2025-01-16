@@ -10,14 +10,17 @@
 #include <EupakConfig.hpp>
 #include <tasks/Task.hpp>
 
+using namespace eupak;
+using namespace eupak::tasks;
+
 int main(int argc, char** argv) {
 	argparse::ArgumentParser parser("eupak", EUPAK_VERSION_STR);
 	parser.add_description("Eupak (Europa Package Multi-Tool) v" EUPAK_VERSION_STR);
 
 	auto tasks = std::vector {
-		eupak::tasks::TaskFactory::CreateNamed("create", parser),
-		eupak::tasks::TaskFactory::CreateNamed("info", parser),
-		eupak::tasks::TaskFactory::CreateNamed("extract", parser),
+		TaskFactory::CreateNamed("create", parser),
+		TaskFactory::CreateNamed("info", parser),
+		TaskFactory::CreateNamed("extract", parser),
 	};
 
 	try {
@@ -38,9 +41,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	// Run the given task
-
-	for(auto task : tasks) {
+	for(auto& task : tasks) {
 		if(task->ShouldRun(parser)) {
 			if(auto res = task->Parse(); res != 0)
 				return res;
