@@ -107,8 +107,9 @@ namespace eupak::tasks {
 				   reader.GetHeader());
 
 		// Print a detailed file list if verbose.
-		if(args.verbose) {
-			for(auto& [filename, file] : reader.GetFiles()) {
+
+		for(auto& [filename, file] : reader.GetFiles()) {
+			if(args.verbose) {
 				std::cout << "File \"" << filename << "\":\n";
 				file.VisitTocEntry([&](auto& tocEntry) {
 					std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
@@ -117,6 +118,17 @@ namespace eupak::tasks {
 					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
 						std::cout << "    Start LBA (CD-ROM Sector): " << tocEntry.startLBA << '\n';
 					}
+				});
+			} else {
+
+				file.VisitTocEntry([&](auto& tocEntry) {
+					std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
+					
+					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
+						std::printf(" (LBA %u)", tocEntry.startLBA);
+					}
+
+					std::printf("\n");
 				});
 			}
 		}
