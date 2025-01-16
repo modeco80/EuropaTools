@@ -15,7 +15,7 @@ add_library(europa
 		io/pak/Writer.cpp
 
 		# Yatf IO
-		io/YatfReader.cpp
+		io/yatf/Reader.cpp
 		)
 
 target_include_directories(europa PUBLIC ${PROJECT_SOURCE_DIR}/include)

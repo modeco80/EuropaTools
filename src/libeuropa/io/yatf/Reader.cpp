@@ -10,19 +10,19 @@
 // we should just use stbiw directly and provide our own
 // simpler/faster utilities for image buffers.
 
-#include <europa/io/YatfReader.hpp>
+#include <europa/io/yatf/Reader.hpp>
 #include <vector>
 
-#include "StreamUtils.h"
+#include "../StreamUtils.h"
 
-namespace europa::io {
+namespace europa::io::yatf {
 
-	YatfReader::YatfReader(std::istream& is)
+	Reader::Reader(std::istream& is)
 		: stream(is) {
 		InitFromStream(stream);
 	}
 
-	void YatfReader::InitFromStream(std::istream& is) {
+	void Reader::InitFromStream(std::istream& is) {
 		// Read the image header.
 		header = impl::ReadStreamType<structs::YatfHeader>(is);
 
@@ -30,7 +30,7 @@ namespace europa::io {
 			invalid = true;
 	}
 
-	void YatfReader::ReadImage() {
+	void Reader::ReadImage() {
 		if(header.flags & structs::YatfHeader::TextureFlag_NoPalette) {
 			image.Resize({ static_cast<std::uint16_t>(header.width), static_cast<std::uint16_t>(header.height) });
 			stream.read(reinterpret_cast<char*>(image.GetBuffer()), (header.width * header.height) * sizeof(pixel::RgbaColor));
@@ -52,12 +52,12 @@ namespace europa::io {
 		}
 	}
 
-	pixel::RgbaImage& YatfReader::GetImage() {
+	pixel::RgbaImage& Reader::GetImage() {
 		return image;
 	}
 
-	const structs::YatfHeader& YatfReader::GetHeader() const {
+	const structs::YatfHeader& Reader::GetHeader() const {
 		return header;
 	}
 
-} // namespace europa::io
+} // namespace europa::io::yatf

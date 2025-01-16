@@ -8,12 +8,15 @@
 
 #include <pixel/ImageWriter.h>
 
-#include <europa/io/YatfReader.hpp>
+#include <europa/io/yatf/Reader.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
+namespace eio = europa::io;
+namespace yatf = eio::yatf;
 namespace fs = std::filesystem;
+
 int main(int argc, char** argv) {
 	if(argc != 2) {
 		std::cout << "Usage: " << argv[0] << " [path to Europa PAK file]";
@@ -27,7 +30,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	europa::io::YatfReader reader(ifs);
+	yatf::Reader reader(ifs);
 
 	if(reader.Invalid()) {
 		std::cout << "Invalid YATF file \"" << argv[1] << "\"\n";

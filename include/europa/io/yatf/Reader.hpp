@@ -14,11 +14,11 @@
 #include <europa/structs/Yatf.hpp>
 #include <iosfwd>
 
-namespace europa::io {
+namespace europa::io::yatf {
 
-	/// Reader for PS2 Europa .tex files.
-	struct YatfReader {
-		explicit YatfReader(std::istream& is);
+	/// Reader for PS2 Europa .tex (YATF - Yet Another Texture Format) files.
+	struct Reader {
+		explicit Reader(std::istream& is);
 
 		void InitFromStream(std::istream& is);
 
