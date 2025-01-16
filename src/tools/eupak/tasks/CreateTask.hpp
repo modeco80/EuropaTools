@@ -18,18 +18,6 @@
 namespace eupak::tasks {
 
 	struct CreateTask : ITask {
-		/// Arguments.
-		/// This is no longer directly used by clients
-		/// and should later be factored out of surface.
-		struct Arguments {
-			fs::path inputDirectory;
-			fs::path outputFile;
-
-			bool verbose;
-			europa::structs::PakVersion pakVersion;
-			bool sectorAligned;
-		};
-
 		CreateTask();
 
 		void Init(argparse::ArgumentParser& parentParser) override;
@@ -41,6 +29,15 @@ namespace eupak::tasks {
 		int Run() override;
 
 	   private:
+		struct Arguments {
+			fs::path inputDirectory;
+			fs::path outputFile;
+
+			bool verbose;
+			europa::structs::PakVersion pakVersion;
+			bool sectorAligned;
+		};
+
 		argparse::ArgumentParser parser;
 		Arguments currentArgs;
 	};

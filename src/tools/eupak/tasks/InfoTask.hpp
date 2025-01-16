@@ -16,11 +16,6 @@
 namespace eupak::tasks {
 
 	struct InfoTask : ITask {
-		struct Arguments {
-			fs::path inputPath;
-			bool verbose;
-		};
-
 		InfoTask();
 
 		void Init(argparse::ArgumentParser& parentParser) override;
@@ -32,6 +27,11 @@ namespace eupak::tasks {
 		int Run() override;
 
 	   private:
+		struct Arguments {
+			fs::path inputPath;
+			bool verbose;
+		};
+
 		argparse::ArgumentParser parser;
 		Arguments currentArgs;
 	};
