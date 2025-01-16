@@ -20,8 +20,3 @@ target_link_libraries(jsfscramble PUBLIC
 		europa
 		)
 europa_target(jsfscramble)
-
-#add_executable(paktest paktest.cpp)
-#target_link_libraries(paktest PUBLIC
-#		europa
-#		)
