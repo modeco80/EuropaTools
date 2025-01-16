@@ -55,11 +55,11 @@ namespace europa::util {
 		}
 
 		T& operator[](std::size_t index) {
-			return (*array)[index];
+			return (array.get())[index];
 		}
 
 		const T& operator[](std::size_t index) const {
-			return (*array)[index];
+			return (array.get())[index];
 		}
 
 		T* Data() {

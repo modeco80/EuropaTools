@@ -16,23 +16,22 @@
 namespace europa::structs {
 
 	struct [[gnu::packed]] YatfHeader {
-		constexpr static u32 TextureFlag_Unknown = 0x1;
-
-		/**
-		 * Texture does not have a palette
-		 */
-		constexpr static u32 TextureFlag_NoPalette = 0x30000;
-
-		/**
-		 * Texture uses alpha.
-		 */
-		constexpr static u32 TextureFlag_UsesAlpha = 0x1000000;
+		enum class TextureFormat : u8 {
+			kTextureFormat8Bpp = 0,
+			kTextureFormatUnknown = 1, // possibly 16bpp?
+			kTextureFormat24Bpp = 2,
+			kTextureFormat32Bpp = 3
+		};
 
 		constexpr static auto ValidMagic = util::FourCC<"YATF", std::endian::big>();
 
 		u32 magic;
 
-		u32 flags;
+		u16 unkThing; // always 0x1
+
+		TextureFormat format;
+
+		u8 unkThing2; // flags?
 
 		// Always zeroed.
 		u32 zero;

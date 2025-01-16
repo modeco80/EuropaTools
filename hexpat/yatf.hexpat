@@ -17,6 +17,8 @@ namespace europa {
 	struct TexHeader {
 		char magic[4]; // 'YATF'
 		
+		// FIXME: this is completely wrong
+		
 		// Flag descriptions:
 		//
 		// 0x1       - unknown? (always pressent)

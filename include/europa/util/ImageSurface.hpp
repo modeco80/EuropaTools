@@ -31,6 +31,40 @@ namespace europa::util {
 		}
 	};
 
+// Avoid dependency on <pshpack*> header
+// while still allowing Pixel to be properly packed
+#ifdef _MSC_VER
+	#pragma pack(push, 1)
+#endif
+
+	struct [[gnu::packed]] PixelRGB {
+		std::uint8_t r;
+		std::uint8_t g;
+		std::uint8_t b;
+	};
+
+	struct [[gnu::packed]] Pixel {
+		std::uint8_t r;
+		std::uint8_t g;
+		std::uint8_t b;
+		std::uint8_t a;
+
+		static constexpr Pixel FromPixelRGB(const PixelRGB& rgb) {
+			return {
+				.r = rgb.r,
+				.g = rgb.g,
+				.b = rgb.b,
+				.a = 0xff
+			};
+		}
+
+		// FIXME: Implement Pixel::FromRgb565 method for 16bpp
+	};
+
+#ifdef _MSC_VER
+	#pragma pack(pop)
+#endif
+
 	/// A RGBA8888 image surface.
 	struct ImageSurface {
 		ImageSurface();
