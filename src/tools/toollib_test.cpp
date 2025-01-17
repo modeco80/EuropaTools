@@ -1,8 +1,12 @@
-
+//
+// EuropaTools
+//
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
+//
+// SPDX-License-Identifier: MIT
+//
 
 // Test/excercise of new toollib system.
-
-#include <argparse/argparse.hpp>
 #include <toollib/ToolCommand.hpp>
 #include <toollib/ToolMain.hpp>
 
