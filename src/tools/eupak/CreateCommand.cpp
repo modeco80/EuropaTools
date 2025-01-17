@@ -65,7 +65,8 @@ namespace eupak {
 					break;
 
 				case FileWriteEnd:
-					progress.set_option(indicators::option::PostfixText { "Written " + event.targetFileName });
+					// ?
+					//progress.set_option(indicators::option::PostfixText { "Written " + event.targetFileName });
 					progress.tick();
 					break;
 			}
@@ -202,7 +203,7 @@ namespace eupak {
 				std::cout << "Writing a sector aligned package\n";
 			}
 
-			indicators::ProgressBar progress {
+			indicators::ProgressBar addProgress {
 				indicators::option::BarWidth { 50 },
 				indicators::option::ForegroundColor { indicators::Color::green },
 				indicators::option::MaxProgress { fileCount },
@@ -233,7 +234,7 @@ namespace eupak {
 					if(c == '/')
 						c = '\\';
 
-				progress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
+				addProgress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
 
 				eio::pak::File file;
 				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.path());
@@ -252,7 +253,7 @@ namespace eupak {
 				});
 
 				files.emplace_back(std::make_pair(relativePathName, std::move(file)));
-				progress.tick();
+				addProgress.tick();
 				currFile++;
 			}
 
