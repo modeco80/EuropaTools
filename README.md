@@ -21,7 +21,7 @@ $ cmake --build build -j $(nproc)
 
 Provides IO readers and writers for data files, along with the structures.
 
-Structure documentation is seperately managed as a .hexpat in [/hexpat](https://github.com/modeco80/EuropaTools/tree/master/hexpat).
+Structure documentation is seperately managed as a .hexpat in [/hexpat](https://git.computernewb.com/modeco80/EuropaTools/src/branch/master/hexpat).
 
 ## The Tools
 
@@ -34,13 +34,13 @@ Feature set:
 - [] working opengl imgui sex
 - ... ?
 
-### `texdump`
-
-Dumper for PS2 `YATF` texture files. Mostly working, but slight WIP.
-
 ### `eupak`
 
 Swiss army knife for Europa packfiles.
 
 Can create, extract, and show info on them.
+
+### `eutex`
+
+A utlity for dumping Europa PS2 .tex files. (creation later)
 
