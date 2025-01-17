@@ -7,11 +7,14 @@
 #
 
 function(europa_target target)
-    # Set binary products to output in the build directory for easier access
-    set_target_properties(
-        ${target} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
-    )
+        # Set binary products to output in the build directory for easier access
+        set_target_properties(
+                ${target} PROPERTIES
+                RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
+        )
+
+        # Require C++20
+        target_compile_features(${target} PUBLIC cxx_std_20)
 endfunction()
 
 function(europa_set_alternate_linker)

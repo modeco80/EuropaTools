@@ -21,3 +21,20 @@ target_link_libraries(jsfscramble PUBLIC
 		europa
 		)
 europa_target(jsfscramble)
+
+# Toollib
+add_subdirectory(toollib)
+
+# Temporary test target.
+add_executable(toollib_test 
+	toollib_test.cpp
+	toollib_test_cmd.cpp
+)
+
+target_link_libraries(toollib_test PUBLIC
+		europa
+		toollib
+)
+
+europa_target(toollib_test)
+
