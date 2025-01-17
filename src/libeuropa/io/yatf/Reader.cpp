@@ -46,16 +46,7 @@ namespace europa::io::yatf {
 
 					stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
 					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.Linear());
-
-					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.GetBuffer());
-
-					for(std::size_t y = 0; y < imageSize.height; ++y) {
-						for(std::size_t x = 0; x < imageSize.width; ++x) {
-							auto& pp = palettizedData[y * imageSize.width + x];
-							auto& dst = pDestBuffer[y * imageSize.width + x];
-							dst = palette[static_cast<std::size_t>(pp)];
-						}
-					}
+					surface.PaintFromSource_8bpp(&palettizedData[0], &palette[0]);
 				} break;
 
 				case kTextureFormatV1_24Bpp: {
@@ -90,20 +81,9 @@ namespace europa::io::yatf {
 				case kTextureFormatV2_4Bpp: {
 					util::Pixel palette[16] {};
 					util::UniqueArray<std::uint8_t> palettizedData(imageSize.Linear() / 2);
-
 					stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
 					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.Linear() / 2);
-
-					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.GetBuffer());
-
-					// can't really get a better loop to work, so i guess this has to do
-					for(std::size_t y = 0; y < (imageSize.width * imageSize.height) / 2; ++y) {
-						auto& pp = palettizedData[y];
-						for(std::size_t b = 0; b < 2; ++b) {
-							auto col = ((pp & (0x0F << (b * 4))) >> (b * 4));
-							(*pDestBuffer++) = palette[static_cast<std::size_t>(col)];
-						}
-					}
+					surface.PaintFromSource_4bpp(&palettizedData[0], &palette[0]);
 				} break;
 
 				case kTextureFormatV2_8Bpp: {
@@ -113,15 +93,7 @@ namespace europa::io::yatf {
 					stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
 					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.Linear());
 
-					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.GetBuffer());
-
-					for(std::size_t y = 0; y < imageSize.height; ++y) {
-						for(std::size_t x = 0; x < imageSize.width; ++x) {
-							auto& pp = palettizedData[y * imageSize.width + x];
-							auto& dst = pDestBuffer[y * imageSize.width + x];
-							dst = palette[static_cast<std::size_t>(pp)];
-						}
-					}
+					surface.PaintFromSource_8bpp(&palettizedData[0], &palette[0]);
 				} break;
 
 				case kTextureFormatV2_24Bpp: {

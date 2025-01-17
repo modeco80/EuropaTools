@@ -17,6 +17,7 @@ namespace europa::structs {
 
 	struct [[gnu::packed]] YatfHeader {
 		enum class TextureFormat : u8 {
+			// V1 formats.
 			kTextureFormatV1_8Bpp = 0,
 			kTextureFormatV1_24Bpp = 2,
 			kTextureFormatV1_32Bpp = 3,
@@ -34,11 +35,11 @@ namespace europa::structs {
 
 		u32 magic;
 
-		u16 version; // 0x1 for starfighter, 0x2 for jsf
+		u16 version; // 0x1 for starfighter, 0x2 for new jsf files
 
 		TextureFormat format;
 
-		u8 unkThing2; // flags? some palbpp?
+		u8 unkThing2; // flags? some palbpp? V2 seems to end up usually matching
 
 		// Always zeroed.
 		u32 zero;

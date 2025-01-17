@@ -78,6 +78,21 @@ namespace europa::util {
 
 		void Resize(Size newSize);
 
+		// FIXME: For now, these APIs will work. It may actually make sense 
+		// to have a ImageSurface hold a Unique<IPixelBuffer>, that knows about
+		// format and can optionally output pixels or provide raw buffer access
+		// if desired.
+		//
+		// basically support other than RGBA8888 out of the box and deal with it nicely
+
+		/// Paint from a 4bpp source.
+		/// Assumes this image has been initalized to the proper size already.
+		void PaintFromSource_4bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
+
+		/// Paint from a 8bpp source.
+		/// Assumes this image has been initalized to the proper size already.
+		void PaintFromSource_8bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
+
 	   private:
 		UniqueArray<std::uint32_t> imageBuffer;
 		Size size;
