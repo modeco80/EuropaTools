@@ -1,0 +1,13 @@
+//
+// EuropaTools
+//
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
+//
+// SPDX-License-Identifier: MIT
+//
+
+#define EUTEX_VERSION_STR "@PROJECT_VERSION@"
+
+#define EUTEX_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define EUTEX_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define EUTEX_VERSION_PATCH @PROJECT_VERSION_PATCH@

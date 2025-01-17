@@ -6,7 +6,11 @@
 # SPDX-License-Identifier: MIT
 #
 
+# Toollib
+add_subdirectory(toollib)
+
 add_subdirectory(eupak)
+add_subdirectory(eutex)
 
 add_executable(texdump texdump.cpp)
 target_link_libraries(texdump PUBLIC
@@ -22,8 +26,6 @@ target_link_libraries(jsfscramble PUBLIC
 		)
 europa_target(jsfscramble)
 
-# Toollib
-add_subdirectory(toollib)
 
 # Temporary test target.
 add_executable(toollib_test 
