@@ -8,19 +8,17 @@
 
 add_executable(eupak
 		main.cpp
-
 		Utils.cpp
 
-		# Tasks
-		tasks/Task.cpp
-		tasks/InfoTask.cpp
-		tasks/CreateTask.cpp
-		tasks/ExtractTask.cpp
+		# eupak commands
+		CreateCommand.cpp
+		InfoCommand.cpp
+		ExtractCommand.cpp
 )
 
 target_link_libraries(eupak PUBLIC
 		europa
-		argparse::argparse
+		toollib
 		indicators::indicators
 		)
 

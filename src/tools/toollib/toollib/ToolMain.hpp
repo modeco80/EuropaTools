@@ -16,6 +16,7 @@ namespace tool {
 
 	struct IToolCommand;
 
+    /// Provides information about a tool.
 	struct ToolInfo {
 		std::string_view name;		  // "Eupak"
 		std::string_view version;	  // v1.0.0
@@ -24,7 +25,7 @@ namespace tool {
 	};
 
 	struct ToolMainInput {
-		/// Tool commands to run.
+		/// Tool commands to provide to ToolMain().
 		std::span<std::shared_ptr<IToolCommand>> toolCommands;
 
 		// C arguments

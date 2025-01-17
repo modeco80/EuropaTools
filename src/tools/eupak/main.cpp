@@ -6,49 +6,28 @@
 // SPDX-License-Identifier: MIT
 //
 
-#include <argparse/argparse.hpp>
 #include <EupakConfig.hpp>
-#include <tasks/Task.hpp>
-
-using namespace eupak;
-using namespace eupak::tasks;
+#include <toollib/ToolCommand.hpp>
+#include <toollib/ToolMain.hpp>
 
 int main(int argc, char** argv) {
-	argparse::ArgumentParser parser("eupak", EUPAK_VERSION_STR);
-	parser.add_description("Eupak (Europa Package Multi-Tool) v" EUPAK_VERSION_STR);
-
-	auto tasks = std::vector {
-		TaskFactory::CreateNamed("create", parser),
-		TaskFactory::CreateNamed("info", parser),
-		TaskFactory::CreateNamed("extract", parser),
+	const tool::ToolInfo info {
+		.name = "eupak",
+		.version = EUPAK_VERSION_STR,
+		.description = "Europa Package Tool v" EUPAK_VERSION_STR
 	};
 
-	try {
-		// No command was specified, display the help and then exit with a failure code.
-		// For some reason the `argparse` library does not have something like this on its own.
-		//
-		// I guess it's simple though so I can't really complain that much
-		if(argc == 1) {
-			auto s = parser.help();
-			printf("%s\n", s.str().c_str());
-			return 1;
-		}
+	auto toolCommands = std::vector {
+		tool::ToolCommandFactory::CreateNamed("eupak_create"),
+		tool::ToolCommandFactory::CreateNamed("eupak_extract"),
+		tool::ToolCommandFactory::CreateNamed("eupak_info"),
+	};
 
-		parser.parse_args(argc, argv);
-	} catch(std::runtime_error& error) {
-		std::cout << error.what() << '\n'
-				  << parser;
-		return 1;
-	}
-
-	for(auto& task : tasks) {
-		if(task->ShouldRun(parser)) {
-			if(auto res = task->Parse(); res != 0)
-				return res;
-
-			return task->Run();
-		}
-	}
-
-	return 0;
+	// clang-format off
+    return tool::ToolMain(info, {
+        .toolCommands = toolCommands,
+        .argc = argc,
+        .argv = argv
+    });
+	// clang-format on
 }
