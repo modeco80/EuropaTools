@@ -86,14 +86,14 @@ namespace europa::io::pak {
 
 			// Update the offset to where we currently are, since we will be writing the file there
 			file.VisitTocEntry([&](auto& tocEntry) {
-				tocEntry.offset = os.tellp();
+				tocEntry.offset = static_cast<std::uint32_t>(os.tellp());
 			});
 
 			// For sector alignment.
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 				if(sectorAlignment == SectorAlignment::Align) {
 					auto& toc = file.GetTOCEntry<structs::PakHeader_V5::TocEntry_SectorAligned>();
-					toc.startLBA = (os.tellp() / util::kCDSectorSize);
+					toc.startLBA = static_cast<std::uint32_t>((os.tellp() / util::kCDSectorSize));
 				}
 			}
 
@@ -132,7 +132,7 @@ namespace europa::io::pak {
 						   filename });
 		}
 
-		pakHeader.tocOffset = os.tellp();
+		pakHeader.tocOffset = static_cast<std::uint32_t>(os.tellp());
 
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
@@ -156,7 +156,7 @@ namespace europa::io::pak {
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
-		pakHeader.fileCount = sortedFiles.size();
+		pakHeader.fileCount = static_cast<std::uint32_t>(sortedFiles.size());
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tellp()) - (pakHeader.tocOffset - 1);
 
 		// Timestamp.

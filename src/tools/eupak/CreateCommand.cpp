@@ -246,10 +246,15 @@ namespace eupak {
 
 				// Setup other stuff like modtime
 				file.VisitTocEntry([&](auto& tocEntry) {
+#ifdef _WIN32
+					auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(lastModified);
+					tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
+#else
 					// Kinda stupid but works
 					auto sys = std::chrono::file_clock::to_sys(lastModified);
 					auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(sys);
 					tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
+#endif
 				});
 
 				files.emplace_back(std::make_pair(relativePathName, std::move(file)));

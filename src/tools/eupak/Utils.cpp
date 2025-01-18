@@ -48,7 +48,15 @@ namespace eupak {
 		char buf[1024]{};
 		tm tmObject{};
 
+#ifdef _MSC_VER
+		// All I will choose to say is: Why didn't Microsoft
+		// just implement _r versions. This is nearly exactly
+		// the same as those! ... This is why I hate cross-platform
+		// software development sometimes
+		localtime_s(&tmObject, &time);
+#else
 		localtime_r(&time, &tmObject);
+#endif
 
 		auto count = std::strftime(&buf[0], sizeof(buf), format.data(), &tmObject);
 

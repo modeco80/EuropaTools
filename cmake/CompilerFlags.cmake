@@ -13,5 +13,6 @@
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	include(CompilerFlags-GNU)
 else()
-	message(FATAL_ERROR "Unsupported (for now?) compiler ${CMAKE_CXX_COMPILER_ID}")
+	message(WARNING "Unsupported (for now?) compiler ${CMAKE_CXX_COMPILER_ID}. Configuration will continue,"
+				    "however this configuration may break at any time.")
 endif()

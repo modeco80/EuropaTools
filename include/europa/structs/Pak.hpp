@@ -25,6 +25,11 @@ namespace europa::structs {
 		Ver5 = 0x5
 	};
 
+	
+#ifdef _MSC_VER
+	#pragma pack(push, 1)
+#endif
+
 	struct [[gnu::packed]] PakHeader_Common {
 		char magic[16]; // "Europa Packfile\0"
 
@@ -99,6 +104,7 @@ namespace europa::structs {
 		u32 reservedPad {};
 	};
 
+
 	struct [[gnu::packed]] PakHeader_V4 : public PakHeader_Impl<PakHeader_V4, PakVersion::Ver4> {
 		using PakHeader_Impl<PakHeader_V4, PakVersion::Ver4>::PakHeader_Impl;
 
@@ -161,6 +167,11 @@ namespace europa::structs {
 		u8 sectorAlignedFlag;
 		u8 pad2;
 	};
+
+	
+#ifdef _MSC_VER
+	#pragma pack(pop)
+#endif
 
 	using PakHeaderVariant = std::variant<
 	structs::PakHeader_V3,

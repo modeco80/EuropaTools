@@ -15,6 +15,10 @@
 
 namespace europa::structs {
 
+#ifdef _MSC_VER
+	#pragma pack(push, 1)
+#endif
+
 	struct [[gnu::packed]] YatfHeader {
 		enum class TextureFormat : u8 {
 			// V1 formats.
@@ -51,6 +55,10 @@ namespace europa::structs {
 			return magic == ValidMagicSF || magic == ValidMagicJSF;
 		}
 	};
+
+#ifdef _MSC_VER
+	#pragma pack(pop)
+#endif
 
 } // namespace europa::structs
 
