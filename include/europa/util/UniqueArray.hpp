@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <europa/util/DllExport.hpp>
 
 namespace europa::util {
 
@@ -17,7 +18,7 @@ namespace europa::util {
 	/// std::unique_ptr<T[]> for buffers
 	/// that need to track their size as well.
 	template <class T>
-	struct UniqueArray final {
+	struct LIBEUROPA_EXPORT UniqueArray final {
 		UniqueArray() = default;
 		explicit UniqueArray(std::size_t size) {
 			Resize(size);
@@ -41,6 +42,7 @@ namespace europa::util {
 			// invalidate moved-from array to default state
 			move.array = nullptr;
 			move.size = 0;
+			return *this;
 		}
 
 		void Resize(std::size_t size) {
