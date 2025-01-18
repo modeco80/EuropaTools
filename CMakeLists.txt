@@ -14,7 +14,7 @@ if(" ${CMAKE_SOURCE_DIR}" STREQUAL " ${CMAKE_BINARY_DIR}")
 endif()
 
 project(EuropaTools
-        VERSION 1.0.0
+        VERSION 0.5.0
         LANGUAGES C CXX
         DESCRIPTION "Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter)"
         )

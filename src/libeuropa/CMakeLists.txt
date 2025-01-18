@@ -6,7 +6,14 @@
 # SPDX-License-Identifier: MIT
 #
 
-add_library(europa
+# NOTICE: libeuropa in shared form does not have a stable ABI yet, 
+# and more than likely, until a defined semver release
+# never will.
+#
+# There will probably be an option or additional target always
+# to build static libeuropa.
+
+add_library(europa SHARED
 		# Utility
 		util/ImageSurface.cpp
 
@@ -24,3 +31,6 @@ add_library(europa
 target_include_directories(europa PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 target_compile_features(europa PUBLIC cxx_std_20)
+
+# SOversion for *ix.
+set_target_properties(europa PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 0)
