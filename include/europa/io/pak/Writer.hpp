@@ -15,12 +15,13 @@
 #include <string>
 #include <utility>
 
-#include "europa/structs/Pak.hpp"
+#include <europa/structs/Pak.hpp>
+#include <europa/util/DllExport.hpp>
 
 namespace europa::io::pak {
 
 	/// A efficient writer for Europa package (.pak) files.
-	struct Writer {
+	struct LIBEUROPA_EXPORT Writer {
 		/// Vocabulary type for making sector alignment stuff a bit easier to see.
 		enum class SectorAlignment {
 			DoNotAlign, /// Do not align to a sector boundary

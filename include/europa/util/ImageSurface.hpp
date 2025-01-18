@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <europa/util/UniqueArray.hpp>
+#include <europa/util/DllExport.hpp>
 
 namespace europa::util {
 
@@ -66,7 +67,7 @@ namespace europa::util {
 #endif
 
 	/// A RGBA8888 image surface.
-	struct ImageSurface {
+	struct LIBEUROPA_EXPORT ImageSurface {
 		ImageSurface();
 		explicit ImageSurface(Size size);
 

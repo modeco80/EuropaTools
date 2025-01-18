@@ -10,6 +10,7 @@
 #define EUROPA_IO_YATFREADER_H
 
 #include <europa/structs/Yatf.hpp>
+#include <europa/util/DllExport.hpp>
 #include <iosfwd>
 
 namespace europa::util {
@@ -19,7 +20,7 @@ namespace europa::util {
 namespace europa::io::yatf {
 
 	/// Reader for PS2 Europa .tex (YATF - Yet Another Texture Format) files.
-	struct Reader {
+	struct LIBEUROPA_EXPORT Reader {
 		explicit Reader(std::istream& is);
 
 		/// Read image. The image output to [surface] is converted to RGBA8888 implicitly.

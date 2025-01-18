@@ -11,13 +11,14 @@
 
 #include <europa/io/pak/File.hpp>
 #include <europa/structs/Pak.hpp>
+#include <europa/util/DllExport.hpp>
 #include <iosfwd>
 #include <string>
 
 namespace europa::io::pak {
 
 	/// Reader for Europa package files (.pak).
-	struct Reader {
+	struct LIBEUROPA_EXPORT Reader {
 		using FlatType = std::pair<std::string, File>;
 		using MapType = std::vector<FlatType>;
 

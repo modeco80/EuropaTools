@@ -1,6 +1,6 @@
 # TODO: This currently assumes libstdc++, later on we should *probably* set this with some detection
 # also TODO: Use a list so that this isn't one giant line (list JOIN should help.)
-set(EUROPA_CORE_COMPILE_ARGS "-Wall -Wextra -Wformat=2 -Wimplicit-fallthrough")
+set(EUROPA_CORE_COMPILE_ARGS "-Wall -Wextra -Wformat=2 -Wimplicit-fallthrough -fvisibility=hidden")
 set(EUROPA_CORE_LINKER_ARGS "-fuse-ld=${EUROPA_LINKER}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release") # OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo"
