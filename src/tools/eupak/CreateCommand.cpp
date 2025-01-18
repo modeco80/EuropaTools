@@ -203,19 +203,6 @@ namespace eupak {
 				std::cout << "Writing a sector aligned package\n";
 			}
 
-			indicators::ProgressBar addProgress {
-				indicators::option::BarWidth { 50 },
-				indicators::option::ForegroundColor { indicators::Color::green },
-				indicators::option::MaxProgress { fileCount },
-				indicators::option::ShowPercentage { true },
-				indicators::option::ShowElapsedTime { true },
-				indicators::option::ShowRemainingTime { true },
-
-				indicators::option::PrefixText { "Adding files to archive " }
-			};
-
-			indicators::show_console_cursor(false);
-
 			// TODO: use time to write in the header
 			//			also: is there any point to verbosity? could add archive written size ig
 
@@ -233,8 +220,6 @@ namespace eupak {
 				for(auto& c : relativePathName)
 					if(c == '/')
 						c = '\\';
-
-				addProgress.set_option(indicators::option::PostfixText { relativePathName + " (" + std::to_string(currFile + 1) + '/' + std::to_string(fileCount) + ")" });
 
 				eio::pak::File file;
 				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.path());
@@ -258,11 +243,8 @@ namespace eupak {
 				});
 
 				files.emplace_back(std::make_pair(relativePathName, std::move(file)));
-				addProgress.tick();
 				currFile++;
 			}
-
-			indicators::show_console_cursor(true);
 
 			std::ofstream ofs(currentArgs.outputFile.string(), std::ofstream::binary);
 
