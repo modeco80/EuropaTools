@@ -6,14 +6,8 @@
 # SPDX-License-Identifier: MIT
 #
 
-# NOTICE: libeuropa in shared form does not have a stable ABI yet, 
-# and more than likely, until a defined semver release
-# never will.
-#
-# There will probably be an option or additional target always
-# to build static libeuropa.
 
-add_library(europa SHARED
+add_library(europa
 		# Utility
 		util/ImageSurface.cpp
 
@@ -30,13 +24,4 @@ add_library(europa SHARED
 
 target_include_directories(europa PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-target_compile_features(europa PUBLIC cxx_std_20)
-
-# SOversion for *ix.
-set_target_properties(europa PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 0)
-
-install(TARGETS europa
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+europa_target(europa)

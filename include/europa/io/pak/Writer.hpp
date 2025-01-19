@@ -11,17 +11,15 @@
 
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
+#include <europa/structs/Pak.hpp>
 #include <iosfwd>
 #include <string>
 #include <utility>
 
-#include <europa/structs/Pak.hpp>
-#include <europa/util/DllExport.hpp>
-
 namespace europa::io::pak {
 
 	/// A efficient writer for Europa package (.pak) files.
-	struct LIBEUROPA_EXPORT Writer {
+	struct Writer {
 		/// Vocabulary type for making sector alignment stuff a bit easier to see.
 		enum class SectorAlignment {
 			DoNotAlign, /// Do not align to a sector boundary
@@ -52,6 +50,6 @@ namespace europa::io::pak {
 		structs::PakVersion version {};
 	};
 
-} // namespace europa::io
+} // namespace europa::io::pak
 
 #endif // EUROPA_IO_PAKWRITER_H
