@@ -75,7 +75,7 @@ namespace europa {
 
 		if(parent.header.Version == 5) {
 			if(parent.header.sectorAligned == 0x1) {
-				// Start LBA of the file
+				// Start LBA of the file (relative to the start LBA of the package file itself)
 				u32 startLBA;
 			}
 		}

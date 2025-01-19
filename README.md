@@ -1,9 +1,6 @@
 ## EuropaTools
 
-Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter).
-
-As per usual for lily, written in C++20.
-
+Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter), written in C++20. For nyoom. And also because why not.
 
 ## Building
 
@@ -19,15 +16,30 @@ $ cmake --build build -j $(nproc)
 
 ### `libeuropa`
 
-Provides IO readers and writers for data files, along with the structures.
+Provides IO readers and writers for Europa data files.
 
-Structure documentation is seperately managed as a .hexpat in [/hexpat](https://git.computernewb.com/modeco80/EuropaTools/src/branch/master/hexpat).
+#### File Format Support
+
+> [!NOTE]  
+> Things marked as unsupported will probably end up being supported at some point; so don't treat this as "final".
+
+
+| Type                  | Support                         |
+| --------------------- | ------------------------------- |
+| Package (.pak, .pmdl) | Read/Write (all versions)       |
+| PS2 Texture (.tex)    | Read-only export (all versions) |
+| Mesh (.msh)           | Currently unsupported (planned) |
+| Model (.mdl)          | Currently unsupported (planned) |
+| Animation (.ani)      | Currently unsupported (planned) |
+| GOD Data (.c3po)      | Currently unsupported           |
+| Mission (.wrl)        | Currently unsupported           |
+| Scene (.scene)        | Currently unsupported           |
 
 ## The Tools
 
 ### `Adam`
 
-Planned to be an open-source equlivant to the `Eve` mission authoring tool used in development of Europa based games.
+Planned to ultimately be an open-source equlivant to the `Eve` mission authoring tool used in development of Europa based games. With probably at least some UI design nicities that have been learned in the past 2 decades.
 
 Feature set:
 
@@ -43,4 +55,3 @@ Can create, extract, and show info on them.
 ### `eutex`
 
 A utlity for dumping Europa PS2 .tex files. (creation later)
-
