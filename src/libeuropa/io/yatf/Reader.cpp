@@ -122,11 +122,11 @@ namespace europa::io::yatf {
 		};
 
 		switch(header.version) {
-			case 1:
+			case structs::YatfHeader::Version::Version1:
 				v1();
 				break;
 
-			case 2:
+			case structs::YatfHeader::Version::Version2:
 				v2();
 				break;
 

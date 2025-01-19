@@ -11,7 +11,6 @@
 
 #include <europa/structs/ImHexAdapter.hpp>
 #include <europa/util/FourCC.hpp>
-#include <type_traits>
 
 namespace europa::structs {
 
@@ -33,13 +32,20 @@ namespace europa::structs {
 			kTextureFormatV2_4Bpp = 5
 		};
 
-		// For some reason Jedi Starfighter YATFs use a different fourcc. ???
-		constexpr static auto ValidMagicSF = util::FourCC<"YATF", std::endian::big>();
-		constexpr static auto ValidMagicJSF = util::FourCC<"YATF", std::endian::little>();
+		enum class Version : u16 {
+			Invalid = 0xffff,
+			Version1 = 1,
+			Version2 = 2,
+		};
+
+		// For some reason Jedi Starfighter (V2) YATFs use a different fourcc endianness than V1.
+		// When writing we should use the appropiate one.
+		constexpr static auto ValidMagic_V1 = util::FourCC<"YATF", std::endian::big>();
+		constexpr static auto ValidMagic_V2 = util::FourCC<"YATF", std::endian::little>();
 
 		u32 magic;
 
-		u16 version; // 0x1 for starfighter, 0x2 for new jsf files
+		Version version;
 
 		TextureFormat format;
 
@@ -52,7 +58,11 @@ namespace europa::structs {
 		u32 width;
 
 		[[nodiscard]] constexpr bool IsValid() const {
-			return magic == ValidMagicSF || magic == ValidMagicJSF;
+			if(auto magicValid = magic == ValidMagic_V1 || magic == ValidMagic_V2; !magicValid)
+				return false;
+
+			// Make sure version is sensical
+			return version == Version::Version1 || version == Version::Version2;
 		}
 	};
 
