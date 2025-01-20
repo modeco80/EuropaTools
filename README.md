@@ -12,6 +12,16 @@ $ cmake --build build -j $(nproc)
 # ... profit?
 ```
 
+## Europa Documentation
+
+Documentation for Europa stuff is provided in the [/datadoc subdirectory](https://git.computernewb.com/modeco80/EuropaTools/src/branch/master/datadoc) of the repository.
+
+This currently contains:
+
+- Work in progress Markdown documentation of the game's file formats.
+- ImHex Pattern Language files for MSH, PAK, and TEX files.
+- A Model Researcher Pro Python script for getting it to read MSH files. **Not a replacement for a real model exporter, which I'm working on**.
+
 ## The Libraries
 
 ### `libeuropa`
@@ -22,7 +32,6 @@ Provides IO readers and writers for Europa data files.
 
 > [!NOTE]  
 > Things marked as unsupported will probably end up being supported at some point; so don't treat this as "final".
-
 
 | Type                  | Support                         |
 | --------------------- | ------------------------------- |
