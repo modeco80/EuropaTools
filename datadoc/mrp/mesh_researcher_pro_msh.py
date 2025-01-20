@@ -85,7 +85,8 @@ for i in range(0, mesh_count):
     # Add it and set everything up, add verts, faces,
     # and normals/UV if provided
     mesh = mrp.create_mesh(mtlFilename)
-    mesh.set_vertices(verts[1], tp="Float")
+    # We set fm="XZY" cause Europa uses a Y-up coordinate system.
+    mesh.set_vertices(verts[1], fm="XZY", tp="Float")
     mesh.set_faces(faces[1], tp="Short")
     if normals[0] != 0:
         mesh.set_normals(normals[1], tp="Float")
