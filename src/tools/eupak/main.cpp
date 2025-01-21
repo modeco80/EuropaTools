@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 	auto toolCommands = std::vector {
 		tool::ToolCommandFactory::CreateNamed("eupak_create"),
 		tool::ToolCommandFactory::CreateNamed("eupak_extract"),
-		tool::ToolCommandFactory::CreateNamed("eupak_info"),
+		tool::ToolCommandFactory::CreateNamed("eupak_list"),
 	};
 
 	// clang-format off

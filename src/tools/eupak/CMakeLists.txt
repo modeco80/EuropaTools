@@ -12,7 +12,7 @@ add_executable(eupak
 
 		# eupak commands
 		CreateCommand.cpp
-		InfoCommand.cpp
+		ListCommand.cpp
 		ExtractCommand.cpp
 )
 

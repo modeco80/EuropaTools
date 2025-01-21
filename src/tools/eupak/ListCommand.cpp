@@ -20,12 +20,12 @@ namespace eupak {
 
 	constexpr static auto DATE_FORMAT = "%m/%d/%Y %r";
 
-	struct InfoCommand : tool::IToolCommand {
-		InfoCommand()
-			: parser("info", EUPAK_VERSION_STR, argparse::default_arguments::help) {
+	struct ListCommand : tool::IToolCommand {
+		ListCommand()
+			: parser("list", EUPAK_VERSION_STR, argparse::default_arguments::help) {
 			// clang-format off
 		parser
-			.add_description("Print information about a package file.");
+			.add_description("Lists package file information and files.");
 		parser
 			.add_argument("input")
 			.help("Input archive")
@@ -34,8 +34,8 @@ namespace eupak {
 		// FIXME: Probably just print this always, in a thinner format, but use
 		// the existing thicker format for verbosity.
 		parser
-			.add_argument("--verbose")
-			.help("Increase information output verbosity (print a list of files).")
+			.add_argument("-v", "--verbose")
+			.help("Increase information output verbosity.")
 			.default_value(false)
 			.implicit_value(true);
 			// clang-format on
@@ -46,7 +46,7 @@ namespace eupak {
 		}
 
 		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
-			return parentParser.is_subcommand_used("info");
+			return parentParser.is_subcommand_used("list");
 		}
 
 		int Parse() override {
@@ -130,6 +130,6 @@ namespace eupak {
 		Arguments currentArgs;
 	};
 
-	TOOLLIB_REGISTER_TOOLCOMMAND("eupak_info", InfoCommand);
+	TOOLLIB_REGISTER_TOOLCOMMAND("eupak_list", ListCommand);
 
 } // namespace eupak
