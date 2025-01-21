@@ -84,48 +84,37 @@ namespace eupak {
 			}
 
 			std::visit([&](auto& header) {
-				std::string_view version = "???";
+				std::string_view version {};
 
 				// This is the best other than just duplicating the body for each pak version.. :(
+				// sucks but it is what it is
 				if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver3)
-					version = "Version 3 (Starfighter/Europa pre-release, May-July 2000?)";
+					version = "Version 3 (Starfighter pre-release)";
 				else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver4)
 					version = "Version 4 (Starfighter)";
 				else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver5)
 					version = "Version 5 (Jedi Starfighter)";
 
-				std::cout << "Archive " << currentArgs.inputPath << ":\n";
-				std::cout << "    Created: " << FormatUnixTimestamp(header.creationUnixTime, DATE_FORMAT) << '\n';
-				std::cout << "    Version: " << version << '\n';
-				std::cout << "    Size: " << FormatUnit(header.tocOffset + header.tocSize) << '\n';
-				std::cout << "    File Count: " << header.fileCount << " files\n";
+				printf("Archive \"%s\": %s, created %s, %d files", currentArgs.inputPath.string().c_str(), version.data(), FormatUnixTimestamp(header.creationUnixTime, DATE_FORMAT).c_str(), header.fileCount);
+
+				if(currentArgs.verbose) {
+					printf(", data size: %s", FormatUnit(header.tocOffset + header.tocSize).c_str());
+				}
+
+				printf("\n");
 			},
 					   reader.GetHeader());
 
-			// Print a detailed file list if verbose.
-
 			for(auto& [filename, file] : reader.GetFiles()) {
-				if(currentArgs.verbose) {
-					std::cout << "File \"" << filename << "\":\n";
-					file.VisitTocEntry([&](auto& tocEntry) {
-						std::cout << "    Created: " << FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT) << '\n';
-						std::cout << "    Size: " << FormatUnit(tocEntry.size) << '\n';
+				file.VisitTocEntry([&](auto& tocEntry) {
+					std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
 
-						if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
-							std::cout << "    Start LBA (CD-ROM Sector): " << tocEntry.startLBA << '\n';
-						}
-					});
-				} else {
-					file.VisitTocEntry([&](auto& tocEntry) {
-						std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
+					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
+						std::printf(" (LBA %u)", tocEntry.startLBA);
+					}
 
-						if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
-							std::printf(" (LBA %u)", tocEntry.startLBA);
-						}
-
-						std::printf("\n");
-					});
-				}
+					std::printf("\n");
+				});
 			}
 
 			return 0;
