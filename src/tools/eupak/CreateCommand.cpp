@@ -66,7 +66,7 @@ namespace eupak {
 
 				case FileWriteEnd:
 					// ?
-					//progress.set_option(indicators::option::PostfixText { "Written " + event.targetFileName });
+					// progress.set_option(indicators::option::PostfixText { "Written " + event.targetFileName });
 					progress.tick();
 					break;
 			}
@@ -187,7 +187,6 @@ namespace eupak {
 		}
 
 		int Run() override {
-			auto currFile = 0;
 			auto fileCount = 0;
 
 			// Count how many files we're gonna add to the archive
@@ -243,7 +242,6 @@ namespace eupak {
 				});
 
 				files.emplace_back(std::make_pair(relativePathName, std::move(file)));
-				currFile++;
 			}
 
 			std::ofstream ofs(currentArgs.outputFile.string(), std::ofstream::binary);
