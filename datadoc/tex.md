@@ -14,10 +14,12 @@ On PS2, the Europa engine uses a homebrew texture format, known as "YATF" or, ~~
 The .tex file header is one of the few filetypes in Europa which uses a proper FourCC magic. However this becomes rapidly annoying as you'll see later.
 
 ```cpp
+using Format = u8; // See version-specific information
+
 struct yatfHeader {
     uint32_t magic;
     uint16_t version;
-    Format format; // Version-specific
+    Format format;
     uint8_t unknown; // ?
     uint32_t unknownZeroed; // Zeroed on all files
 
