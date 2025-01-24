@@ -49,6 +49,6 @@ The default when it is unspecified is **starfighter**.
 
 *PACKFILE* must be specified as a non-positional argument. It is the path of the packfile to extract.
 
-## INFO
+## LIST
 
 *PACKFILE* must be specified as a non-positional argument. It is the path of the packfile to list information and files from.
