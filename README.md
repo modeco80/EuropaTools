@@ -5,21 +5,26 @@ Tools for working with LEC Europa based games (Star Wars: Starfighter & Star War
 ## Building
 
 ```bash
-$ git clone https://git.computernewb.com/modeco80/EuropaTools.git
+$ git clone --recursive https://github.com/modeco80/EuropaTools.git
 $ cd EuropaTools
 $ cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
 $ cmake --build build -j $(nproc)
 # ... profit?
 ```
 
-## Europa Documentation
+## Documentation
 
-Documentation for Europa stuff is provided in the [/datadoc subdirectory](https://git.computernewb.com/modeco80/EuropaTools/src/branch/master/datadoc) of the repository.
+> [!NOTE]  
+> Documentation on tools is still a work-in-progress. Later on pandoc or something will be used to make them accessible online. File format documentation is also a work-in-progress.
+
+Documentation on tools that are a part of this project are provided in the [/doc subdirectory](https://github.com/modeco80/EuropaTools/tree/master/doc) of the repository.
+
+Documentation for Europa **file formats** is provided in the [/datadoc subdirectory](https://github.com/modeco80/EuropaTools/tree/master/datadoc) of the repository.
 
 This currently contains:
 
 - Work in progress Markdown documentation of the game's file formats.
-- ImHex Pattern Language files for MSH, PAK, and TEX files.
+- ImHex Pattern Language files for MSH,c PAK, and TEX files.
 - A Model Researcher Pro Python script for getting it to read MSH files. **Not a replacement for a real model exporter, which I'm working on**.
 
 ## The Libraries
