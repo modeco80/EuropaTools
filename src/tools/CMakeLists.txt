@@ -17,3 +17,10 @@ target_link_libraries(jsfscramble PUBLIC
 		europa
 		)
 europa_target(jsfscramble)
+
+# VFS test.
+add_executable(vfs_test vfs_test.cpp)
+target_link_libraries(vfs_test PUBLIC
+		europa
+		)
+europa_target(vfs_test)

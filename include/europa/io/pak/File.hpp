@@ -27,7 +27,7 @@ namespace europa::io::pak {
 	struct FileData {
 		// clang-format off
 		using Variant = std::variant<
-			// File data
+			// Memory data
 			std::vector<std::uint8_t>,
 
 			// Path
@@ -83,8 +83,8 @@ namespace europa::io::pak {
 		FileData::Variant variant_;
 	};
 
-	/// Repressents a package file. Can either hold a memory buffer of contents
-	/// or a filesystem path (for creating packages).
+	/// Repressents a package file to be written to a package.
+	/// Can either hold a memory buffer of contents or a filesystem path (for creating packages).
 	struct File {
 		using DataType = FileData;
 

@@ -8,6 +8,14 @@
 
 
 add_library(europa
+		base/MoveOnlyAny.cpp
+		
+		# VFS
+		base/VirtualFileSystem.cpp
+
+		# Host VFS
+		base/VirtualFileSystem_Host.cpp
+
 		# Utility
 		util/ImageSurface.cpp
 
