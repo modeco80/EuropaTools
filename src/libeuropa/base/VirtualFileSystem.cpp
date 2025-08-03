@@ -1,3 +1,10 @@
+//
+// EuropaTools
+//
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
+//
+// SPDX-License-Identifier: MIT
+//
 
 #include <europa/base/VirtualFileSystem.hpp>
 #include <system_error>

@@ -11,6 +11,7 @@
 #include <filesystem>
 
 namespace europa {
+	namespace base {}
 	namespace io {}
 	namespace util {}
 	namespace structs {}
@@ -22,6 +23,7 @@ namespace eutex {
 
 	// Shorthands for libeuropa components
 	// that we might want to reference
+	namespace ebase = europa::base;
 	namespace eio = europa::io;
 	namespace eutil = europa::util;
 	namespace estructs = europa::structs;

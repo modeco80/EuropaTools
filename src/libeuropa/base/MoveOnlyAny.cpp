@@ -1,3 +1,11 @@
+//
+// EuropaTools
+//
+// (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
+//
+// SPDX-License-Identifier: MIT
+//
+
 #include <europa/base/MoveOnlyAny.hpp>
 
 namespace europa::base {

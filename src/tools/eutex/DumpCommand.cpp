@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <fstream>
 #include <toollib/ToolCommand.hpp>
+#include "europa/base/VirtualFileSystem.hpp"
 
 namespace eutex {
 
@@ -68,10 +69,8 @@ namespace eutex {
 				return 1;
 			}
 
-
-			std::ifstream ifs(inputTexPath.string(), std::ifstream::binary);
-
-			yatf::Reader reader(ifs);
+			auto fh = ebase::HostFileSystem().Open(inputTexPath.string(), ebase::VirtualFileSystem::Read);
+			yatf::Reader reader(std::move(fh));
 
 			europa::structs::YatfHeader yatfHeader;
 			eutil::ImageSurface surface;
