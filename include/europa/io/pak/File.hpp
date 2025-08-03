@@ -197,11 +197,6 @@ namespace europa::io::pak {
 		}
 
 	   private:
-		// FIXME: Are these `friend`s required? I don't think so,
-		// we use public APIs now.
-		friend Reader;
-		friend Writer;
-
 		std::optional<FileData> fileData;
 		structs::PakTocEntryVariant toc;
 	};
