@@ -6,21 +6,19 @@
 // SPDX-License-Identifier: MIT
 //
 
-#include <chrono>
-
 // Common stuff
 #include <CommonDefs.hpp>
 #include <EupakConfig.hpp>
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/Writer.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
-#include <fstream>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
 #include <toollib/ToolCommand.hpp>
 #include <Utils.hpp>
 
+#include "europa/base/VirtualFileSystem.hpp"
 #include "europa/structs/Pak.hpp"
 
 namespace eupak {
@@ -202,23 +200,25 @@ namespace eupak {
 				std::cout << "Writing a sector aligned package\n";
 			}
 
-			// TODO: use time to write in the header
-			//			also: is there any point to verbosity? could add archive written size ig
-
 			std::vector<eio::pak::Writer::FlattenedType> files;
+			std::vector<std::string> fileTocOrder;
+
 			files.reserve(fileCount);
+			fileTocOrder.reserve(fileCount);
+
+			eio::pak::Writer::Manifest manifest(files, fileTocOrder);
+			manifest.version = currentArgs.pakVersion;
+			// temp.
+			manifest.creationUnixTime = 0;
 
 			for(auto& ent : fs::recursive_directory_iterator(currentArgs.inputDirectory)) {
 				if(ent.is_directory())
 					continue;
 
 				auto relativePathName = fs::relative(ent.path(), currentArgs.inputDirectory).string();
-				auto lastModified = fs::last_write_time(ent.path());
-
+				
 				// Convert to Windows path separator always (that's what the game wants, after all)
-				for(auto& c : relativePathName)
-					if(c == '/')
-						c = '\\';
+				std::replace(relativePathName.begin(), relativePathName.end(), '\\', '/');
 
 				eio::pak::File file;
 				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.path());
@@ -228,40 +228,22 @@ namespace eupak {
 				// Add data
 				file.SetData(std::move(pakData));
 
-				// Setup other stuff like modtime
-				file.VisitTocEntry([&](auto& tocEntry) {
-#ifdef _WIN32
-					auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(lastModified);
-					tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
-#else
-					// Kinda stupid but works
-					auto sys = std::chrono::file_clock::to_sys(lastModified);
-					auto seconds = std::chrono::time_point_cast<std::chrono::seconds>(sys);
-					tocEntry.creationUnixTime = static_cast<std::uint32_t>(seconds.time_since_epoch().count());
-#endif
-				});
+				// TEMP until there's actuallly json stuff dumping this.
+				file.SetCreationUnixTime(0);
 
 				files.emplace_back(std::make_pair(relativePathName, std::move(file)));
+				fileTocOrder.push_back(relativePathName);
 			}
 
-			std::ofstream ofs(currentArgs.outputFile.string(), std::ofstream::binary);
-
-			if(!ofs) {
-				std::cout << "Error: Couldn't open " << currentArgs.outputFile << " for writing\n";
-				return 1;
-			}
-
+			auto ofs = ebase::HostFileSystem().Open(currentArgs.outputFile.string(), ebase::VirtualFileSystem::Read | ebase::VirtualFileSystem::Write | ebase::VirtualFileSystem::Create);
 			CreateArchiveReportSink reportSink(fileCount);
-			eio::pak::Writer writer(currentArgs.pakVersion);
+			eio::pak::Writer writer;
 
 			using enum eio::pak::Writer::SectorAlignment;
-
-			eio::pak::Writer::SectorAlignment alignment = DoNotAlign;
-
 			if(currentArgs.sectorAligned)
-				alignment = Align;
+				manifest.sectorAlignment = Align;
 
-			writer.Write(ofs, std::move(files), reportSink, alignment);
+			writer.Write(ofs, reportSink, manifest);
 			return 0;
 		}
 
