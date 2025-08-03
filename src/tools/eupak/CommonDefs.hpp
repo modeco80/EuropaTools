@@ -12,6 +12,7 @@
 #include <filesystem>
 
 namespace europa {
+	namespace base {}
 	namespace io {}
 	namespace util {}
 	namespace structs {}
@@ -22,6 +23,7 @@ namespace eupak {
 	namespace fs = std::filesystem;
 
 	// Shorthands for libeuropa components
+	namespace ebase = europa::base;
 	namespace eio = europa::io;
 	namespace eutil = europa::util;
 	namespace estructs = europa::structs;

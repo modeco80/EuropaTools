@@ -28,6 +28,9 @@ namespace europa::io::pak {
 		// clang-format off
 		using Variant = std::variant<
 			// Memory data
+			// NOTE: This is no longer directly used by readers,
+			// but may be useful still when synthesizing package files,
+			// so I'll probably keep it.
 			std::vector<std::uint8_t>,
 
 			// Path

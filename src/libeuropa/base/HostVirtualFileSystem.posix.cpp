@@ -1,6 +1,9 @@
-#include <sys/stat.h>
 
-#include <cstdio>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <europa/base/VirtualFileSystem.hpp>
 #include <string_view>
 #include <system_error>
@@ -9,29 +12,38 @@ namespace europa::base {
 
 	namespace {
 
-		std::string openModeToLibcMode(int mode) {
-			std::string a;
+		/// Helper which converts the VFS open mode to POSIX's mode.
+		int openModeToPosixMode(int mode) {
+			int a = 0;
 
 			if(mode & VirtualFileSystem::Read)
-				a += 'r';
+				a |= O_RDONLY;
 			if(mode & VirtualFileSystem::Write)
-				a += "w+";
-#ifdef _WIN32
-			a += 'b';
-#endif
+				a |= O_WRONLY;
+
+			if(mode & VirtualFileSystem::Create)
+				a |= O_CREAT;
+
 			return a;
 		}
 
 		struct HostVfsFile : VfsFile {
 			HostVfsFile()
-				: VfsFile(), fp(nullptr) {
+				: VfsFile() {
 			}
 
 			void OpenFileImpl(std::error_code& ec, const std::string_view path, int mode) {
-				auto modeConverted = openModeToLibcMode(mode);
-				fp = fopen(path.data(), modeConverted.c_str());
+				auto modeConverted = openModeToPosixMode(mode);
 
-				if(fp == nullptr) {
+				// This looks dumb but we basically have to handle this this way when creating new files,
+				// since it always expects the file's mode to be provided. We just provide a "good enough"
+				// blanket on which Works.
+				if(modeConverted & O_CREAT)
+					fd = open(path.data(), modeConverted, 0666);
+				else
+					fd = open(path.data(), modeConverted);
+
+				if(fd == -1) {
 					ec = { errno, std::system_category() };
 					return;
 				}
@@ -41,10 +53,43 @@ namespace europa::base {
 			}
 
 			void Close() override {
-				if(fp) {
-					fclose(fp);
-					fp = nullptr;
+				if(fd) {
+					close(fd);
+					fd = -1;
 				}
+			}
+
+			VfsFile* Clone() override {
+#if defined(__linux__)
+				// This is Linux-specific but it allows us to open a new file
+				// without needing to hold the filename needlessly.
+				char path[32] {};
+				snprintf(&path[0], sizeof(path) - 1, "/proc/self/fd/%d", fd);
+
+				// This is a little :( munging around with internal state like this, but
+				// this saves a round trip through the mode conversion code when we know
+				// we only want O_RDONLY when cloning (since it'd be unsafe to allow clones to write).
+				auto* file = new HostVfsFile();
+				file->fd = open(path, O_RDONLY);
+
+				if(fd == -1) {
+					delete file;
+					throw std::system_error(std::error_code { errno, std::system_category() });
+				}
+
+				return file;
+#else
+	// FIXME: a POSIX-compatible implementation of this would be nice.
+	#error This code currently only supports Linux.
+#endif
+			}
+
+			void Truncate(std::uint64_t newSize) override {
+				ftruncate64(fd, newSize);
+			}
+
+			std::uint64_t Tell() const override {
+				return lseek(fd, 0, SEEK_CUR);
 			}
 
 			std::uint64_t Seek(std::error_code& ec, std::int64_t offset, SeekDirection whence = RelativeBegin) override {
@@ -61,7 +106,7 @@ namespace europa::base {
 						break;
 				}
 
-				auto res = fseek(fp, offset, dir);
+				auto res = lseek(fd, offset, dir);
 				if(res == -1) {
 					ec = { errno, std::system_category() };
 					return res;
@@ -70,41 +115,27 @@ namespace europa::base {
 				return res;
 			}
 
-			std::uint64_t Tell() const override {
-				return ftell(fp);
-			}
-
 			std::uint64_t Read(std::error_code& ec, std::uint8_t* pBuffer, std::size_t length) override {
-				auto res = fread(pBuffer, 1, length, fp);
-				if(res != length) {
-					if(res == static_cast<std::size_t>(EOF)) {
-						// EOF. No error.
-						if(feof(fp))
-							return 0;
-
-						if(ferror(fp)) {
-							ec = { errno, std::system_category() };
-							return 0;
-						}
-					}
+				auto res = read(fd, pBuffer, length);
+				if(res == -1) {
+					ec = { errno, std::system_category() };
+					return 0;
 				}
 
 				return res;
 			}
 
 			std::uint64_t Write(std::error_code& ec, const std::uint8_t* pBuffer, std::size_t length) override {
-				auto res = fwrite(pBuffer, 1, length, fp);
-				if(res != length) {
-					if(feof(fp))
-						return res;
+				auto res = write(fd, pBuffer, length);
+				if(res == -1) {
 					ec = { errno, std::system_category() };
+					return 0;
 				}
-
 				return res;
 			}
 
 		   private:
-			FILE* fp;
+			int fd { -1 };
 		};
 
 		struct HostVfs : VirtualFileSystem {

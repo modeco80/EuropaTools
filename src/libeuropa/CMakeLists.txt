@@ -14,7 +14,7 @@ add_library(europa
 		base/VirtualFileSystem.cpp
 
 		# Host VFS
-		base/VirtualFileSystem_Host.cpp
+		base/HostVirtualFileSystem.posix.cpp
 
 		# Utility
 		util/ImageSurface.cpp

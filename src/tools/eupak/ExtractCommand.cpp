@@ -8,15 +8,29 @@
 
 #include <CommonDefs.hpp>
 #include <EupakConfig.hpp>
+#include <europa/base/VirtualFileSystem.hpp>
 #include <europa/io/pak/Reader.hpp>
-#include <fstream>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <system_error>
 #include <toollib/ToolCommand.hpp>
 
 namespace eupak {
+
+	void TeeOutPackageFileData(eio::pak::Reader::OpenedPackageFile& is, ebase::VfsFileHandle& os) {
+		std::uint8_t buffer[1024] {};
+		int rc = 0;
+		while(true) {
+			rc = is.Read(&buffer[0], sizeof(buffer));
+			if(rc == 0) {
+				// end of stream
+				break;
+			}
+			os->Write(&buffer[0], rc);
+		}
+	}
 
 	struct ExtractCommand : tool::IToolCommand {
 		ExtractCommand()
@@ -71,14 +85,9 @@ namespace eupak {
 			std::cout << "Input PAK/PMDL: " << currentArgs.inputPath << '\n';
 			std::cout << "Output Directory: " << currentArgs.outputDirectory << '\n';
 
-			std::ifstream ifs(currentArgs.inputPath.string(), std::ifstream::binary);
-
-			if(!ifs) {
-				std::cout << "Error: Could not open file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
-
-			eio::pak::Reader reader(ifs);
+			auto& hostFs = ebase::HostFileSystem();
+			auto fh = hostFs.Open(currentArgs.inputPath.string());
+			eio::pak::Reader reader(std::move(fh));
 
 			reader.ReadHeaderAndTOC();
 
@@ -104,12 +113,8 @@ namespace eupak {
 				auto nameCopy = filename;
 
 #ifndef _WIN32
-				if(nameCopy.find('\\') != std::string::npos) {
-					// Grody, but eh. Should work.
-					for(auto& c : nameCopy)
-						if(c == '\\')
-							c = '/';
-				}
+				// Replace path seperators with the POSIX ones.
+				std::replace(nameCopy.begin(), nameCopy.end(), '\\', '/');
 #endif
 
 				progress.set_option(indicators::option::PostfixText { filename });
@@ -119,31 +124,21 @@ namespace eupak {
 				if(!fs::exists(outpath.parent_path()))
 					fs::create_directories(outpath.parent_path());
 
-				std::ofstream ofs(outpath.string(), std::ofstream::binary);
-
-				if(!ofs) {
-					std::cerr << "Could not open " << outpath << " for writing.\n";
-					continue;
-				}
-
 				if(currentArgs.verbose) {
 					std::cerr << "Extracting file \"" << filename << "\"...\n";
 				}
 
-				reader.ReadFile(filename);
-
-				{
-					auto& fileData = file.GetData();
-					if(auto* buffer = fileData.GetIf<std::vector<std::uint8_t>>(); buffer) {
-						ofs.write(reinterpret_cast<const char*>((*buffer).data()), (*buffer).size());
-						ofs.flush();
-					} else {
-						throw std::runtime_error("???? why are we getting paths here?");
-					}
+				try {
+					// Tee out the package file data.
+					auto packageFile = reader.Open(filename);
+					auto outputFile = hostFs.Open(outpath.string(), ebase::VirtualFileSystem::Read | ebase::VirtualFileSystem::Write | ebase::VirtualFileSystem::Create);
+					outputFile->Truncate(file.GetSize());
+					TeeOutPackageFileData(packageFile, outputFile);
+					outputFile.Close();
+				} catch(std::system_error& err) {
+					std::cerr << "Error when writing output file: " << err.what() << "\n";
+					return 1;
 				}
-
-				// We no longer need the file data anymore, so let's purge it to save memory
-				file.PurgeData();
 
 				progress.tick();
 			}

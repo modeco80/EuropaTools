@@ -12,14 +12,83 @@
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/Reader.hpp>
 #include <europa/structs/Pak.hpp>
-#include <stdexcept>
+#include <exception>
 
 #include "../StreamUtils.h"
+#include "europa/base/VirtualFileSystem.hpp"
 
 namespace europa::io::pak {
 
-	Reader::Reader(std::istream& is)
-		: stream(is) {
+	struct ReaderInvalidPath : public std::exception {
+		const char* what() const noexcept override {
+			return "no such path in package file";
+		}
+	};
+
+	/// Reader::OpenedPackageFile
+
+	Reader::OpenedPackageFile::OpenedPackageFile(base::VfsFileHandle&& fh)
+		: fh(std::move(fh)) {
+	}
+
+	void Reader::OpenedPackageFile::Init(File& data) {
+		fileOffset = data.GetOffset();
+		fileSize = data.GetSize();
+
+		fh->Seek(fileOffset);
+	}
+
+	// TODO: This logic would probably be better in a VFS adapter. This would also mean making it possible
+	// to make some of the streamutils code common (since really it is probably better there) and maybe
+	// bits of it public (teeing a stream is actually relatively useful)?
+
+	std::uint64_t Reader::OpenedPackageFile::Read(std::uint8_t* pBuffer, std::size_t bufferLength) {
+		// EOF
+		if(virtualPos >= fileSize) {
+			return 0;
+		}
+
+		std::size_t readCount = bufferLength;
+		if(virtualPos + bufferLength > fileSize)
+			readCount = fileSize - virtualPos;
+
+		auto nRead = fh->Read(pBuffer, readCount);
+		virtualPos += nRead;
+		return nRead;
+	}
+
+	std::uint64_t Reader::OpenedPackageFile::Tell() {
+		return virtualPos;
+	}
+
+	std::uint64_t Reader::OpenedPackageFile::Seek(std::int64_t offset, base::VfsFile::SeekDirection seekDir) {
+		std::uint64_t target = 0;
+		switch(seekDir) {
+			case base::VfsFile::RelativeBegin:
+				target = offset;
+				break;
+			case base::VfsFile::RelativeCurrent:
+				target = virtualPos + offset;
+				break;
+			case base::VfsFile::RelativeEnd:
+				target = fileSize + offset;
+				break;
+		}
+
+		if(target > fileSize) {
+			// too far
+			return -1;
+		}
+
+		fh->Seek(fileOffset + target, base::VfsFile::RelativeBegin);
+		virtualPos = target;
+		return virtualPos;
+	}
+
+	/// Reader
+
+	Reader::Reader(base::VfsFileHandle&& is)
+		: stream(std::move(is)) {
 	}
 
 	template <class T>
@@ -32,7 +101,7 @@ namespace europa::io::pak {
 		}
 
 		// Read the archive TOC
-		stream.seekg(header_type.tocOffset, std::istream::beg);
+		stream->Seek(header_type.tocOffset, base::VfsFile::RelativeBegin);
 		for(std::uint32_t i = 0; i < header_type.fileCount; ++i) {
 			// The first part of the TOC entry is always a VLE string,
 			// which we don't store inside the type (because we can't)
@@ -60,7 +129,7 @@ namespace europa::io::pak {
 
 	void Reader::ReadHeaderAndTOC() {
 		auto commonHeader = impl::ReadStreamType<structs::PakHeader_Common>(stream);
-		stream.seekg(0, std::istream::beg);
+		stream->Seek(0, base::VfsFile::RelativeBegin);
 
 		switch(commonHeader.version) {
 			case structs::PakVersion::Ver3:
@@ -77,34 +146,19 @@ namespace europa::io::pak {
 		}
 	}
 
-	void Reader::ReadFiles() {
-		for(auto& [filename, file] : files)
-			ReadFile(filename);
-	}
-
-	void Reader::ReadFile(const std::string& file) {
+	Reader::OpenedPackageFile Reader::Open(const std::string& file) {
 		auto it = std::find_if(files.begin(), files.end(), [&file](Reader::FlatType& fl) { return fl.first == file; });
 		if(it == files.end())
-			return;
+			throw ReaderInvalidPath();
 
 		auto& fileObject = it->second;
-		std::vector<std::uint8_t> buffer;
 
-		buffer.resize(fileObject.GetSize());
+		// Clone a new file handle.
+		auto fh = stream.Clone();
 
-		// This file was already read in, or has data
-		// the user may not want to overwrite.
-		if(fileObject.HasData())
-			return;
-
-		stream.seekg(fileObject.GetOffset(), std::istream::beg);
-		stream.read(reinterpret_cast<char*>(&buffer[0]), buffer.size());
-
-		if(!stream)
-			throw std::runtime_error("Stream went bad while trying to read file");
-
-		auto data = FileData::InitAsBuffer(std::move(buffer));
-		fileObject.SetData(std::move(data));
+		auto opened = Reader::OpenedPackageFile(std::move(fh));
+		opened.Init(fileObject);
+		return opened;
 	}
 
 	Reader::MapType& Reader::GetFiles() {

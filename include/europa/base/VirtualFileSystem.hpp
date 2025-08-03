@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
+
 #include "europa/base/MoveOnlyAny.hpp"
 
 namespace europa::base {
@@ -39,6 +40,11 @@ namespace europa::base {
 
 		virtual void Close() = 0;
 
+		/// Clones a new file.
+		virtual VfsFile* Clone() = 0;
+
+		virtual void Truncate(std::uint64_t newSize) = 0;
+
 		virtual std::uint64_t Tell() const = 0;
 
 		virtual std::uint64_t Seek(std::error_code& ec, std::int64_t offset, SeekDirection whence = RelativeBegin) = 0;
@@ -47,6 +53,12 @@ namespace europa::base {
 
 		/// Reads some data from this file.
 		virtual std::uint64_t Read(std::error_code& ec, std::uint8_t* pBuffer, std::size_t length);
+
+		std::uint8_t Get() {
+			std::uint8_t c{};
+			Read(&c, 1);
+			return c;
+		}
 
 		/// Writes some data.
 		virtual std::uint64_t Write(std::error_code& ec, const std::uint8_t* pBuffer, std::size_t length);
@@ -81,8 +93,17 @@ namespace europa::base {
 			}
 		}
 
+		/// Clones this file to a new file.
+		VfsFileHandle Clone() {
+			return VfsFileHandle(raw->Clone());
+		}
+
 		operator bool() {
 			return raw != nullptr;
+		}
+
+		VfsFile* operator->() {
+			return raw;
 		}
 
 		VfsFile& operator*() {
@@ -100,6 +121,10 @@ namespace europa::base {
 			EUROPA_FORBID_COPY(StatFile);
 			EUROPA_ALLOW_MOVE(StatFile);
 
+			bool HasXAttr() const {
+				return extendedAttr.HasValue();
+			}
+
 			std::uint64_t lengthBytes;
 
 			/// Extended filesystem-specific attributes.
@@ -116,7 +141,7 @@ namespace europa::base {
 			bool HasXAttr() const {
 				return extendedAttr.HasValue();
 			}
-			
+
 			/// Extended filesystem-specific attributes.
 			/// The underlying type of this data will be specific
 			/// to the filesystem that was statted.
@@ -126,6 +151,7 @@ namespace europa::base {
 		enum OpenMode {
 			Read = (1 << 0),
 			Write = (1 << 1),
+			Create = (1 << 2)
 		};
 
 		/// Gets the name of this filesystem.

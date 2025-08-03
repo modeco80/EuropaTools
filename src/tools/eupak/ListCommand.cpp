@@ -11,8 +11,6 @@
 #include <EupakConfig.hpp>
 #include <europa/io/pak/Reader.hpp>
 #include <filesystem>
-#include <fstream>
-#include <iostream>
 #include <toollib/ToolCommand.hpp>
 #include <Utils.hpp>
 
@@ -67,14 +65,9 @@ namespace eupak {
 		}
 
 		int Run() override {
-			std::ifstream ifs(currentArgs.inputPath.string(), std::ifstream::binary);
-
-			if(!ifs) {
-				std::cout << "Error: Could not open file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
-
-			eio::pak::Reader reader(ifs);
+			auto& hostFs = ebase::HostFileSystem();
+			auto fh = hostFs.Open(currentArgs.inputPath.string());
+			eio::pak::Reader reader(std::move(fh));
 
 			reader.ReadHeaderAndTOC();
 
