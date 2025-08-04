@@ -122,8 +122,6 @@ namespace europa::io::pak {
 
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
-		std::fprintf(stderr, "my plants itch\n");
-
 		for(auto& filename : manifest.tocOrder) {
 			auto it = std::find_if(manifest.files.begin(), manifest.files.end(), [&](const auto& el) {
 				return el.first == filename;

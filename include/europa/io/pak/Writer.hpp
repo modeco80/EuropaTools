@@ -13,7 +13,6 @@
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
 #include <europa/structs/Pak.hpp>
-#include <iosfwd>
 #include <string>
 #include <utility>
 
