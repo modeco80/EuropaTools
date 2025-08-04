@@ -60,6 +60,10 @@ namespace europa::base {
 			return c;
 		}
 
+		void Put(std::uint8_t c) {
+			Write(&c, 1);
+		}
+
 		/// Writes some data.
 		virtual std::uint64_t Write(std::error_code& ec, const std::uint8_t* pBuffer, std::size_t length);
 

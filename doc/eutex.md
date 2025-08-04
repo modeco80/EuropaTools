@@ -13,11 +13,11 @@ eupak - dump Europa PS2 tex files
 
 **eutex** *SUBCOMMAND* [*OPTIONS*...]
 
-**eupak** **dump** [**-o|--output-file** *OUTPUT*] *FILE*
+**eutex** **dump** [**-o|--output-file** *OUTPUT*] *FILE*
 
 # DESCRIPTION
 
-Eutex is a tool for working with Europa PS2 .tex files. These are a custom format that was created just for the PS2 port.
+Eutex is a tool for working with Europa PS2 .tex files. These are a custom format that was created just for the PS2 port of Europa.
 
 # COMMAND SYNTAX
 

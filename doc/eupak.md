@@ -1,7 +1,7 @@
 ---
 author:
 - Lily Tsuru
-date: 'January 24, 2025'
+date: 'August 3, 2025'
 title: eupak
 ---
 
@@ -13,9 +13,7 @@ eupak - create, extract, list Europa packfiles
 
 **eupak** *SUBCOMMAND* [*OPTIONS*...]
 
-*ARCHIVE-VERSION* := { **europa-prerelease** | **starfighter** | **jedistarfighter** }
-
-**eupak** **create** **-V|--archive-version** *ARCHIVE-VERSION* **-d|--directory** *DIRECTORY* [**--verbose**] [**-s|--sector-aligned**] *PACKFILE*
+**eupak** **create** **-m|--manifest** *MANIFEST* *PACKFILE*
 
 **eupak** **extract** **-d|--directory** *PACKFILE*
 
@@ -29,19 +27,11 @@ Eupak is a tool which allows extracting and creating new Europa packfiles for th
 
 ## CREATE
 
-**-V** must be one of the following:
+The **-m** option MUST be provided.
 
-- **europa-prerelease** to make a version 3 package
-- **starfighter** to make a version 4 package
-- **jedistarfighter** to make a version 5 package
+**MANIFEST** *MUST* be a path to a manifest file. The manifest file is JSON, and its syntax will be later documented.
 
-The default when it is unspecified is **starfighter**.
-
-**-d** must be specified and is the directory to create the packfile from.
-
-**-s** builds a sector-aligned package, and is only valid for **-V jedistarfighter**.
-
-*PACKFILE* must be specified as a non-positional argument. It is the path of the output packfile.
+**PACKFILE** must be specified as a non-positional argument. It is the path of the output packfile.
 
 ## EXTRACT
 

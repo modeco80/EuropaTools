@@ -48,7 +48,7 @@ namespace europa::io::pak {
 	template <class THeader>
 	void Writer::WriteImpl(base::VfsFileHandle& os, WriterProgressReportSink& sink, const Manifest& manifest) {
 		THeader pakHeader {};
-	
+
 		// Leave space for the header
 		os->Seek(sizeof(THeader));
 
@@ -137,7 +137,6 @@ namespace europa::io::pak {
 			});
 		}
 
-
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
@@ -145,9 +144,13 @@ namespace europa::io::pak {
 		pakHeader.tocSize = static_cast<std::uint32_t>(os->Tell()) - (pakHeader.tocOffset - 1);
 		pakHeader.creationUnixTime = manifest.creationUnixTime;
 
+		// The TOC was accidentally constructed in a way which always adds a trailer null byte,
+		// so replicate that.
+		os->Put(0);
+
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
 
-		// As the last step, write it.
+		// As the final step with writing, write the finalized header.
 		os->Seek(0);
 		impl::WriteStreamType(os, pakHeader);
 	}

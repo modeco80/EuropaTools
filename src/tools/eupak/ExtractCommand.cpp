@@ -129,11 +129,12 @@ namespace eupak {
 			});
 
 			for(auto& [filename, file] : files) {
-				// printf("%s toc offset : %08x\n", filename.c_str(), file.GetOffset());
+				//printf("%s toc offset : %08x\n", filename.c_str(), file.GetOffset());
 				root.tocOrder.push_back(filename);
 			}
 
 			for(auto& [filename, file] : fileOrderedClone) {
+				printf("%s file offset : %08x\n", filename.c_str(), file.GetOffset());
 				auto outpath = (currentArgs.outputDirectory / "files" / BeautifyPath(filename));
 				root.files.push_back(ManifestFile {
 				.path = filename,

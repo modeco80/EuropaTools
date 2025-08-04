@@ -12,14 +12,17 @@
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/Writer.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
+#include <filesystem>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
 #include <toollib/ToolCommand.hpp>
 #include <Utils.hpp>
 
+#include "daw/json/daw_json_exception.h"
 #include "europa/base/VirtualFileSystem.hpp"
 #include "europa/structs/Pak.hpp"
+#include "ManifestJSON.hpp"
 
 namespace eupak {
 
@@ -100,19 +103,10 @@ namespace eupak {
 			// Setup argparse
 			// clang-format off
 			parser.add_description("Create a package file.");
-			parser.add_argument("-d", "--directory")
+			parser.add_argument("-m", "--manifest")
 				.required()
-				.metavar("DIRECTORY")
-				.help("Directory to create archive from");
-
-			parser.add_argument("-V", "--archive-version")
-				.default_value("starfighter")
-				.help(R"(Output archive version. Either "europa-prerelease", "starfighter" or "jedistarfighter".)")
-				.metavar("VERSION");
-
-			parser.add_argument("-s", "--sector-aligned")
-				.help(R"(Aligns all files in this new package to CD-ROM sector boundaries. Only valid for -V jedistarfighter.)")
-				.flag();
+				.metavar("MANIFEST")
+				.help("Manifest to use to create archive from");
 
 			parser.add_argument("output")
 				.required()
@@ -123,19 +117,6 @@ namespace eupak {
 				.help("Increase creation output verbosity")
 				.default_value(false)
 				.implicit_value(true);
-
-			// FIXME: At some point for bit-accurate rebuilds we should also accept a JSON manifest file
-			// that contains: 
-			// 	- Package version, 
-			//	- sector alignment (for v5), 
-			//	- package build time, 
-			//	- data order of all files
-			//	- TOC order of all files
-			//	- file TOC data (modtime, TOC index, so on)
-			// Then a user can just do `eupak create --manifest manifest.json` and it'll all be done for them
-			//
-			// `eupak extract` should optionally generate this manifest for the user
-			// (I have not dreamt up the schema for this yet and this relies on other FIXMEs being done so this will have to wait.)
 
 			// clang-format on
 		}
@@ -150,54 +131,65 @@ namespace eupak {
 
 		int Parse() override {
 			currentArgs.verbose = parser.get<bool>("--verbose");
-			currentArgs.inputDirectory = fs::path(parser.get("--directory"));
+			currentArgs.inputManifest = fs::path(parser.get("--manifest"));
 			currentArgs.outputFile = fs::path(parser.get("output"));
 
-			if(parser.is_used("--archive-version")) {
-				const auto& versionStr = parser.get("--archive-version");
+			if(!eupak::fs::is_regular_file(currentArgs.inputManifest)) {
+				std::cout << "Error: Provided manifest isn't a file or doesn't exist\n"
+						  << parser;
+				return 1;
+			}
 
-				if(auto opt = ParsePakVersion(versionStr); opt.has_value()) {
-					currentArgs.pakVersion = *opt;
-				} else {
-					std::cout << "Error: Invalid version \"" << versionStr << "\"\n"
-							  << parser;
-					return 1;
+			// Parse the manifest JSON file.
+			try {
+				std::string buffer;
+				// Read the entire manifest into the string
+				// TODO: This could be a VFS utility function
+				{
+					auto n = 0;
+					auto fh = ebase::HostFileSystem().Open(currentArgs.inputManifest.string(), ebase::VirtualFileSystem::Read);
+					char buf[512] {};
+					while(true) {
+						n = fh->Read(reinterpret_cast<std::uint8_t*>(&buf[0]), sizeof(buf));
+						if(n == 0)
+							break;
+						buffer.append(&buf[0], n);
+					}
 				}
-			} else {
-				currentArgs.pakVersion = estructs::PakVersion::Ver4;
-			}
 
-			currentArgs.sectorAligned = parser.get<bool>("--sector-aligned");
-
-			if(currentArgs.sectorAligned && currentArgs.pakVersion != estructs::PakVersion::Ver5) {
-				std::cout << "Error: --sector-aligned is only valid for creating a package with \"-V jedistarfighter\".\n"
-						  << parser;
+				currentArgs.manifest = daw::json::from_json<ManifestRoot>(std::move(buffer));
+			} catch(daw::json::json_exception& ex) {
+				std::fprintf(stderr, "Error when parsing manifest: %s\n", ex.what());
 				return 1;
 			}
 
-			if(!eupak::fs::is_directory(currentArgs.inputDirectory)) {
-				std::cout << "Error: Provided input isn't a directory\n"
-						  << parser;
-				return 1;
+			// Catch an attempt to write a sector-aligned package for an invalid pak version.
+			if(currentArgs.manifest.alignment.has_value()) {
+				if(*currentArgs.manifest.alignment == eio::pak::Writer::SectorAlignment::Align) {
+					if(currentArgs.manifest.version != estructs::PakVersion::Ver5) {
+						std::fprintf(stderr, "Cannot write a sector-aligned package if not version 5\n");
+						return 1;
+					}
+				}
 			}
 
 			return 0;
 		}
 
 		int Run() override {
-			auto fileCount = 0;
-
-			// Count how many files we're gonna add to the archive
-			for(auto& ent : fs::recursive_directory_iterator(currentArgs.inputDirectory)) {
-				if(ent.is_directory())
-					continue;
-				fileCount++;
-			}
+			const auto& jsonManifest = currentArgs.manifest;
+			auto fileCount = jsonManifest.files.size();
 
 			std::cout << "Going to write " << fileCount << " files into " << currentArgs.outputFile << '\n';
 
-			if(currentArgs.sectorAligned) {
-				std::cout << "Writing a sector aligned package\n";
+			if(jsonManifest.alignment.has_value()) {
+				if(*jsonManifest.alignment == eio::pak::Writer::SectorAlignment::Align) {
+					if(jsonManifest.version != estructs::PakVersion::Ver5) {
+						std::fprintf(stderr, "Cannot write a sector-aligned package if not version 5\n");
+						return 1;
+					}
+					std::cout << "Writing a sector aligned package\n";
+				}
 			}
 
 			std::vector<eio::pak::Writer::FlattenedType> files;
@@ -206,55 +198,44 @@ namespace eupak {
 			files.reserve(fileCount);
 			fileTocOrder.reserve(fileCount);
 
-			eio::pak::Writer::Manifest manifest(files, fileTocOrder);
-			manifest.version = currentArgs.pakVersion;
-			// temp.
-			manifest.creationUnixTime = 0;
+			eio::pak::Writer::Manifest eioManifest(files, fileTocOrder);
+			eioManifest.version = jsonManifest.version;
+			eioManifest.creationUnixTime = jsonManifest.creationTime.value_or(0);
 
-			for(auto& ent : fs::recursive_directory_iterator(currentArgs.inputDirectory)) {
-				if(ent.is_directory())
-					continue;
+			using enum eio::pak::Writer::SectorAlignment;
+			eioManifest.sectorAlignment = jsonManifest.alignment.value_or(DoNotAlign);
 
-				auto relativePathName = fs::relative(ent.path(), currentArgs.inputDirectory).string();
-				
-				// Convert to Windows path separator always (that's what the game wants, after all)
-				std::replace(relativePathName.begin(), relativePathName.end(), '\\', '/');
+			// Create eio pak files from the manifest data.
+			for(auto& ent : jsonManifest.files) {
+				auto relativePathName = fs::relative(ent.sourcePath, currentArgs.inputManifest).string();
 
 				eio::pak::File file;
-				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.path());
+				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.sourcePath);
 
-				file.InitAs(currentArgs.pakVersion, currentArgs.sectorAligned);
+				file.InitAs(eioManifest.version, jsonManifest.alignment.value_or(DoNotAlign) == Align);
 
 				// Add data
 				file.SetData(std::move(pakData));
-
-				// TEMP until there's actuallly json stuff dumping this.
-				file.SetCreationUnixTime(0);
-
-				files.emplace_back(std::make_pair(relativePathName, std::move(file)));
-				fileTocOrder.push_back(relativePathName);
+				file.SetCreationUnixTime(ent.creationTime.value_or(0));
+				files.emplace_back(std::make_pair(ent.path, std::move(file)));
 			}
+
+			eioManifest.tocOrder = jsonManifest.tocOrder;
 
 			auto ofs = ebase::HostFileSystem().Open(currentArgs.outputFile.string(), ebase::VirtualFileSystem::Read | ebase::VirtualFileSystem::Write | ebase::VirtualFileSystem::Create);
 			CreateArchiveReportSink reportSink(fileCount);
 			eio::pak::Writer writer;
-
-			using enum eio::pak::Writer::SectorAlignment;
-			if(currentArgs.sectorAligned)
-				manifest.sectorAlignment = Align;
-
-			writer.Write(ofs, reportSink, manifest);
+			writer.Write(ofs, reportSink, eioManifest);
 			return 0;
 		}
 
 	   private:
 		struct Arguments {
-			fs::path inputDirectory;
+			fs::path inputManifest;
 			fs::path outputFile;
+			ManifestRoot manifest;
 
 			bool verbose;
-			europa::structs::PakVersion pakVersion;
-			bool sectorAligned;
 		};
 
 		argparse::ArgumentParser parser;
