@@ -85,18 +85,6 @@ namespace eupak {
 		};
 	};
 
-	std::optional<estructs::PakVersion> ParsePakVersion(const std::string& str) {
-		if(str == "europa-prerelease") {
-			return estructs::PakVersion::Ver3;
-		} else if(str == "starfighter") {
-			return estructs::PakVersion::Ver4;
-		} else if(str == "jedistarfighter") {
-			return estructs::PakVersion::Ver5;
-		}
-
-		return std::nullopt;
-	}
-
 	struct CreateCommand : tool::IToolCommand {
 		CreateCommand()
 			: parser("create", EUPAK_VERSION_STR, argparse::default_arguments::help) {
@@ -184,10 +172,6 @@ namespace eupak {
 
 			if(jsonManifest.alignment.has_value()) {
 				if(*jsonManifest.alignment == eio::pak::Writer::SectorAlignment::Align) {
-					if(jsonManifest.version != estructs::PakVersion::Ver5) {
-						std::fprintf(stderr, "Cannot write a sector-aligned package if not version 5\n");
-						return 1;
-					}
 					std::cout << "Writing a sector aligned package\n";
 				}
 			}
@@ -207,8 +191,6 @@ namespace eupak {
 
 			// Create eio pak files from the manifest data.
 			for(auto& ent : jsonManifest.files) {
-				auto relativePathName = fs::relative(ent.sourcePath, currentArgs.inputManifest).string();
-
 				eio::pak::File file;
 				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.sourcePath);
 
@@ -221,6 +203,10 @@ namespace eupak {
 			}
 
 			eioManifest.tocOrder = jsonManifest.tocOrder;
+
+			// After this we no longer need the converted JSON data, so
+			// we can just destroy it.
+			currentArgs.manifest = {};
 
 			auto ofs = ebase::HostFileSystem().Open(currentArgs.outputFile.string(), ebase::VirtualFileSystem::Read | ebase::VirtualFileSystem::Write | ebase::VirtualFileSystem::Create);
 			CreateArchiveReportSink reportSink(fileCount);

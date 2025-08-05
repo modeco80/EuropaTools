@@ -134,7 +134,7 @@ namespace eupak {
 			}
 
 			for(auto& [filename, file] : fileOrderedClone) {
-				printf("%s file offset : %08x\n", filename.c_str(), file.GetOffset());
+				//printf("%s file offset : %08x\n", filename.c_str(), file.GetOffset());
 				auto outpath = (currentArgs.outputDirectory / "files" / BeautifyPath(filename));
 				root.files.push_back(ManifestFile {
 				.path = filename,
