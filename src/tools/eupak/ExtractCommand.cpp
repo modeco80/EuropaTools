@@ -17,7 +17,19 @@
 #include <stdexcept>
 #include <toollib/ToolCommand.hpp>
 
+#include "ManifestJSON.hpp"
+
 namespace eupak {
+
+	std::string BeautifyPath(const std::string& path) {
+		auto nameCopy = path;
+
+		#ifndef _WIN32
+		// Replace path seperators with the POSIX ones.
+		std::replace(nameCopy.begin(), nameCopy.end(), '\\', '/');
+		#endif
+		return nameCopy;
+	}
 
 	struct ExtractCommand : tool::IToolCommand {
 		ExtractCommand()
@@ -68,6 +80,57 @@ namespace eupak {
 			return 0;
 		}
 
+		void createManifest(const estructs::PakHeaderVariant& header, const eio::pak::Reader::MapType& files) {
+			auto outpath = (currentArgs.outputDirectory / "manifest.json");
+
+			ManifestRoot root;
+
+			// set this up
+			std::visit([&](auto& pakHdr) {
+				root.version = pakHdr.version;
+				root.creationTime = pakHdr.creationUnixTime;
+			},
+			header);
+
+			// if this is pakv5, then set the alignment appropiately
+			// (the default is fine for older versions which don't have alignment)
+			if(auto* h = std::get_if<estructs::PakHeader_V5>(&header)) {
+				if(h->sectorAlignedFlag == 1) {
+					root.alignment = eio::pak::Writer::SectorAlignment::Align;
+				} else {
+					root.alignment = eio::pak::Writer::SectorAlignment::DoNotAlign;
+				}
+			}
+
+			eio::pak::Reader::MapType fileOrderedClone(files);
+
+			// Sort our clone of the file table to the order which files were actually written.
+			// The files "map" is in TOC order (which can differ to the actual file placement), so we do not need to do anything with that.
+			std::sort(fileOrderedClone.begin(), fileOrderedClone.end(), [](const auto& f1, const auto& f2) {
+				return f1.second.GetOffset() < f2.second.GetOffset();
+			});
+
+			for(auto& [filename, file] : files) {
+				//printf("%s toc offset : %08x\n", filename.c_str(), file.GetOffset());
+				root.tocOrder.push_back(filename);
+			}
+
+			for(auto& [filename, file] : fileOrderedClone) {
+				//printf("%s file offset : %08x\n", filename.c_str(), file.GetOffset());
+				auto outpath = (currentArgs.outputDirectory / "files" / BeautifyPath(filename));
+				root.files.push_back(ManifestFile {
+					.path = filename,
+					.sourcePath = outpath.string(),
+									 .creationTime = file.GetCreationUnixTime() });
+			}
+
+			// Serialize the JSON to the manifest file.
+			auto fh = mco::FileStream::open(outpath.string().c_str(), mco::FileStream::ReadWrite | mco::FileStream::Create);
+			using namespace daw::json::options;
+			auto dump = daw::json::to_json(root, output_flags<SerializationFormat::Pretty, IndentationType::Tab>);
+			fh.write(reinterpret_cast<const std::uint8_t*>(dump.data()), dump.size());
+		}
+
 		int Run() override {
 			std::cout << "Input PAK/PMDL: " << currentArgs.inputPath << '\n';
 			std::cout << "Output Directory: " << currentArgs.outputDirectory << '\n';
@@ -95,6 +158,12 @@ namespace eupak {
 
 			indicators::show_console_cursor(false);
 
+			if(!fs::exists(currentArgs.outputDirectory))
+				fs::create_directories(currentArgs.outputDirectory);
+
+			// Create the manifest file.
+			createManifest(reader.GetHeader(), reader.GetFiles());
+
 			for(auto& [filename, file] : reader.GetFiles()) {
 				auto nameCopy = filename;
 
@@ -109,7 +178,7 @@ namespace eupak {
 
 				progress.set_option(indicators::option::PostfixText { filename });
 
-				auto outpath = (currentArgs.outputDirectory / nameCopy);
+				auto outpath = (currentArgs.outputDirectory / "files" / nameCopy);
 
 				if(!fs::exists(outpath.parent_path()))
 					fs::create_directories(outpath.parent_path());

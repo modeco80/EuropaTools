@@ -33,23 +33,26 @@ namespace europa::io::pak {
 		}
 	}
 
-	void Writer::SetVersion(structs::PakVersion version) {
-		// for now.
-		this->version = version;
-	}
+	void Writer::Write(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
+		// Sanity check the manifest.
+		if(manifest.tocOrder.size() != manifest.files.size()) {
+			throw std::runtime_error("Invalid TOC order (doesn't match files)");
+		}
 
-	void Writer::Write(mco::WritableStream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment) {
+
+		std::printf("Write() version %d\n", manifest.version);
+
 		// Depending on the version, do a mix of runtime/compile-time dispatch to the right
 		// package format version we have been told to write.
-		switch(version) {
+		switch(manifest.version) {
 			case structs::PakVersion::Ver3:
-				WriteImpl<structs::PakHeader_V3>(os, std::move(vec), sink, sectorAlignment);
+				WriteImpl<structs::PakHeader_V3>(os, sink, manifest);
 				break;
 			case structs::PakVersion::Ver4:
-				WriteImpl<structs::PakHeader_V4>(os, std::move(vec), sink, sectorAlignment);
+				WriteImpl<structs::PakHeader_V4>(os, sink, manifest);
 				break;
 			case structs::PakVersion::Ver5:
-				WriteImpl<structs::PakHeader_V5>(os, std::move(vec), sink, sectorAlignment);
+				WriteImpl<structs::PakHeader_V5>(os, sink, manifest);
 				break;
 			default:
 				throw std::invalid_argument("Invalid version");
@@ -57,28 +60,16 @@ namespace europa::io::pak {
 	}
 
 	template <class THeader>
-	void Writer::WriteImpl(mco::WritableStream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment) {
+	void Writer::WriteImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
 		// TODO: assert that os.isRandomAccess() == true, since it's the only way
 		// we can function currently.
-
-		std::vector<FlattenedType> sortedFiles = std::move(vec);
-
 		THeader pakHeader {};
-
-		// FIXME: We should not be modifying the user provided order here
-		// Instead, a client can choose to sort however they want
-		// (Either that or we can explicitly disable this behaviour with a new argument, idk)
-
-		// Sort the flattened array.
-		std::ranges::sort(sortedFiles, std::greater {}, [](const FlattenedType& elem) {
-			return elem.second.GetSize();
-		});
 
 		// Leave space for the header
 		os.seek(sizeof(THeader), mco::Stream::Begin);
 
 		if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
-			if(sectorAlignment == SectorAlignment::Align) {
+			if(manifest.sectorAlignment == SectorAlignment::Align) {
 				pakHeader.sectorAlignment = util::kCDSectorSize;
 				pakHeader.sectorAlignedFlag = 1;
 			} else {
@@ -89,12 +80,12 @@ namespace europa::io::pak {
 
 		if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 			// Align the first file to start on the next sector boundary.
-			if(sectorAlignment == SectorAlignment::Align)
+			if(manifest.sectorAlignment == SectorAlignment::Align)
 				os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Begin);
 		}
 
 		// Write all the file data
-		for(auto& [filename, file] : sortedFiles) {
+		for(auto& [filename, file] : manifest.files) {
 			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteBegin,
 						   filename });
 
@@ -105,7 +96,7 @@ namespace europa::io::pak {
 
 			// For sector alignment.
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
-				if(sectorAlignment == SectorAlignment::Align) {
+				if(manifest.sectorAlignment == SectorAlignment::Align) {
 					auto& toc = file.GetTOCEntry<structs::PakHeader_V5::TocEntry_SectorAligned>();
 					toc.startLBA = static_cast<std::uint32_t>((os.tell() / util::kCDSectorSize));
 				}
@@ -135,7 +126,7 @@ namespace europa::io::pak {
 
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 				// Align to the next sector boundary.
-				if(sectorAlignment == SectorAlignment::Align)
+				if(manifest.sectorAlignment == SectorAlignment::Align)
 					os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Current);
 			}
 
@@ -148,11 +139,17 @@ namespace europa::io::pak {
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
 		// Write the TOC
-		for(auto& [filename, file] : sortedFiles) {
-			// Write the filename Pascal string.
-			impl::WritePString(os, filename);
+		for(auto& filename : manifest.tocOrder) {
+			auto it = std::find_if(manifest.files.begin(), manifest.files.end(), [&](const auto& el) {
+				return el.first == filename;
+			});
 
-			file.VisitTocEntry([&](auto& tocEntry) {
+			if(it == manifest.files.end()) {
+				throw std::runtime_error("Invalid TOC order");
+			}
+
+			impl::WritePString(os, filename);
+			(*it).second.VisitTocEntry([&](auto& tocEntry) {
 				ensureWrite(os, &tocEntry, sizeof(tocEntry));
 			});
 		}
@@ -160,12 +157,13 @@ namespace europa::io::pak {
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
-		pakHeader.fileCount = static_cast<std::uint32_t>(sortedFiles.size());
+		pakHeader.fileCount = static_cast<std::uint32_t>(manifest.files.size());
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tell()) - (pakHeader.tocOffset - 1);
+		pakHeader.creationUnixTime = manifest.creationUnixTime;
 
-		// Timestamp.
-		auto now = std::chrono::system_clock::now();
-		pakHeader.creationUnixTime = static_cast<std::uint32_t>(std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count());
+		// The TOC was accidentally constructed in a way which always adds a trailer null byte,
+		// so replicate that.
+		os.put(0);
 
 		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
 

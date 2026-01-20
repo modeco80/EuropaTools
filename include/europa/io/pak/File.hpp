@@ -166,6 +166,13 @@ namespace europa::io::pak {
 			return time;
 		}
 
+		void SetCreationUnixTime(std::uint32_t time) {
+			std::visit([&](auto& entry) {
+				entry.creationUnixTime = time;
+			},
+			toc);
+		}
+
 		std::uint32_t GetOffset() const {
 			std::uint32_t size {};
 

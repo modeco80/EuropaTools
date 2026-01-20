@@ -6,6 +6,15 @@
 # SPDX-License-Identifier: MIT
 #
 
+FetchContent_Declare(daw_json_link
+        GIT_REPOSITORY https://github.com/beached/daw_json_link.git
+		# latest released version as of 8/4/25
+		GIT_TAG v3.30.2
+		GIT_PROGRESS ON
+        )
+
+FetchContent_MakeAvailable(daw_json_link)
+
 add_executable(eupak
 		main.cpp
 		Utils.cpp
@@ -20,6 +29,7 @@ target_link_libraries(eupak PUBLIC
 		europa
 		toollib
 		indicators::indicators
+		daw::json_link
 		)
 
 configure_file(EupakConfig.hpp.in

@@ -29,26 +29,28 @@ namespace europa::io::pak {
 
 		using FlattenedType = std::pair<std::string, File>;
 
+		/// Manifest data structure.
+		struct Manifest {
+			explicit Manifest(std::vector<FlattenedType>& files, std::vector<std::string>& tocOrder)
+			: files(files), tocOrder(tocOrder) {
+			}
+
+			structs::PakVersion version;
+			std::uint32_t creationUnixTime;
+			SectorAlignment sectorAlignment { SectorAlignment::DoNotAlign };
+			std::vector<FlattenedType>& files;
+			std::vector<std::string>& tocOrder;
+		};
+
 		constexpr Writer() = default;
 
-		Writer(structs::PakVersion version) {
-			SetVersion(version);
-		}
-
-		/// Initalize for the given package version.
-		void SetVersion(structs::PakVersion version);
-
 		/// Write archive to the given output stream.
-		/// [vec] is all files which should be packaged
 		/// [sink] is a implementation of PakProgressReportsSink which should get events (TODO: Make this optional)
-		/// [sectorAlignment] controls sector alignment. It is ignored unless the package's version is [structs::PakVersion::Ver5].
-		void Write(mco::WritableStream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment = SectorAlignment::DoNotAlign);
+		void Write(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest);
 
 	   private:
 		template <class T>
-		void WriteImpl(mco::WritableStream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment);
-
-		structs::PakVersion version {};
+		void WriteImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest);
 	};
 
 } // namespace europa::io::pak
