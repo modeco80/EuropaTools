@@ -9,19 +9,19 @@
 #ifndef EUROPA_TOOLS_STREAMUTILS_H
 #define EUROPA_TOOLS_STREAMUTILS_H
 
-#include <iostream>
+#include <mco/io/stream.hpp>
 #include <string>
 
 namespace europa::io::impl {
 
 	namespace detail {
-		void ReadStreamTypeImpl(std::istream& is, char* buffer, std::size_t size);
-		void WriteStreamTypeImpl(std::ostream& os, const char* buffer, std::size_t buffer_size);
+		void ReadStreamTypeImpl(mco::Stream& is, char* buffer, std::size_t size);
+		void WriteStreamTypeImpl(mco::WritableStream& os, const char* buffer, std::size_t buffer_size);
 	} // namespace detail
 
 	// This is lame. But it works :)
 	template <class T>
-	constexpr T ReadStreamType(std::istream& is) {
+	constexpr T ReadStreamType(mco::Stream& is) {
 		T object {};
 
 		// Absolutely UB.
@@ -38,7 +38,7 @@ namespace europa::io::impl {
 	}
 
 	template <class T>
-	constexpr void WriteStreamType(std::ostream& os, const T& object) {
+	constexpr void WriteStreamType(mco::WritableStream& os, const T& object) {
 		// Absolutely UB.
 		union Hack {
 			const T* t;
@@ -50,13 +50,10 @@ namespace europa::io::impl {
 		detail::WriteStreamTypeImpl(os, address.c, sizeof(T));
 	}
 
-	std::string ReadZeroTerminatedString(std::istream& is);
-	std::string ReadPString(std::istream& is);
+	std::string ReadZeroTerminatedString(mco::Stream& is);
+	std::string ReadPString(mco::Stream& is);
 
-	void WritePString(std::ostream& os, const std::string& string);
-
-	/// Tees a input stream to an output stream until the input stream signals EOF.
-	void TeeInOut(std::istream& is, std::ostream& os);
+	void WritePString(mco::WritableStream& os, const std::string& string);
 
 } // namespace europa::io::impl
 

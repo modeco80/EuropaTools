@@ -10,4 +10,4 @@ target_link_libraries(toollib PUBLIC
 
 target_include_directories(toollib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-europa_target(toollib)
+mco_target(toollib)

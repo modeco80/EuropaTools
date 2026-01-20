@@ -16,7 +16,7 @@
 
 namespace europa::io::yatf {
 
-	Reader::Reader(std::istream& is)
+	Reader::Reader(mco::Stream& is)
 		: stream(is) {
 	}
 

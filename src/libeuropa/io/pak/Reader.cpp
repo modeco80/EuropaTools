@@ -18,7 +18,78 @@
 
 namespace europa::io::pak {
 
-	Reader::Reader(std::istream& is)
+	// FIXME: Expose this exception..
+	struct ReaderInvalidPath : public std::exception {
+		const char* what() const noexcept override {
+			return "no such path in package file";
+		}
+	};
+
+	Reader::OpenedFile::OpenedFile(mco::Stream& source, File& file)
+		: source(source), file(file) {
+		virtualPosition = 0;
+	}
+
+	bool Reader::OpenedFile::isRandomAccess() const noexcept { return true; }
+
+	u64 Reader::OpenedFile::read(void* buffer, u64 length) {
+		const auto fileSize = file.GetSize();
+
+		// just to be sure!
+		seek(virtualPosition, mco::Stream::Begin);
+
+		// EOF handling
+		if(virtualPosition >= fileSize) {
+			return 0;
+		}
+
+		std::size_t readCount = length;
+		if(virtualPosition + length > fileSize)
+			readCount = fileSize - virtualPosition;
+
+		auto nRead = source.read(buffer, readCount);
+		virtualPosition += nRead;
+		return nRead;
+	}
+
+	i64 Reader::OpenedFile::tell() {
+		return virtualPosition;
+	}
+
+	i64 Reader::OpenedFile::seek(i64 offset, Whence whence) {
+		std::uint64_t target = 0;
+		switch(whence) {
+			case mco::Stream::Begin:
+				target = offset;
+				break;
+			case mco::Stream::Current:
+				target = virtualPosition + offset;
+				break;
+			case mco::Stream::End:
+				if(offset > 0)
+					return -1;
+				target = file.GetSize() + offset;
+				break;
+		}
+
+		if(target > file.GetSize()) {
+			// too far
+			return -1;
+		}
+
+		source.seek(file.GetOffset() + target, mco::Stream::Begin);
+		virtualPosition = target;
+		return virtualPosition;
+	}
+
+	u64 Reader::OpenedFile::getSize() {
+		return file.GetSize();
+	}
+
+
+	/// Reader
+
+	Reader::Reader(mco::Stream& is)
 		: stream(is) {
 	}
 
@@ -27,12 +98,12 @@ namespace europa::io::pak {
 		auto header_type = impl::ReadStreamType<T>(stream);
 
 		if(!header_type.Valid()) {
-			invalid = true;
-			return;
+			throw std::runtime_error("Invalid Package file.");
 		}
 
+
 		// Read the archive TOC
-		stream.seekg(header_type.tocOffset, std::istream::beg);
+		stream.seek(header_type.tocOffset, mco::Stream::Begin);
 		for(std::uint32_t i = 0; i < header_type.fileCount; ++i) {
 			// The first part of the TOC entry is always a VLE string,
 			// which we don't store inside the type (because we can't)
@@ -58,9 +129,9 @@ namespace europa::io::pak {
 		header = header_type;
 	}
 
-	void Reader::ReadHeaderAndTOC() {
+	void Reader::init() {
 		auto commonHeader = impl::ReadStreamType<structs::PakHeader_Common>(stream);
-		stream.seekg(0, std::istream::beg);
+		stream.seek(0, mco::Stream::Begin);
 
 		switch(commonHeader.version) {
 			case structs::PakVersion::Ver3:
@@ -77,34 +148,11 @@ namespace europa::io::pak {
 		}
 	}
 
-	void Reader::ReadFiles() {
-		for(auto& [filename, file] : files)
-			ReadFile(filename);
-	}
-
-	void Reader::ReadFile(const std::string& file) {
-		auto it = std::find_if(files.begin(), files.end(), [&file](Reader::FlatType& fl) { return fl.first == file; });
+	Reader::OpenedFile Reader::open(const std::string& path) {
+		auto it = std::find_if(files.begin(), files.end(), [&path](Reader::FlatType& fl) { return fl.first == path; });
 		if(it == files.end())
-			return;
-
-		auto& fileObject = it->second;
-		std::vector<std::uint8_t> buffer;
-
-		buffer.resize(fileObject.GetSize());
-
-		// This file was already read in, or has data
-		// the user may not want to overwrite.
-		if(fileObject.HasData())
-			return;
-
-		stream.seekg(fileObject.GetOffset(), std::istream::beg);
-		stream.read(reinterpret_cast<char*>(&buffer[0]), buffer.size());
-
-		if(!stream)
-			throw std::runtime_error("Stream went bad while trying to read file");
-
-		auto data = FileData::InitAsBuffer(std::move(buffer));
-		fileObject.SetData(std::move(data));
+			throw ReaderInvalidPath();
+		return Reader::OpenedFile(stream, it->second);
 	}
 
 	Reader::MapType& Reader::GetFiles() {

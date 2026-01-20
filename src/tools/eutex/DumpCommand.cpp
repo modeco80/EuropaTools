@@ -13,7 +13,7 @@
 #include <europa/io/yatf/Reader.hpp>
 #include <europa/util/ImageSurface.hpp>
 #include <filesystem>
-#include <fstream>
+#include <mco/io/file_stream.hpp>
 #include <toollib/ToolCommand.hpp>
 
 namespace eutex {
@@ -69,8 +69,7 @@ namespace eutex {
 			}
 
 
-			std::ifstream ifs(inputTexPath.string(), std::ifstream::binary);
-
+			auto ifs = mco::FileStream::open(inputTexPath.string().c_str(), mco::FileStream::Read);
 			yatf::Reader reader(ifs);
 
 			europa::structs::YatfHeader yatfHeader;

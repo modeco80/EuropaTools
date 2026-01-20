@@ -16,4 +16,4 @@ add_executable(jsfscramble jsfscramble.cpp)
 target_link_libraries(jsfscramble PUBLIC
 		europa
 		)
-europa_target(jsfscramble)
+mco_target(jsfscramble)

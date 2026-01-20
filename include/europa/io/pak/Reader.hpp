@@ -9,31 +9,53 @@
 #ifndef EUROPA_IO_PAKREADER_H
 #define EUROPA_IO_PAKREADER_H
 
+#include <mco/io/stream.hpp>
 #include <europa/io/pak/File.hpp>
 #include <europa/structs/Pak.hpp>
-#include <iosfwd>
 #include <string>
 
 namespace europa::io::pak {
 
-	/// Reader for Europa package files (.pak).
+	/// Low-level reader for Europa package files (.pak).
 	struct Reader {
 		using FlatType = std::pair<std::string, File>;
 		using MapType = std::vector<FlatType>;
 
+		// TODO (since I'll need to add it in mcolib itself):
+		// OpenedFile at a later time will have to clone the stream
+		// to stay concurrent-safe. For now, this doesn't matter,
+		// but for later (e.g: threaded extraction, so on...), it
+		// is something to note
+
+		/// An opened package file.
+		struct OpenedFile : mco::Stream {
+			// Stream
+			bool isRandomAccess() const noexcept override;
+
+			u64 read(void* buffer, u64 length) override;
+
+			i64 tell() override;
+			i64 seek(i64 offset, Whence whence) override;
+			u64 getSize() override;
+
+		private:
+			friend Reader;
+			OpenedFile(mco::Stream& source, File& file);
+
+			mco::Stream& source;
+			File& file;
+			std::size_t virtualPosition;
+		};
+
 		/// Constructor. Takes in a input stream to read pak data from.
 		/// This stream should only be used by the PakReader, nothing else.
-		explicit Reader(std::istream& is);
+		explicit Reader(mco::Stream& is);
 
-		/// Reads the header and the file TOC.
-		/// This function should be called first.
-		void ReadHeaderAndTOC();
+		/// Initialize the package reader.
+		void init();
 
-		/// Reads all files in the package.
-		void ReadFiles();
-
-		/// Reads a file with the path specified as [file].
-		void ReadFile(const std::string& file);
+		/// Opens a file at [path].
+		OpenedFile open(const std::string& path);
 
 		bool Invalid() const {
 			return invalid;
@@ -50,7 +72,7 @@ namespace europa::io::pak {
 		template <class T>
 		void ReadHeaderAndTOCImpl();
 
-		std::istream& stream;
+		mco::Stream& stream;
 		bool invalid { false };
 
 		structs::PakHeaderVariant header {};
