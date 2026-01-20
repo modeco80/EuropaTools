@@ -1,7 +1,7 @@
 #
 # EuropaTools
 #
-# (C) 2021-2025 modeco80 <lily.modeco80@protonmail.ch>
+# (C) 2021-2026 modeco80 <lily.modeco80@protonmail.ch>
 #
 # SPDX-License-Identifier: MIT
 #
