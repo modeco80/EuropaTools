@@ -9,7 +9,8 @@
 #include <CommonDefs.hpp>
 #include <EupakConfig.hpp>
 #include <europa/io/pak/Reader.hpp>
-#include <fstream>
+#include <mco/io/file_stream.hpp>
+#include <mco/io/stream_utils.hpp>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
@@ -71,16 +72,10 @@ namespace eupak {
 			std::cout << "Input PAK/PMDL: " << currentArgs.inputPath << '\n';
 			std::cout << "Output Directory: " << currentArgs.outputDirectory << '\n';
 
-			std::ifstream ifs(currentArgs.inputPath.string(), std::ifstream::binary);
-
-			if(!ifs) {
-				std::cout << "Error: Could not open file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
+			auto ifs = mco::FileStream::open(currentArgs.inputPath.string().c_str(), mco::FileStream::Read);
 
 			eio::pak::Reader reader(ifs);
-
-			reader.ReadHeaderAndTOC();
+			reader.init();
 
 			if(reader.Invalid()) {
 				std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
@@ -119,31 +114,16 @@ namespace eupak {
 				if(!fs::exists(outpath.parent_path()))
 					fs::create_directories(outpath.parent_path());
 
-				std::ofstream ofs(outpath.string(), std::ofstream::binary);
-
-				if(!ofs) {
-					std::cerr << "Could not open " << outpath << " for writing.\n";
-					continue;
-				}
+				auto ofs = mco::FileStream::open(outpath.string().c_str(), mco::FileStream::ReadWrite | mco::FileStream::Create);
 
 				if(currentArgs.verbose) {
 					std::cerr << "Extracting file \"" << filename << "\"...\n";
 				}
 
-				reader.ReadFile(filename);
-
 				{
-					auto& fileData = file.GetData();
-					if(auto* buffer = fileData.GetIf<std::vector<std::uint8_t>>(); buffer) {
-						ofs.write(reinterpret_cast<const char*>((*buffer).data()), (*buffer).size());
-						ofs.flush();
-					} else {
-						throw std::runtime_error("???? why are we getting paths here?");
-					}
+					auto fileStream = reader.open(filename);
+					mco::teeStreams(fileStream, ofs, fileStream.getSize());
 				}
-
-				// We no longer need the file data anymore, so let's purge it to save memory
-				file.PurgeData();
 
 				progress.tick();
 			}

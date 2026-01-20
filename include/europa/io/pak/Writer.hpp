@@ -9,6 +9,7 @@
 #ifndef EUROPA_IO_PAKWRITER_H
 #define EUROPA_IO_PAKWRITER_H
 
+#include <mco/io/stream.hpp>
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
 #include <europa/structs/Pak.hpp>
@@ -41,11 +42,11 @@ namespace europa::io::pak {
 		/// [vec] is all files which should be packaged
 		/// [sink] is a implementation of PakProgressReportsSink which should get events (TODO: Make this optional)
 		/// [sectorAlignment] controls sector alignment. It is ignored unless the package's version is [structs::PakVersion::Ver5].
-		void Write(std::ostream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment = SectorAlignment::DoNotAlign);
+		void Write(mco::WritableStream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment = SectorAlignment::DoNotAlign);
 
 	   private:
 		template <class T>
-		void WriteImpl(std::ostream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment);
+		void WriteImpl(mco::WritableStream& os, std::vector<FlattenedType>&& vec, WriterProgressReportSink& sink, SectorAlignment sectorAlignment);
 
 		structs::PakVersion version {};
 	};

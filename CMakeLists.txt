@@ -19,14 +19,7 @@ project(EuropaTools
         DESCRIPTION "Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter)"
         )
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-
-include(Policies)
-include(ProjectFuncs)
-include(CompilerFlags)
-
 include(FetchContent)
-
 include(GNUInstallDirs)
 
 # declare dependencies

@@ -1,5 +1,7 @@
 /.cache
 build/
+# TEMP
+/ref
 
 # swap
 *.kate-swp

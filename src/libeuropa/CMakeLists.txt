@@ -24,4 +24,8 @@ add_library(europa
 
 target_include_directories(europa PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-europa_target(europa)
+target_link_libraries(europa PUBLIC
+	mco::io
+)
+
+mco_target(europa)

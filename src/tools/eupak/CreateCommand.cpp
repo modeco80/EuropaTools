@@ -14,7 +14,7 @@
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/Writer.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
-#include <fstream>
+#include <mco/io/file_stream.hpp>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
@@ -244,24 +244,25 @@ namespace eupak {
 				files.emplace_back(std::make_pair(relativePathName, std::move(file)));
 			}
 
-			std::ofstream ofs(currentArgs.outputFile.string(), std::ofstream::binary);
+			try {
+				auto ofs = mco::FileStream::open(currentArgs.outputFile.string().c_str(), mco::FileStream::ReadWrite | mco::FileStream::Create);
 
-			if(!ofs) {
-				std::cout << "Error: Couldn't open " << currentArgs.outputFile << " for writing\n";
+
+				CreateArchiveReportSink reportSink(fileCount);
+				eio::pak::Writer writer(currentArgs.pakVersion);
+
+				using enum eio::pak::Writer::SectorAlignment;
+
+				eio::pak::Writer::SectorAlignment alignment = DoNotAlign;
+
+				if(currentArgs.sectorAligned)
+					alignment = Align;
+
+				writer.Write(ofs, std::move(files), reportSink, alignment);
+			} catch(std::exception& ex) {
+				std::cout << "Caught exception: " << ex.what() << "\n";
 				return 1;
 			}
-
-			CreateArchiveReportSink reportSink(fileCount);
-			eio::pak::Writer writer(currentArgs.pakVersion);
-
-			using enum eio::pak::Writer::SectorAlignment;
-
-			eio::pak::Writer::SectorAlignment alignment = DoNotAlign;
-
-			if(currentArgs.sectorAligned)
-				alignment = Align;
-
-			writer.Write(ofs, std::move(files), reportSink, alignment);
 			return 0;
 		}
 

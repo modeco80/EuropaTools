@@ -11,7 +11,7 @@
 #include <EupakConfig.hpp>
 #include <europa/io/pak/Reader.hpp>
 #include <filesystem>
-#include <fstream>
+#include <mco/io/file_stream.hpp>
 #include <iostream>
 #include <toollib/ToolCommand.hpp>
 #include <Utils.hpp>
@@ -67,17 +67,11 @@ namespace eupak {
 		}
 
 		int Run() override {
-			std::ifstream ifs(currentArgs.inputPath.string(), std::ifstream::binary);
-
-			if(!ifs) {
-				std::cout << "Error: Could not open file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
-
+			auto ifs = mco::FileStream::open(currentArgs.inputPath.string().c_str(), mco::FileStream::Read);
 			eio::pak::Reader reader(ifs);
 
-			reader.ReadHeaderAndTOC();
-
+			// TODO
+			reader.init();
 			if(reader.Invalid()) {
 				std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
 				return 1;

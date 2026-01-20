@@ -1,3 +1,6 @@
 [submodule "third_party/lodepng"]
 	path = third_party/lodepng
 	url = https://github.com/lvandeve/lodepng
+[submodule "third_party/mcolib"]
+	path = third_party/mcolib
+	url = https://github.com/modeco80/mcolib.git

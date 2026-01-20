@@ -15,25 +15,23 @@ namespace europa::io::impl {
 
 	namespace detail {
 
-		void ReadStreamTypeImpl(std::istream& is, char* buffer, std::size_t size) {
-			if(!is)
-				throw std::runtime_error("stream is bad");
-
-			is.read(&buffer[0], size);
+		void ReadStreamTypeImpl(mco::Stream& is, char* buffer, std::size_t size) {
+			if(auto n = is.read(&buffer[0], size); n != size) {
+				throw std::runtime_error("Short/incomplete read!");
+			}
 		}
 
-		void WriteStreamTypeImpl(std::ostream& os, const char* buffer, std::size_t buffer_size) {
-			os.write(&buffer[0], buffer_size);
+		void WriteStreamTypeImpl(mco::WritableStream& os, const char* buffer, std::size_t buffer_size) {
+			if(auto n = os.write(&buffer[0], buffer_size); n != buffer_size) {
+				throw std::runtime_error("Short/incomplete write!");
+			}
 		}
 
 	} // namespace detail
 
-	std::string ReadZeroTerminatedString(std::istream& is) {
+	std::string ReadZeroTerminatedString(mco::Stream& is) {
 		std::string s;
 		char c;
-
-		if(!is)
-			return "";
 
 		while(true) {
 			c = static_cast<char>(is.get());
@@ -45,12 +43,8 @@ namespace europa::io::impl {
 		}
 	}
 
-	std::string ReadPString(std::istream& is) {
+	std::string ReadPString(mco::Stream& is) {
 		std::string s;
-
-		if(!is)
-			return "";
-
 		std::uint32_t length = static_cast<std::uint32_t>(is.get());
 
 		if(length == 0) {
@@ -67,7 +61,7 @@ namespace europa::io::impl {
 		return s;
 	}
 
-	void WritePString(std::ostream& os, const std::string& string) {
+	void WritePString(mco::WritableStream& os, const std::string& string) {
 		if(string.length() >= 255)
 			throw std::invalid_argument("String length too long for WritePString()");
 
@@ -83,12 +77,5 @@ namespace europa::io::impl {
 		os.write(string.data(), string.length() + 1);
 	}
 
-	void TeeInOut(std::istream& is, std::ostream& os) {
-		std::uint8_t buffer[1024] {};
-		while(!is.eof()) {
-			is.read(reinterpret_cast<char*>(&buffer[0]), sizeof(buffer));
-			os.write(reinterpret_cast<char*>(&buffer[0]), is.gcount());
-		}
-	}
 
 } // namespace europa::io::impl

@@ -26,7 +26,7 @@ configure_file(EutexConfig.hpp.in
 target_include_directories(eutex PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(eutex PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-europa_target(eutex)
+mco_target(eutex)
 
 install(TARGETS eutex
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
