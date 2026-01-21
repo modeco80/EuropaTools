@@ -6,7 +6,7 @@ namespace europa::util {
 
 	template <class To, class From>
 	struct IntoImpl {
-		constexpr static To DoInto(const From& from) {
+		constexpr static To doInto(const From& from) {
 			// The default implentation assumes that the To type has a constructor which
 			// can initalize it from a value of From const&.
 			return To(from);
@@ -16,7 +16,7 @@ namespace europa::util {
 	/// Into() support for vectors of items.
 	template <class To, class From>
 	struct IntoImpl<std::vector<To>, std::vector<From>> {
-		constexpr static std::vector<To> DoInto(const std::vector<From>& from) {
+		constexpr static std::vector<To> doInto(const std::vector<From>& from) {
 			// FIXME: Ranges could make this less stupid
 			auto vec = std::vector<To> {};
 			vec.resize(from.size());
@@ -41,7 +41,7 @@ namespace europa::util {
 #define EUROPA_BEGIN_INTO_CONVERSION(To, From)  \
 	template <>                                 \
 	struct ::europa::util::IntoImpl<To, From> { \
-		static To DoInto([[maybe_unused]] const From& from)
+		static To doInto([[maybe_unused]] const From& from)
 
 #define EUROPA_END_INTO_CONVERSION }
 

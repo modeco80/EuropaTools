@@ -40,10 +40,10 @@ namespace europa::structs {
 
 		// For some reason Jedi Starfighter (V2) YATFs use a different fourcc endianness than V1.
 		// When writing we should use the appropiate one.
-		constexpr static auto ValidMagic_V1 = util::FourCC<"YATF", std::endian::big>();
-		constexpr static auto ValidMagic_V2 = util::FourCC<"YATF", std::endian::little>();
+		constexpr static auto ValidMagic_V1 = util::FourCCGenerator<>::template generate<"YATF", std::endian::big>();
+		constexpr static auto ValidMagic_V2 = util::FourCCGenerator<>::template generate<"YATF", std::endian::little>();
 
-		u32 magic;
+		util::FourCC magic;
 
 		Version version;
 
