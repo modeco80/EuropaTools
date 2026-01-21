@@ -36,17 +36,14 @@ namespace europa::io::pak {
 		>;
 		// clang-format on
 
-		///
+		/// Creates an instance of FileData which holds the file data buffer.
 		static FileData newBuffer(std::vector<std::uint8_t>&& buffer) {
-			return FileData {
-				.variant_ = Variant(std::move(buffer))
-			};
+			return FileData(std::move(buffer));
 		}
 
+		/// Creates an instance of FileData which holds only a filesystem path.
 		static FileData newPath(const std::filesystem::path& path) {
-			return FileData {
-				.variant_ = Variant(path)
-			};
+			return FileData(path);
 		}
 
 		std::uint32_t getSize() const {
@@ -81,12 +78,18 @@ namespace europa::io::pak {
 			return std::visit(v, variant_);
 		}
 
-		// private:
+	private:
+		FileData(std::vector<std::uint8_t>&& buffer)
+			: variant_(Variant(std::move(buffer))) {}
+
+		FileData(const std::filesystem::path& path)
+			: variant_(Variant(path)) {}
+
 		FileData::Variant variant_;
 	};
 
-	/// Repressents a package file. Can either hold a memory buffer of contents
-	/// or a filesystem path (for creating packages).
+	/// Repressents a package file. Holds the TOC entry
+	/// and a sum type of file data if being used for creation of a new package.
 	struct File {
 		using DataType = FileData;
 
@@ -122,7 +125,7 @@ namespace europa::io::pak {
 		/**
 		 * Get the file data.
 		 */
-		[[nodiscard]] const DataType& GetData() const {
+		[[nodiscard]] const DataType& getData() const {
 			if(!fileData.has_value())
 				throw std::runtime_error("no file data to get!");
 			return fileData.value();

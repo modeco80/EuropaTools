@@ -109,7 +109,7 @@ namespace europa::io::pak {
 				}
 			}
 
-			auto& fileData = file.GetData();
+			auto& fileData = file.getData();
 
 			// Visit the file data sum type and do the right operation.
 			//
