@@ -28,7 +28,7 @@ namespace europa::io::yatf {
 
 		auto imageSize = util::Size { static_cast<std::uint16_t>(header.width), static_cast<std::uint16_t>(header.height) };
 
-		surface.Resize(imageSize);
+		surface.resize(imageSize);
 
 		// FIXME: merge this code and make it better
 		// i.e: let's share de-palettization between the two.
@@ -41,30 +41,30 @@ namespace europa::io::yatf {
 			switch(header.format) {
 				case kTextureFormatV1_8Bpp: {
 					util::Pixel palette[256] {};
-					util::UniqueArray<std::uint8_t> palettizedData(imageSize.Linear());
+					util::UniqueArray<std::uint8_t> palettizedData(imageSize.linear());
 
 					stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
-					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.Linear());
-					surface.PaintFromSource_8bpp(&palettizedData[0], &palette[0]);
+					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.linear());
+					surface.paintFromSource_8bpp(&palettizedData[0], &palette[0]);
 				} break;
 
 				case kTextureFormatV1_24Bpp: {
-					util::UniqueArray<util::PixelRGB> rgbPixelData(imageSize.Linear());
-					stream.read(reinterpret_cast<char*>(&rgbPixelData[0]), imageSize.LinearWithStride<util::PixelRGB>());
-					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.GetBuffer());
+					util::UniqueArray<util::PixelRGB> rgbPixelData(imageSize.linear());
+					stream.read(reinterpret_cast<char*>(&rgbPixelData[0]), imageSize.linearWithStride<util::PixelRGB>());
+					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.getBuffer());
 
 					for(std::size_t y = 0; y < imageSize.height; ++y) {
 						for(std::size_t x = 0; x < imageSize.width; ++x) {
 							auto& pp = rgbPixelData[y * imageSize.width + x];
 							auto& dst = pDestBuffer[y * imageSize.width + x];
-							dst = util::Pixel::FromPixelRGB(pp);
+							dst = util::Pixel::fromRGB(pp);
 						}
 					}
 				} break;
 
 				case kTextureFormatV1_32Bpp:
 					// We can directly read data
-					stream.read(reinterpret_cast<char*>(surface.GetBuffer()), imageSize.LinearWithStride<util::Pixel>());
+					stream.read(reinterpret_cast<char*>(surface.getBuffer()), imageSize.linearWithStride<util::Pixel>());
 					break;
 
 				default:
@@ -79,39 +79,39 @@ namespace europa::io::yatf {
 			switch(header.format) {
 				case kTextureFormatV2_4Bpp: {
 					util::Pixel palette[16] {};
-					util::UniqueArray<std::uint8_t> palettizedData(imageSize.Linear() / 2);
+					util::UniqueArray<std::uint8_t> palettizedData(imageSize.linear() / 2);
 					stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
-					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.Linear() / 2);
-					surface.PaintFromSource_4bpp(&palettizedData[0], &palette[0]);
+					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.linear() / 2);
+					surface.paintFromSource_4bpp(&palettizedData[0], &palette[0]);
 				} break;
 
 				case kTextureFormatV2_8Bpp: {
 					util::Pixel palette[256] {};
-					util::UniqueArray<std::uint8_t> palettizedData(imageSize.Linear());
+					util::UniqueArray<std::uint8_t> palettizedData(imageSize.linear());
 
 					stream.read(reinterpret_cast<char*>(&palette[0]), sizeof(palette));
-					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.Linear());
+					stream.read(reinterpret_cast<char*>(&palettizedData[0]), imageSize.linear());
 
-					surface.PaintFromSource_8bpp(&palettizedData[0], &palette[0]);
+					surface.paintFromSource_8bpp(&palettizedData[0], &palette[0]);
 				} break;
 
 				case kTextureFormatV2_24Bpp: {
-					util::UniqueArray<util::PixelRGB> rgbPixelData(imageSize.Linear());
-					stream.read(reinterpret_cast<char*>(&rgbPixelData[0]), imageSize.LinearWithStride<util::PixelRGB>());
-					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.GetBuffer());
+					util::UniqueArray<util::PixelRGB> rgbPixelData(imageSize.linear());
+					stream.read(reinterpret_cast<char*>(&rgbPixelData[0]), imageSize.linearWithStride<util::PixelRGB>());
+					auto* pDestBuffer = reinterpret_cast<util::Pixel*>(surface.getBuffer());
 
 					for(std::size_t y = 0; y < imageSize.height; ++y) {
 						for(std::size_t x = 0; x < imageSize.width; ++x) {
 							auto& pp = rgbPixelData[y * imageSize.width + x];
 							auto& dst = pDestBuffer[y * imageSize.width + x];
-							dst = util::Pixel::FromPixelRGB(pp);
+							dst = util::Pixel::fromRGB(pp);
 						}
 					}
 				} break;
 
 				case kTextureFormatV2_32Bpp:
 					// We can directly read data
-					stream.read(reinterpret_cast<char*>(surface.GetBuffer()), imageSize.LinearWithStride<util::Pixel>());
+					stream.read(reinterpret_cast<char*>(surface.getBuffer()), imageSize.linearWithStride<util::Pixel>());
 					break;
 
 				default:

@@ -18,16 +18,16 @@ namespace europa::util {
 		std::uint16_t width;
 		std::uint16_t height;
 
-		constexpr std::size_t Linear() const {
+		constexpr std::size_t linear() const {
 			return static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
 		}
 
 		template <class T>
-		constexpr std::size_t LinearWithStride() const {
+		constexpr std::size_t linearWithStride() const {
 			// We don't cast here since decltype(sizeof(...)) should
 			// always be size_t or a size_t bit-compatible type.
 			// (The C++ standard pretty much enforces #1 however)
-			return Linear() * sizeof(T);
+			return linear() * sizeof(T);
 		}
 	};
 
@@ -49,7 +49,7 @@ namespace europa::util {
 		std::uint8_t b;
 		std::uint8_t a;
 
-		static constexpr Pixel FromPixelRGB(const PixelRGB& rgb) {
+		static constexpr Pixel fromRGB(const PixelRGB& rgb) {
 			return {
 				.r = rgb.r,
 				.g = rgb.g,
@@ -58,7 +58,7 @@ namespace europa::util {
 			};
 		}
 
-		// FIXME: Implement Pixel::FromRgb565 method for 16bpp
+		// FIXME: Implement Pixel::fromRGB565 method for 16bpp
 	};
 
 #ifdef _MSC_VER
@@ -70,13 +70,13 @@ namespace europa::util {
 		ImageSurface();
 		explicit ImageSurface(Size size);
 
-		Size GetSize() const;
+		Size getSize() const;
 
-		std::uint32_t* GetBuffer();
+		std::uint32_t* getBuffer();
 
-		std::uint32_t const* GetBuffer() const;
+		std::uint32_t const* getBuffer() const;
 
-		void Resize(Size newSize);
+		void resize(Size newSize);
 
 		// FIXME: For now, these APIs will work. It may actually make sense 
 		// to have a ImageSurface hold a Unique<IPixelBuffer>, that knows about
@@ -87,11 +87,11 @@ namespace europa::util {
 
 		/// Paint from a 4bpp source.
 		/// Assumes this image has been initalized to the proper size already.
-		void PaintFromSource_4bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
+		void paintFromSource_4bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
 
 		/// Paint from a 8bpp source.
 		/// Assumes this image has been initalized to the proper size already.
-		void PaintFromSource_8bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
+		void paintFromSource_8bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
 
 	   private:
 		UniqueArray<std::uint32_t> imageBuffer;

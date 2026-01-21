@@ -82,9 +82,9 @@ namespace eutex {
 				return 1;
 			}
 
-			auto size = surface.GetSize();
+			auto size = surface.getSize();
 
-			if(auto res = lodepng::encode(outputPngPath.string(), reinterpret_cast<std::uint8_t*>(surface.GetBuffer()), size.width, size.height, LCT_RGBA, 8); res == 0) {
+			if(auto res = lodepng::encode(outputPngPath.string(), reinterpret_cast<std::uint8_t*>(surface.getBuffer()), size.width, size.height, LCT_RGBA, 8); res == 0) {
 				std::cout << "Wrote image to " << outputPngPath << '\n';
 				return 0;
 			} else {
