@@ -93,7 +93,7 @@ namespace europa::io::pak {
 
 		// Write all the file data
 		for(auto& [filename, file] : manifest.files) {
-			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteBegin,
+			sink.onEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteBegin,
 						   filename });
 
 			// Update the offset to where we currently are, since we will be writing the file there.
@@ -111,10 +111,10 @@ namespace europa::io::pak {
 
 			auto& fileData = file.GetData();
 
-			// Visit the file data sum type and do the right operation
-			// For filesystem paths, we open the file and then tee it into the package file
-			// effiently saving a lot of memory usage when packing (trading off some IO overhead,
-			// but hey.)
+			// Visit the file data sum type and do the right operation.
+			//
+			// For filesystem paths, we open the file and then tee it into the package file,
+			// which saves a *lot* of memory usage when packing (trading off some IO overhead.)
 			// For buffers, we just write the buffer.
 
 			// clang-format off
@@ -137,13 +137,13 @@ namespace europa::io::pak {
 					os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Current);
 			}
 
-			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteEnd,
+			sink.onEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteEnd,
 						   filename });
 		}
 
 		pakHeader.tocOffset = static_cast<std::uint32_t>(os.tell());
 
-		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
+		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
 		// Write the TOC
 		for(auto& filename : manifest.tocOrder) {
@@ -158,7 +158,7 @@ namespace europa::io::pak {
 		}
 
 
-		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
+		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
 		pakHeader.fileCount = static_cast<std::uint32_t>(manifest.files.size());
@@ -172,7 +172,7 @@ namespace europa::io::pak {
 		pakHeader.creationUnixTime = manifest.creationUnixTime;
 
 
-		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
+		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
 
 		// As the last step, write the header.
 		os.seek(0, mco::Stream::Begin);

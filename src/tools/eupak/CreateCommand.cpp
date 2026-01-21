@@ -39,7 +39,7 @@ namespace eupak {
 			indicators::show_console_cursor(true);
 		}
 
-		void OnEvent(const PakEvent& event) override {
+		void onEvent(const PakEvent& event) override {
 			using enum PakEvent::EventCode;
 			switch(event.eventCode) {
 				case WritingHeader:
@@ -59,7 +59,7 @@ namespace eupak {
 			}
 		}
 
-		void OnEvent(const FileEvent& event) override {
+		void onEvent(const FileEvent& event) override {
 			using enum FileEvent::EventCode;
 			switch(event.eventCode) {
 				case FileWriteBegin:
