@@ -16,7 +16,8 @@
 
 namespace europa::io::pak {
 
-	/// Low-level reader for Europa package files (.pak).
+	/// Reader for Europa package files (.pak). Provides a mcolib stream for
+	/// opened package files.
 	struct Reader {
 		using FlatType = std::pair<std::string, File>;
 		using MapType = std::vector<FlatType>;
@@ -25,7 +26,8 @@ namespace europa::io::pak {
 		// OpenedFile at a later time will have to clone the stream
 		// to stay concurrent-safe. For now, this doesn't matter,
 		// but for later (e.g: threaded extraction, so on...), it
-		// is something to note
+		// is something to note. By that point it'll probably have to be
+		// a Ref<Stream> ? At least that's what I'll have Stream::clone() return.
 
 		/// An opened package file.
 		struct OpenedFile : mco::Stream {
@@ -57,16 +59,17 @@ namespace europa::io::pak {
 		/// Opens a file at [path].
 		OpenedFile open(const std::string& path);
 
-		MapType& GetFiles();
-		const MapType& GetFiles() const;
+		/// Gets const access to all package files.
+		const MapType& getPackageFiles() const;
 
-		const structs::PakHeaderVariant& GetHeader() const {
+		/// Gets const access to the package header.
+		const structs::PakHeaderVariant& getPackageHeader() const {
 			return header;
 		}
 
 	   private:
 		template <class T>
-		void ReadHeaderAndTOCImpl();
+		void initImpl();
 
 		mco::Stream& stream;
 

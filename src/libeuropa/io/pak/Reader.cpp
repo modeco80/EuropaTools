@@ -94,14 +94,14 @@ namespace europa::io::pak {
 	}
 
 	template <class T>
-	void Reader::ReadHeaderAndTOCImpl() {
+	void Reader::initImpl() {
+		// Read the header. If this fails, or it's invalid, give up.
 		auto pakHeader = impl::ReadStreamType<T>(stream);
-
 		if(!pakHeader.valid()) {
 			throw std::runtime_error("Invalid Package file.");
 		}
 
-		// Read the archive TOC
+		// Read the archive TOC.
 		stream.seek(pakHeader.tocOffset, mco::Stream::Begin);
 		for(std::uint32_t i = 0; i < pakHeader.fileCount; ++i) {
 			// The first part of the TOC entry is always a VLE string,
@@ -133,13 +133,13 @@ namespace europa::io::pak {
 
 		switch(commonHeader.version) {
 			case structs::PakVersion::Ver3:
-				ReadHeaderAndTOCImpl<structs::PakHeader_V3>();
+				initImpl<structs::PakHeader_V3>();
 				break;
 			case structs::PakVersion::Ver4:
-				ReadHeaderAndTOCImpl<structs::PakHeader_V4>();
+				initImpl<structs::PakHeader_V4>();
 				break;
 			case structs::PakVersion::Ver5:
-				ReadHeaderAndTOCImpl<structs::PakHeader_V5>();
+				initImpl<structs::PakHeader_V5>();
 				break;
 			default:
 				return;
@@ -153,11 +153,7 @@ namespace europa::io::pak {
 		return Reader::OpenedFile(stream, it->second);
 	}
 
-	Reader::MapType& Reader::GetFiles() {
-		return files;
-	}
-
-	const Reader::MapType& Reader::GetFiles() const {
+	const Reader::MapType& Reader::getPackageFiles() const {
 		return files;
 	}
 

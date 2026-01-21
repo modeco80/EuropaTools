@@ -92,10 +92,9 @@ namespace eupak {
 				}
 
 				printf("\n");
-			},
-					   reader.GetHeader());
+			}, reader.getPackageHeader());
 
-			for(auto& [filename, file] : reader.GetFiles()) {
+			for(const auto& [filename, file] : reader.getPackageFiles()) {
 				file.visitTOCEntry([&](auto& tocEntry) {
 					std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
 

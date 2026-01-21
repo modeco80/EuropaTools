@@ -202,6 +202,11 @@ namespace europa::io::pak {
 			return std::visit(cb, toc);
 		}
 
+		template <class Visitor>
+		auto visitTOCEntry(Visitor&& cb) const {
+			return std::visit(cb, toc);
+		}
+
 	   private:
 		// FIXME: Are these `friend`s required? I don't think so,
 		// we use public APIs now.

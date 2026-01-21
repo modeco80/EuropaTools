@@ -140,10 +140,12 @@ namespace eupak {
 			eio::pak::Reader reader(ifs);
 			reader.init();
 
+			auto& files = reader.getPackageFiles();
+
 			indicators::ProgressBar progress {
 				indicators::option::BarWidth { 50 },
 				indicators::option::ForegroundColor { indicators::Color::green },
-				indicators::option::MaxProgress { reader.GetFiles().size() },
+				indicators::option::MaxProgress { files.size() },
 				indicators::option::ShowPercentage { true },
 				indicators::option::ShowElapsedTime { true },
 				indicators::option::ShowRemainingTime { true },
@@ -157,9 +159,9 @@ namespace eupak {
 				fs::create_directories(currentArgs.outputDirectory);
 
 			// Create the manifest file.
-			createManifest(reader.GetHeader(), reader.GetFiles());
+			createManifest(reader.getPackageHeader(), files);
 
-			for(auto& [filename, file] : reader.GetFiles()) {
+			for(auto& [filename, file] : files) {
 				auto nameCopy = filename;
 
 #ifndef _WIN32
