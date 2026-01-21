@@ -19,7 +19,7 @@ if(WIN32 AND MSVC)
 endif()
 
 project(EuropaTools
-        VERSION 0.5.0
+        VERSION 0.8.0
         LANGUAGES C CXX
         DESCRIPTION "Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter)"
         )
