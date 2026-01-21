@@ -57,10 +57,6 @@ namespace europa::io::pak {
 		/// Opens a file at [path].
 		OpenedFile open(const std::string& path);
 
-		bool Invalid() const {
-			return invalid;
-		}
-
 		MapType& GetFiles();
 		const MapType& GetFiles() const;
 
@@ -73,7 +69,6 @@ namespace europa::io::pak {
 		void ReadHeaderAndTOCImpl();
 
 		mco::Stream& stream;
-		bool invalid { false };
 
 		structs::PakHeaderVariant header {};
 		MapType files;

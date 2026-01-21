@@ -140,11 +140,6 @@ namespace eupak {
 			eio::pak::Reader reader(ifs);
 			reader.init();
 
-			if(reader.Invalid()) {
-				std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
-
 			indicators::ProgressBar progress {
 				indicators::option::BarWidth { 50 },
 				indicators::option::ForegroundColor { indicators::Color::green },

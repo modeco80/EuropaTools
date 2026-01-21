@@ -70,12 +70,8 @@ namespace eupak {
 			auto ifs = mco::FileStream::open(currentArgs.inputPath.string().c_str(), mco::FileStream::Read);
 			eio::pak::Reader reader(ifs);
 
-			// TODO
+			// TODO: toollib should wrap run in a try/catch and or we should wrap this code in it ourselves.
 			reader.init();
-			if(reader.Invalid()) {
-				std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
 
 			std::visit([&](auto& header) {
 				std::string_view version {};
