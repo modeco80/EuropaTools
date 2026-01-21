@@ -1,6 +1,7 @@
 /.cache
 build/
 buildwin/
+*.7z
 
 # swap
 *.kate-swp

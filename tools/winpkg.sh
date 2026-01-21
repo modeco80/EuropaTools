@@ -14,7 +14,7 @@ set -xeuo pipefail
 ninja -C buildwin
 
 # Make a simple version file.
-echo "Version: $(git describe --dirty)" > /tmp/VERSION.txt
+echo "Version: $(git describe --tags --dirty)" > /tmp/VERSION.txt
 echo "Git commit: $(git rev-parse HEAD)" >> /tmp/VERSION.txt
 echo "Git branch: $(git branch --show-current)" >> /tmp/VERSION.txt
 dos2unix /tmp/VERSION.txt
