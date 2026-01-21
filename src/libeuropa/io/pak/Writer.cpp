@@ -88,7 +88,7 @@ namespace europa::io::pak {
 		if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 			// Align the first file to start on the next sector boundary.
 			if(manifest.sectorAlignment == SectorAlignment::Align)
-				os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Begin);
+				os.seek(util::alignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Begin);
 		}
 
 		// Write all the file data
@@ -134,7 +134,7 @@ namespace europa::io::pak {
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 				// Align to the next sector boundary.
 				if(manifest.sectorAlignment == SectorAlignment::Align)
-					os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Current);
+					os.seek(util::alignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Current);
 			}
 
 			sink.onEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteEnd,
