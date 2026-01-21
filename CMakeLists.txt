@@ -13,6 +13,11 @@ if(" ${CMAKE_SOURCE_DIR}" STREQUAL " ${CMAKE_BINARY_DIR}")
     message(FATAL_ERROR "In-source builds are strictly prohibited.")
 endif()
 
+# Later on I think it might be a good idea to do clang-cl, but mingw's fine too.
+if(WIN32 AND MSVC)
+        message(FATAL_ERROR "Windows is only supported with the MinGW toolchain.")
+endif()
+
 project(EuropaTools
         VERSION 0.5.0
         LANGUAGES C CXX

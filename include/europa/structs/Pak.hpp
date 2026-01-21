@@ -26,10 +26,6 @@ namespace europa::structs {
 	};
 
 	
-#ifdef _MSC_VER
-	#pragma pack(push, 1)
-#endif
-
 	struct [[gnu::packed]] PakHeader_Common {
 		char magic[16]; // "Europa Packfile\0"
 
@@ -155,10 +151,6 @@ namespace europa::structs {
 	};
 
 #undef IMPL_BRINGIN
-
-#ifdef _MSC_VER
-	#pragma pack(pop)
-#endif
 
 	using PakHeaderVariant = std::variant<
 	structs::PakHeader_V3,
