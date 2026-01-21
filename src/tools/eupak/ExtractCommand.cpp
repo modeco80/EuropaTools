@@ -56,15 +56,15 @@ namespace eupak {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("extract");
 		}
 
-		int Parse() override {
+		int parse() override {
 			currentArgs.verbose = parser.get<bool>("--verbose");
 			currentArgs.inputPath = eupak::fs::path(parser.get("input"));
 
@@ -107,7 +107,7 @@ namespace eupak {
 			// Sort our clone of the file table to the order which files were actually written.
 			// The files "map" is in TOC order (which can differ to the actual file placement), so we do not need to do anything with that.
 			std::sort(fileOrderedClone.begin(), fileOrderedClone.end(), [](const auto& f1, const auto& f2) {
-				return f1.second.GetOffset() < f2.second.GetOffset();
+				return f1.second.getOffset() < f2.second.getOffset();
 			});
 
 			for(auto& [filename, file] : files) {
@@ -121,7 +121,7 @@ namespace eupak {
 				root.files.push_back(ManifestFile {
 					.path = filename,
 					.sourcePath = outpath.string(),
-									 .creationTime = file.GetCreationUnixTime() });
+									 .creationTime = file.getCreationUnixTime() });
 			}
 
 			// Serialize the JSON to the manifest file.
@@ -131,7 +131,7 @@ namespace eupak {
 			fh.write(reinterpret_cast<const std::uint8_t*>(dump.data()), dump.size());
 		}
 
-		int Run() override {
+		int run() override {
 			std::cout << "Input PAK/PMDL: " << currentArgs.inputPath << '\n';
 			std::cout << "Output Directory: " << currentArgs.outputDirectory << '\n';
 
@@ -140,15 +140,12 @@ namespace eupak {
 			eio::pak::Reader reader(ifs);
 			reader.init();
 
-			if(reader.Invalid()) {
-				std::cout << "Error: Invalid PAK/PMDL file " << currentArgs.inputPath << ".\n";
-				return 1;
-			}
+			auto& files = reader.getPackageFiles();
 
 			indicators::ProgressBar progress {
 				indicators::option::BarWidth { 50 },
 				indicators::option::ForegroundColor { indicators::Color::green },
-				indicators::option::MaxProgress { reader.GetFiles().size() },
+				indicators::option::MaxProgress { files.size() },
 				indicators::option::ShowPercentage { true },
 				indicators::option::ShowElapsedTime { true },
 				indicators::option::ShowRemainingTime { true },
@@ -162,9 +159,9 @@ namespace eupak {
 				fs::create_directories(currentArgs.outputDirectory);
 
 			// Create the manifest file.
-			createManifest(reader.GetHeader(), reader.GetFiles());
+			createManifest(reader.getPackageHeader(), files);
 
-			for(auto& [filename, file] : reader.GetFiles()) {
+			for(auto& [filename, file] : files) {
 				auto nameCopy = filename;
 
 #ifndef _WIN32

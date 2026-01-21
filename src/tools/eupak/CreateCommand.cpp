@@ -39,7 +39,7 @@ namespace eupak {
 			indicators::show_console_cursor(true);
 		}
 
-		void OnEvent(const PakEvent& event) override {
+		void onEvent(const PakEvent& event) override {
 			using enum PakEvent::EventCode;
 			switch(event.eventCode) {
 				case WritingHeader:
@@ -59,7 +59,7 @@ namespace eupak {
 			}
 		}
 
-		void OnEvent(const FileEvent& event) override {
+		void onEvent(const FileEvent& event) override {
 			using enum FileEvent::EventCode;
 			switch(event.eventCode) {
 				case FileWriteBegin:
@@ -112,15 +112,15 @@ namespace eupak {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("create");
 		}
 
-		int Parse() override {
+		int parse() override {
 			currentArgs.verbose = parser.get<bool>("--verbose");
 			currentArgs.inputManifest = fs::path(parser.get("--manifest"));
 			currentArgs.outputFile = fs::path(parser.get("output"));
@@ -167,7 +167,7 @@ namespace eupak {
 			return 0;
 		}
 
-		int Run() override {
+		int run() override {
 			const auto& jsonManifest = currentArgs.manifest;
 			auto fileCount = jsonManifest.files.size();
 
@@ -195,13 +195,13 @@ namespace eupak {
 			// Create eio pak files from the manifest data.
 			for(auto& ent : jsonManifest.files) {
 				eio::pak::File file;
-				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.sourcePath);
+				eio::pak::FileData pakData = eio::pak::FileData::newPath(ent.sourcePath);
 
-				file.InitAs(eioManifest.version, jsonManifest.alignment.value_or(DoNotAlign) == Align);
+				file.init(eioManifest.version, jsonManifest.alignment.value_or(DoNotAlign) == Align);
 
 				// Add data
-				file.SetData(std::move(pakData));
-				file.SetCreationUnixTime(ent.creationTime.value_or(0));
+				file.setData(std::move(pakData));
+				file.setCreationUnixTime(ent.creationTime.value_or(0));
 				files.emplace_back(std::make_pair(ent.path, std::move(file)));
 			}
 
@@ -218,7 +218,7 @@ namespace eupak {
 				eio::pak::Writer writer;
 
 				// Do it.
-				writer.Write(ofs, reportSink, eioManifest);
+				writer.writePackage(ofs, reportSink, eioManifest);
 			} catch(std::exception& ex) {
 				std::cout << "Caught exception: " << ex.what() << "\n";
 				return 1;

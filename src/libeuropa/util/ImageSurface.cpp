@@ -6,31 +6,31 @@ namespace europa::util {
 	}
 
 	ImageSurface::ImageSurface(Size size) {
-		Resize(size);
+		resize(size);
 	}
 
-	Size ImageSurface::GetSize() const {
+	Size ImageSurface::getSize() const {
 		return size;
 	}
 
-	void ImageSurface::Resize(Size newSize) {
-		imageBuffer.Resize(newSize.Linear());
+	void ImageSurface::resize(Size newSize) {
+		imageBuffer.resize(newSize.linear());
 		size = newSize;
 	}
 
-	std::uint32_t* ImageSurface::GetBuffer() {
-		return imageBuffer.Data();
+	std::uint32_t* ImageSurface::getBuffer() {
+		return imageBuffer.data();
 	}
 
-	std::uint32_t const* ImageSurface::GetBuffer() const {
-		return imageBuffer.Data();
+	std::uint32_t const* ImageSurface::getBuffer() const {
+		return imageBuffer.data();
 	}
 
-	void ImageSurface::PaintFromSource_4bpp(std::uint8_t const* pSrc, Pixel const* pPalette) {
-		auto* pDestBuffer = reinterpret_cast<util::Pixel*>(imageBuffer.Data());
+	void ImageSurface::paintFromSource_4bpp(std::uint8_t const* pSrc, Pixel const* pPalette) {
+		auto* pDestBuffer = reinterpret_cast<util::Pixel*>(imageBuffer.data());
 
 		// can't really get a better loop to work, so i guess this has to do
-		for(std::size_t y = 0; y < size.Linear() / 2; ++y) {
+		for(std::size_t y = 0; y < size.linear() / 2; ++y) {
 			auto& pp = pSrc[y];
 			for(std::size_t b = 0; b < 2; ++b) {
 				auto col = ((pp & (0x0F << (b * 4))) >> (b * 4));
@@ -39,8 +39,8 @@ namespace europa::util {
 		}
 	}
 
-	void ImageSurface::PaintFromSource_8bpp(std::uint8_t const* pSrc, Pixel const* pPalette) {
-		auto* pDestBuffer = reinterpret_cast<Pixel*>(imageBuffer.Data());
+	void ImageSurface::paintFromSource_8bpp(std::uint8_t const* pSrc, Pixel const* pPalette) {
+		auto* pDestBuffer = reinterpret_cast<Pixel*>(imageBuffer.data());
 
 		for(std::size_t y = 0; y < size.height; ++y) {
 			for(std::size_t x = 0; x < size.width; ++x) {

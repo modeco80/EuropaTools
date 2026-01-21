@@ -16,7 +16,7 @@
 
 namespace eupak {
 
-	std::string FormatUnit(std::uint64_t bytes) {
+	std::string formatUnit(std::uint64_t bytes) {
 		char buf[1024];
 		constexpr auto unit = 1024;
 
@@ -44,7 +44,7 @@ namespace eupak {
 		return buf;
 	}
 
-	std::string FormatUnixTimestamp(std::time_t time, const std::string_view format) {
+	std::string formatUnixTimestamp(std::time_t time, const std::string_view format) {
 		char buf[1024]{};
 		tm tmObject{};
 

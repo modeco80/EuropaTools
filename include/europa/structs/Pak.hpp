@@ -16,7 +16,7 @@
 
 namespace europa::structs {
 
-	constexpr static const char VALID_MAGIC[16] = "Europa Packfile";
+	constexpr static const char PAK_VALID_MAGIC[16] = "Europa Packfile";
 
 	enum class PakVersion : u16 {
 		Invalid = 0xffff,
@@ -33,57 +33,53 @@ namespace europa::structs {
 	struct [[gnu::packed]] PakHeader_Common {
 		char magic[16]; // "Europa Packfile\0"
 
-		/**
-		 * Header size. Doesn't include the magic.
-		 */
-		u8 revision;
-		u8 padding;
+		/// Revision. Seems to be generally written with the magic/signature.
+		u16 revision;
 
+		/// Version.
 		PakVersion version;
 
-		bool Valid() const {
-			return !std::strcmp(magic, VALID_MAGIC);
+		bool valid() const noexcept {
+			return !std::memcmp(magic, PAK_VALID_MAGIC, sizeof(PAK_VALID_MAGIC));
 		}
 	};
 
+	/// Implementation helper template.
 	template <class Impl, PakVersion Version>
 	struct [[gnu::packed]] PakHeader_Impl : PakHeader_Common {
 		constexpr static auto VERSION = Version;
-
-		constexpr static u16 HeaderSize() {
-			return sizeof(Impl) - (sizeof(VALID_MAGIC) - 1);
-		}
 
 		PakHeader_Impl() {
 			// clear any junk
 			memset(this, 0, sizeof(PakHeader_Impl));
 
-			version = Version;
-
-			// Copy important things & set proper revision. I guess
-			std::memcpy(&magic[0], &VALID_MAGIC[0], sizeof(VALID_MAGIC));
+			// Set fields.
+			std::memcpy(&magic[0], &PAK_VALID_MAGIC[0], sizeof(PAK_VALID_MAGIC));
 			revision = 0x1a;
+			version = Version;
 		}
 
 		explicit PakHeader_Impl(const PakHeader_Common& header) {
+			// Copy from the common header.
 			memcpy(&magic[0], &header.magic[0], sizeof(header.magic));
 			version = header.version;
 			revision = header.revision;
 		}
 
-		[[nodiscard]] bool Valid() const noexcept {
-			// Magic must match.
-			if(!reinterpret_cast<const PakHeader_Common*>(this)->Valid())
+		[[nodiscard]] bool valid() const noexcept {
+			if(!reinterpret_cast<const PakHeader_Common*>(this)->valid())
 				return false;
-
 			return version == Version;
 		}
 	};
 
+#define IMPL_BRINGIN(T, Version) \
+	using PakHeader_Impl<T, Version>::VERSION; \
+	using PakHeader_Impl<T, Version>::PakHeader_Impl; \
+	using PakHeader_Impl<T, Version>::valid;
+
 	struct [[gnu::packed]] PakHeader_V3 : public PakHeader_Impl<PakHeader_V3, PakVersion::Ver3> {
-		using PakHeader_Impl<PakHeader_V3, PakVersion::Ver3>::VERSION;
-		using PakHeader_Impl<PakHeader_V3, PakVersion::Ver3>::PakHeader_Impl;
-		using PakHeader_Impl<PakHeader_V3, PakVersion::Ver3>::Valid;
+		IMPL_BRINGIN(PakHeader_V3, PakVersion::Ver3);
 
 		struct [[gnu::packed]] TocEntry {
 			u32 offset;
@@ -93,11 +89,8 @@ namespace europa::structs {
 		};
 
 		u32 tocOffset;
-
 		u32 tocSize;
-
 		u32 fileCount;
-
 		u32 creationUnixTime;
 
 		// Zeroes.
@@ -106,7 +99,7 @@ namespace europa::structs {
 
 
 	struct [[gnu::packed]] PakHeader_V4 : public PakHeader_Impl<PakHeader_V4, PakVersion::Ver4> {
-		using PakHeader_Impl<PakHeader_V4, PakVersion::Ver4>::PakHeader_Impl;
+		IMPL_BRINGIN(PakHeader_V4, PakVersion::Ver4);
 
 		struct [[gnu::packed]] TocEntry {
 			u32 offset;
@@ -115,13 +108,9 @@ namespace europa::structs {
 		};
 
 		u8 pad;
-
 		u32 tocOffset;
-
 		u32 tocSize;
-
 		u32 fileCount;
-
 		u32 creationUnixTime;
 
 		// Zeroes.
@@ -129,7 +118,7 @@ namespace europa::structs {
 	};
 
 	struct [[gnu::packed]] PakHeader_V5 : public PakHeader_Impl<PakHeader_V5, PakVersion::Ver5> {
-		using PakHeader_Impl<PakHeader_V5, PakVersion::Ver5>::PakHeader_Impl;
+		IMPL_BRINGIN(PakHeader_V5, PakVersion::Ver5);
 
 		struct [[gnu::packed]] TocEntry {
 			u32 offset;
@@ -148,11 +137,8 @@ namespace europa::structs {
 		u8 pad;
 
 		u32 tocOffset;
-
 		u32 tocSize;
-
 		u32 fileCount;
-
 		u32 creationUnixTime;
 
 		// Zeroes.
@@ -168,7 +154,8 @@ namespace europa::structs {
 		u8 pad2;
 	};
 
-	
+#undef IMPL_BRINGIN
+
 #ifdef _MSC_VER
 	#pragma pack(pop)
 #endif

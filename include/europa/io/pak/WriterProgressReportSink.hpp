@@ -37,8 +37,8 @@ namespace europa::io::pak {
 
 		virtual ~WriterProgressReportSink() = default;
 
-		virtual void OnEvent(const PakEvent& event) = 0;
-		virtual void OnEvent(const FileEvent& event) = 0;
+		virtual void onEvent(const PakEvent& event) = 0;
+		virtual void onEvent(const FileEvent& event) = 0;
 	};
 
 } // namespace europa::io

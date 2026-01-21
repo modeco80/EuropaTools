@@ -20,39 +20,39 @@ namespace europa::util {
 	struct UniqueArray final {
 		UniqueArray() = default;
 		explicit UniqueArray(std::size_t size) {
-			Resize(size);
+			resize(size);
 		}
 
 		UniqueArray(const UniqueArray&) = delete;
 
 		UniqueArray(UniqueArray&& move) {
 			array = std::move(move.array);
-			size = move.size;
+			mSize = move.mSize;
 
 			// invalidate moved-from array to default state
 			move.array = nullptr;
-			move.size = 0;
+			move.mSize = 0;
 		}
 
 		UniqueArray& operator=(UniqueArray&& move) {
 			array = std::move(move.array);
-			size = move.size;
+			mSize = move.mSize;
 
 			// invalidate moved-from array to default state
 			move.array = nullptr;
-			move.size = 0;
+			move.mSize = 0;
 			return *this;
 		}
 
-		void Resize(std::size_t size) {
+		void resize(std::size_t size) {
 			this->array = std::make_unique<T[]>(size);
-			this->size = size;
+			this->mSize = size;
 		}
 
 		/// Clears this array.
-		void Clear() {
+		void clear() {
 			this->array.reset();
-			this->size = 0;
+			this->mSize = 0;
 		}
 
 		T& operator[](std::size_t index) {
@@ -63,20 +63,20 @@ namespace europa::util {
 			return (array.get())[index];
 		}
 
-		T* Data() {
+		T* data() {
 			return array.get();
 		}
 
-		const T* Data() const {
+		const T* data() const {
 			return array.get();
 		}
 
-		std::size_t Size() const {
-			return size;
+		std::size_t size() const {
+			return mSize;
 		}
 
 	   private:
 		std::unique_ptr<T[]> array {};
-		std::size_t size {};
+		std::size_t mSize {};
 	};
 } // namespace europa::util

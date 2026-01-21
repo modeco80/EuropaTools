@@ -18,13 +18,13 @@ int main(int argc, char** argv) {
 	};
 
 	auto toolCommands = std::vector {
-		tool::ToolCommandFactory::CreateNamed("eupak_create"),
-		tool::ToolCommandFactory::CreateNamed("eupak_extract"),
-		tool::ToolCommandFactory::CreateNamed("eupak_list"),
+		tool::ToolCommandFactory::createNamed("eupak_create"),
+		tool::ToolCommandFactory::createNamed("eupak_extract"),
+		tool::ToolCommandFactory::createNamed("eupak_list"),
 	};
 
 	// clang-format off
-    return tool::ToolMain(info, {
+    return tool::toollibMain(info, {
         .toolCommands = toolCommands,
         .argc = argc,
         .argv = argv

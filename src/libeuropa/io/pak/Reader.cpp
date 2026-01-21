@@ -33,7 +33,7 @@ namespace europa::io::pak {
 	bool Reader::OpenedFile::isRandomAccess() const noexcept { return true; }
 
 	u64 Reader::OpenedFile::read(void* buffer, u64 length) {
-		const auto fileSize = file.GetSize();
+		const auto fileSize = file.getSize();
 
 		// just to be sure!
 		seek(virtualPosition, mco::Stream::Begin);
@@ -68,22 +68,22 @@ namespace europa::io::pak {
 			case mco::Stream::End:
 				if(offset > 0)
 					return -1;
-				target = file.GetSize() + offset;
+				target = file.getSize() + offset;
 				break;
 		}
 
-		if(target > file.GetSize()) {
+		if(target > file.getSize()) {
 			// too far
 			return -1;
 		}
 
-		source.seek(file.GetOffset() + target, mco::Stream::Begin);
+		source.seek(file.getOffset() + target, mco::Stream::Begin);
 		virtualPosition = target;
 		return virtualPosition;
 	}
 
 	u64 Reader::OpenedFile::getSize() {
-		return file.GetSize();
+		return file.getSize();
 	}
 
 
@@ -94,39 +94,37 @@ namespace europa::io::pak {
 	}
 
 	template <class T>
-	void Reader::ReadHeaderAndTOCImpl() {
-		auto header_type = impl::ReadStreamType<T>(stream);
-
-		if(!header_type.Valid()) {
+	void Reader::initImpl() {
+		// Read the header. If this fails, or it's invalid, give up.
+		auto pakHeader = impl::ReadStreamType<T>(stream);
+		if(!pakHeader.valid()) {
 			throw std::runtime_error("Invalid Package file.");
 		}
 
-
-		// Read the archive TOC
-		stream.seek(header_type.tocOffset, mco::Stream::Begin);
-		for(std::uint32_t i = 0; i < header_type.fileCount; ++i) {
+		// Read the archive TOC.
+		stream.seek(pakHeader.tocOffset, mco::Stream::Begin);
+		for(std::uint32_t i = 0; i < pakHeader.fileCount; ++i) {
 			// The first part of the TOC entry is always a VLE string,
-			// which we don't store inside the type (because we can't)
-			//
-			// Read this in first.
+			// which we don't store inside the type (because we can't).
 			auto filename = impl::ReadPString(stream);
+
 			auto file = File {};
 			if constexpr(std::is_same_v<T, structs::PakHeader_V5>) {
 				// Version 5 supports sector aligned packages, which have an additional field in them
 				// (the start LBA of the file), so we need to handle that here.
-				if(header_type.sectorAlignedFlag) {
-					file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry_SectorAligned>(stream));
+				if(pakHeader.sectorAlignedFlag) {
+					file.init(impl::ReadStreamType<typename T::TocEntry_SectorAligned>(stream));
 				} else {
-					file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
+					file.init(impl::ReadStreamType<typename T::TocEntry>(stream));
 				}
 			} else {
-				file.InitWithExistingTocEntry(impl::ReadStreamType<typename T::TocEntry>(stream));
+				file.init(impl::ReadStreamType<typename T::TocEntry>(stream));
 			}
 
 			files.emplace_back(filename, std::move(file));
 		}
 
-		header = header_type;
+		header = pakHeader;
 	}
 
 	void Reader::init() {
@@ -135,13 +133,13 @@ namespace europa::io::pak {
 
 		switch(commonHeader.version) {
 			case structs::PakVersion::Ver3:
-				ReadHeaderAndTOCImpl<structs::PakHeader_V3>();
+				initImpl<structs::PakHeader_V3>();
 				break;
 			case structs::PakVersion::Ver4:
-				ReadHeaderAndTOCImpl<structs::PakHeader_V4>();
+				initImpl<structs::PakHeader_V4>();
 				break;
 			case structs::PakVersion::Ver5:
-				ReadHeaderAndTOCImpl<structs::PakHeader_V5>();
+				initImpl<structs::PakHeader_V5>();
 				break;
 			default:
 				return;
@@ -155,11 +153,7 @@ namespace europa::io::pak {
 		return Reader::OpenedFile(stream, it->second);
 	}
 
-	Reader::MapType& Reader::GetFiles() {
-		return files;
-	}
-
-	const Reader::MapType& Reader::GetFiles() const {
+	const Reader::MapType& Reader::getPackageFiles() const {
 		return files;
 	}
 

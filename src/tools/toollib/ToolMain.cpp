@@ -10,14 +10,14 @@
 #include <toollib/ToolMain.hpp>
 
 namespace tool {
-	int ToolMain(const ToolInfo& toolInfo, const ToolMainInput& mainInput) {
+	int toollibMain(const ToolInfo& toolInfo, const ToolMainInput& mainInput) {
         // :( Again, FUCK argparse.
 		argparse::ArgumentParser parser(std::string(toolInfo.name), std::string(toolInfo.version));
 		parser.add_description(std::string(toolInfo.description));
 
         // Add commands to this parser
 		for(auto& toolCmds : mainInput.toolCommands) {
-            toolCmds->Init(parser);
+            toolCmds->init(parser);
         }
 
 		try {
@@ -39,11 +39,11 @@ namespace tool {
 		}
 
 		for(auto& toolCmds : mainInput.toolCommands) {
-			if(toolCmds->ShouldRun(parser)) {
-				if(auto res = toolCmds->Parse(); res != 0)
+			if(toolCmds->shouldRun(parser)) {
+				if(auto res = toolCmds->parse(); res != 0)
 					return res;
 
-				return toolCmds->Run();
+				return toolCmds->run();
 			}
 		}
 

@@ -40,15 +40,15 @@ namespace eutex {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("dump");
 		}
 
-		int Parse() override {
+		int parse() override {
 			inputTexPath = fs::path(parser.get("input"));
 
 			if(parser.is_used("--output-file")) {
@@ -62,7 +62,7 @@ namespace eutex {
 			return 0;
 		}
 
-		int Run() override {
+		int run() override {
 			if(!fs::is_regular_file(inputTexPath)) {
 				std::cout << "Invalid file " << inputTexPath << "\n";
 				return 1;
@@ -77,14 +77,14 @@ namespace eutex {
 
 			std::cout << "Opening \"" << inputTexPath << "\"\n";
 
-			if(!reader.ReadImage(yatfHeader, surface)) {
+			if(!reader.readImage(yatfHeader, surface)) {
 				std::cout << "Invalid YATF file \"" << inputTexPath << "\"\n";
 				return 1;
 			}
 
-			auto size = surface.GetSize();
+			auto size = surface.getSize();
 
-			if(auto res = lodepng::encode(outputPngPath.string(), reinterpret_cast<std::uint8_t*>(surface.GetBuffer()), size.width, size.height, LCT_RGBA, 8); res == 0) {
+			if(auto res = lodepng::encode(outputPngPath.string(), reinterpret_cast<std::uint8_t*>(surface.getBuffer()), size.width, size.height, LCT_RGBA, 8); res == 0) {
 				std::cout << "Wrote image to " << outputPngPath << '\n';
 				return 0;
 			} else {

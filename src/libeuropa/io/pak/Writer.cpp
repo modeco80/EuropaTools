@@ -33,34 +33,41 @@ namespace europa::io::pak {
 		}
 	}
 
-	void Writer::Write(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
+	void Writer::writePackage(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
 		// Sanity check the manifest.
 		if(manifest.tocOrder.size() != manifest.files.size()) {
 			throw std::runtime_error("Invalid TOC order (doesn't match files)");
 		}
 
+		for(auto& filename : manifest.tocOrder) {
+			auto it = std::find_if(manifest.files.begin(), manifest.files.end(), [&](const auto& el) {
+				return el.first == filename;
+			});
 
-		std::printf("Write() version %d\n", manifest.version);
+			if(it == manifest.files.end()) {
+				throw std::runtime_error("Invalid TOC order (lists files which aren't going to be packed!!!)");
+			}
+		}
 
-		// Depending on the version, do a mix of runtime/compile-time dispatch to the right
-		// package format version we have been told to write.
+		// After sanity checking, do a mix of runtime/compile-time dispatch to the right
+		// package format version we have been told to write, to write the package.
 		switch(manifest.version) {
 			case structs::PakVersion::Ver3:
-				WriteImpl<structs::PakHeader_V3>(os, sink, manifest);
+				writePackageImpl<structs::PakHeader_V3>(os, sink, manifest);
 				break;
 			case structs::PakVersion::Ver4:
-				WriteImpl<structs::PakHeader_V4>(os, sink, manifest);
+				writePackageImpl<structs::PakHeader_V4>(os, sink, manifest);
 				break;
 			case structs::PakVersion::Ver5:
-				WriteImpl<structs::PakHeader_V5>(os, sink, manifest);
+				writePackageImpl<structs::PakHeader_V5>(os, sink, manifest);
 				break;
 			default:
-				throw std::invalid_argument("Invalid version");
+				throw std::invalid_argument("Invalid package version in manifest.");
 		}
 	}
 
 	template <class THeader>
-	void Writer::WriteImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
+	void Writer::writePackageImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
 		// TODO: assert that os.isRandomAccess() == true, since it's the only way
 		// we can function currently.
 		THeader pakHeader {};
@@ -81,45 +88,45 @@ namespace europa::io::pak {
 		if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 			// Align the first file to start on the next sector boundary.
 			if(manifest.sectorAlignment == SectorAlignment::Align)
-				os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Begin);
+				os.seek(util::alignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Begin);
 		}
 
 		// Write all the file data
 		for(auto& [filename, file] : manifest.files) {
-			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteBegin,
+			sink.onEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteBegin,
 						   filename });
 
-			// Update the offset to where we currently are, since we will be writing the file there
-			file.VisitTocEntry([&](auto& tocEntry) {
+			// Update the offset to where we currently are, since we will be writing the file there.
+			file.visitTOCEntry([&](auto& tocEntry) {
 				tocEntry.offset = static_cast<std::uint32_t>(os.tell());
 			});
 
 			// For sector alignment.
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 				if(manifest.sectorAlignment == SectorAlignment::Align) {
-					auto& toc = file.GetTOCEntry<structs::PakHeader_V5::TocEntry_SectorAligned>();
+					auto& toc = file.getTOCEntry<structs::PakHeader_V5::TocEntry_SectorAligned>();
 					toc.startLBA = static_cast<std::uint32_t>((os.tell() / util::kCDSectorSize));
 				}
 			}
 
-			auto& fileData = file.GetData();
+			auto& fileData = file.getData();
 
-			// Visit the file data sum type and do the right operation
-			// For filesystem paths, we open the file and then tee it into the package file
-			// effiently saving a lot of memory usage when packing (trading off some IO overhead,
-			// but hey.)
+			// Visit the file data sum type and do the right operation.
+			//
+			// For filesystem paths, we open the file and then tee it into the package file,
+			// which saves a *lot* of memory usage when packing (trading off some IO overhead.)
 			// For buffers, we just write the buffer.
 
 			// clang-format off
-			fileData.Visit(overloaded {
+			fileData.visit(overloaded {
 				[&](const std::filesystem::path& path) {
 					auto fs = mco::FileStream::open(path.string().c_str(), mco::FileStream::Read);
 					// Tee data into the package file stream
-					mco::teeStreams(fs, os, fs.getSize());
+					mco::teeStreams(fs, os, file.getSize());
 				},
 
 				[&](const std::vector<std::uint8_t>& buffer) {
-					ensureWrite(os, reinterpret_cast<const char*>(buffer.data()), file.GetSize());
+					ensureWrite(os, reinterpret_cast<const char*>(buffer.data()), file.getSize());
 				} 
 			});
 			// clang-format on
@@ -127,16 +134,16 @@ namespace europa::io::pak {
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 				// Align to the next sector boundary.
 				if(manifest.sectorAlignment == SectorAlignment::Align)
-					os.seek(util::AlignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Current);
+					os.seek(util::alignBy(static_cast<std::size_t>(os.tell()), util::kCDSectorSize), mco::Stream::Current);
 			}
 
-			sink.OnEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteEnd,
+			sink.onEvent({ WriterProgressReportSink::FileEvent::EventCode::FileWriteEnd,
 						   filename });
 		}
 
 		pakHeader.tocOffset = static_cast<std::uint32_t>(os.tell());
 
-		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
+		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
 		// Write the TOC
 		for(auto& filename : manifest.tocOrder) {
@@ -144,28 +151,28 @@ namespace europa::io::pak {
 				return el.first == filename;
 			});
 
-			if(it == manifest.files.end()) {
-				throw std::runtime_error("Invalid TOC order");
-			}
-
 			impl::WritePString(os, filename);
-			(*it).second.VisitTocEntry([&](auto& tocEntry) {
+			(*it).second.visitTOCEntry([&](auto& tocEntry) {
 				ensureWrite(os, &tocEntry, sizeof(tocEntry));
 			});
 		}
 
-		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
+
+		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
 		pakHeader.fileCount = static_cast<std::uint32_t>(manifest.files.size());
 		pakHeader.tocSize = static_cast<std::uint32_t>(os.tell()) - (pakHeader.tocOffset - 1);
-		pakHeader.creationUnixTime = manifest.creationUnixTime;
 
 		// The TOC was accidentally constructed in a way which always adds a trailer null byte,
-		// so replicate that.
+		// so replicate that. We do this after filling in the TOC size, because that size
+		// is actually still correct.
 		os.put(0);
 
-		sink.OnEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
+		pakHeader.creationUnixTime = manifest.creationUnixTime;
+
+
+		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
 
 		// As the last step, write the header.
 		os.seek(0, mco::Stream::Begin);

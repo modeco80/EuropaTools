@@ -18,11 +18,11 @@ int main(int argc, char** argv) {
 	};
 
 	auto toolCommands = std::vector {
-		tool::ToolCommandFactory::CreateNamed("eutex_dump")
+		tool::ToolCommandFactory::createNamed("eutex_dump")
 	};
 
 	// clang-format off
-    return tool::ToolMain(info, {
+    return tool::toollibMain(info, {
         .toolCommands = toolCommands,
         .argc = argc,
         .argv = argv

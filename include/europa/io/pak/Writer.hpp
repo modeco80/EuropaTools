@@ -46,11 +46,11 @@ namespace europa::io::pak {
 
 		/// Write archive to the given output stream.
 		/// [sink] is a implementation of PakProgressReportsSink which should get events (TODO: Make this optional)
-		void Write(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest);
+		void writePackage(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest);
 
 	   private:
 		template <class T>
-		void WriteImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest);
+		void writePackageImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest);
 	};
 
 } // namespace europa::io::pak

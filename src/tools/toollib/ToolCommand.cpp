@@ -14,7 +14,7 @@ namespace tool {
 
 	IToolCommandObjectCreator* pToolCommandListHead = nullptr;
 
-	void ToolCommandFactory::RegisterToolCommand(IToolCommandObjectCreator* pCreate) {
+	void ToolCommandFactory::registerToolCommand(IToolCommandObjectCreator* pCreate) {
 		if(pToolCommandListHead != nullptr) {
 			// Find the first linked creator with a
 			// nullptr next link (the end of the list).
@@ -31,7 +31,7 @@ namespace tool {
 		}
 	}
 
-	IToolCommandObjectCreator* FindCreator(const std::string& name) {
+	IToolCommandObjectCreator* findCreator(const std::string& name) {
 		if(!pToolCommandListHead)
 			return nullptr;
 
@@ -46,9 +46,9 @@ namespace tool {
 		return nullptr;
 	}
 
-	std::shared_ptr<IToolCommand> ToolCommandFactory::CreateNamed(const std::string& name) {
-		if(auto pCreator = FindCreator(name); pCreator) {
-			auto cmd = pCreator->Create();
+	std::shared_ptr<IToolCommand> ToolCommandFactory::createNamed(const std::string& name) {
+		if(auto pCreator = findCreator(name); pCreator) {
+			auto cmd = pCreator->create();
 			return cmd;
 		} else {
 			throw std::runtime_error(std::format("Invalid tool command \"{}\"", name));

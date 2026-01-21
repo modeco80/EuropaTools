@@ -19,7 +19,7 @@ namespace eupak {
  	 * Format a raw amount of bytes to a human-readable unit, if possible.
  	 * \param[in] bytes Size in bytes.
 	 */
-	std::string FormatUnit(std::uint64_t bytes);
+	std::string formatUnit(std::uint64_t bytes);
 
 	/**
 	 * Formats a Unix timestamp using the strftime() C function.
@@ -28,7 +28,7 @@ namespace eupak {
 	 * \param[in] format The format string
 	 * \return A formatted string corresponding to user input.
 	 */
-	std::string FormatUnixTimestamp(std::time_t time, const std::string_view format);
+	std::string formatUnixTimestamp(std::time_t time, const std::string_view format);
 
 }
 
