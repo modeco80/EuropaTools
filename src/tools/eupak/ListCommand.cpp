@@ -100,7 +100,7 @@ namespace eupak {
 					   reader.GetHeader());
 
 			for(auto& [filename, file] : reader.GetFiles()) {
-				file.VisitTocEntry([&](auto& tocEntry) {
+				file.visitTOCEntry([&](auto& tocEntry) {
 					std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
 
 					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {

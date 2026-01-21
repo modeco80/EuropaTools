@@ -195,13 +195,13 @@ namespace eupak {
 			// Create eio pak files from the manifest data.
 			for(auto& ent : jsonManifest.files) {
 				eio::pak::File file;
-				eio::pak::FileData pakData = eio::pak::FileData::InitAsPath(ent.sourcePath);
+				eio::pak::FileData pakData = eio::pak::FileData::newPath(ent.sourcePath);
 
-				file.InitAs(eioManifest.version, jsonManifest.alignment.value_or(DoNotAlign) == Align);
+				file.init(eioManifest.version, jsonManifest.alignment.value_or(DoNotAlign) == Align);
 
 				// Add data
-				file.SetData(std::move(pakData));
-				file.SetCreationUnixTime(ent.creationTime.value_or(0));
+				file.setData(std::move(pakData));
+				file.setCreationUnixTime(ent.creationTime.value_or(0));
 				files.emplace_back(std::make_pair(ent.path, std::move(file)));
 			}
 

@@ -23,7 +23,8 @@ namespace europa::io::pak {
 	struct Reader;
 	struct Writer;
 
-	/// sumtype for package file data
+	/// Sumtype for package file data. This will only be used by the
+	/// package writers.
 	struct FileData {
 		// clang-format off
 		using Variant = std::variant<
@@ -35,19 +36,20 @@ namespace europa::io::pak {
 		>;
 		// clang-format on
 
-		static FileData InitAsBuffer(std::vector<std::uint8_t>&& buffer) {
+		///
+		static FileData newBuffer(std::vector<std::uint8_t>&& buffer) {
 			return FileData {
 				.variant_ = Variant(std::move(buffer))
 			};
 		}
 
-		static FileData InitAsPath(const std::filesystem::path& path) {
+		static FileData newPath(const std::filesystem::path& path) {
 			return FileData {
 				.variant_ = Variant(path)
 			};
 		}
 
-		std::uint32_t GetSize() const {
+		std::uint32_t getSize() const {
 			// FIXME: make this just a overloaded lambda
 			struct SizeVisitor {
 				std::uint32_t& size;
@@ -70,12 +72,12 @@ namespace europa::io::pak {
 		}
 
 		template <class T>
-		const T* GetIf() const {
+		const T* getIf() const {
 			return std::get_if<T>(&variant_);
 		}
 
 		template <class Visitor>
-		auto Visit(Visitor&& v) const {
+		auto visit(Visitor&& v) const {
 			return std::visit(v, variant_);
 		}
 
@@ -89,11 +91,11 @@ namespace europa::io::pak {
 		using DataType = FileData;
 
 		template <class T>
-		void InitWithExistingTocEntry(const T& value) {
+		void init(const T& value) {
 			toc = value;
 		}
 
-		void InitAs(structs::PakVersion version, bool aligned) {
+		void init(structs::PakVersion version, bool aligned) {
 			switch(version) {
 				case structs::PakVersion::Ver3:
 					toc = structs::PakHeader_V3::TocEntry {};
@@ -113,7 +115,7 @@ namespace europa::io::pak {
 			}
 		}
 
-		bool HasData() const {
+		bool hasData() const {
 			return fileData.has_value();
 		}
 
@@ -127,18 +129,18 @@ namespace europa::io::pak {
 		}
 
 		/// Sets data.
-		void SetData(DataType&& data) {
+		void setData(DataType&& data) {
 			this->fileData = std::move(data);
 
 			// Update the TOC size.
 			std::visit([&](auto& entry) {
-				entry.size = this->fileData.value().GetSize();
+				entry.size = this->fileData.value().getSize();
 			},
 					   toc);
 		}
 
 		/// Purge read file data.
-		void PurgeData() {
+		void purgeData() {
 			this->fileData = std::nullopt;
 		}
 
@@ -146,16 +148,16 @@ namespace europa::io::pak {
 		 * Get the TOC entry responsible.
 		 */
 		template <class T>
-		[[nodiscard]] const T& GetTOCEntry() const {
+		[[nodiscard]] const T& getTOCEntry() const {
 			return std::get<T>(toc);
 		}
 
 		template <class T>
-		[[nodiscard]] T& GetTOCEntry() {
+		[[nodiscard]] T& getTOCEntry() {
 			return std::get<T>(toc);
 		}
 
-		std::uint32_t GetCreationUnixTime() const {
+		std::uint32_t getCreationUnixTime() const {
 			std::uint32_t time {};
 
 			std::visit([&](auto& entry) {
@@ -166,14 +168,14 @@ namespace europa::io::pak {
 			return time;
 		}
 
-		void SetCreationUnixTime(std::uint32_t time) {
+		void setCreationUnixTime(std::uint32_t time) {
 			std::visit([&](auto& entry) {
 				entry.creationUnixTime = time;
 			},
 			toc);
 		}
 
-		std::uint32_t GetOffset() const {
+		std::uint32_t getOffset() const {
 			std::uint32_t size {};
 
 			std::visit([&](auto& entry) {
@@ -184,7 +186,7 @@ namespace europa::io::pak {
 			return size;
 		}
 
-		std::uint32_t GetSize() const {
+		std::uint32_t getSize() const {
 			std::uint32_t size {};
 
 			std::visit([&](auto& entry) {
@@ -196,7 +198,7 @@ namespace europa::io::pak {
 		}
 
 		template <class Visitor>
-		auto VisitTocEntry(Visitor&& cb) {
+		auto visitTOCEntry(Visitor&& cb) {
 			return std::visit(cb, toc);
 		}
 

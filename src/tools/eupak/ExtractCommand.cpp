@@ -107,7 +107,7 @@ namespace eupak {
 			// Sort our clone of the file table to the order which files were actually written.
 			// The files "map" is in TOC order (which can differ to the actual file placement), so we do not need to do anything with that.
 			std::sort(fileOrderedClone.begin(), fileOrderedClone.end(), [](const auto& f1, const auto& f2) {
-				return f1.second.GetOffset() < f2.second.GetOffset();
+				return f1.second.getOffset() < f2.second.getOffset();
 			});
 
 			for(auto& [filename, file] : files) {
@@ -121,7 +121,7 @@ namespace eupak {
 				root.files.push_back(ManifestFile {
 					.path = filename,
 					.sourcePath = outpath.string(),
-									 .creationTime = file.GetCreationUnixTime() });
+									 .creationTime = file.getCreationUnixTime() });
 			}
 
 			// Serialize the JSON to the manifest file.
