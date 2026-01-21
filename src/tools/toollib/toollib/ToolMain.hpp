@@ -25,7 +25,7 @@ namespace tool {
 	};
 
 	struct ToolMainInput {
-		/// Tool commands to provide to ToolMain().
+		/// Tool commands to provide to toollibMain().
 		std::span<std::shared_ptr<IToolCommand>> toolCommands;
 
 		// C arguments
@@ -34,6 +34,6 @@ namespace tool {
 	};
 
 	/// The shared toollib main. When in doubt, use this.
-	int ToolMain(const ToolInfo& toolInfo, const ToolMainInput& mainInput);
+	int toollibMain(const ToolInfo& toolInfo, const ToolMainInput& mainInput);
 
 } // namespace tool

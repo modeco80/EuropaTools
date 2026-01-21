@@ -18,23 +18,23 @@ namespace tool {
 		virtual ~IToolCommand() = default;
 
 		/// Do any creation-time initalizatiion.
-		virtual void Init(argparse::ArgumentParser& parentParser) = 0;
+		virtual void init(argparse::ArgumentParser& parentParser) = 0;
 
 		/// Query if this task has been selected
-		virtual bool ShouldRun(argparse::ArgumentParser& parentParser) const = 0;
+		virtual bool shouldRun(argparse::ArgumentParser& parentParser) const = 0;
 
 		/// Parse arguments from the user
-		virtual int Parse() = 0;
+		virtual int parse() = 0;
 
 		/// Run the task.
-		virtual int Run() = 0;
+		virtual int run() = 0;
 	};
 
 	struct IToolCommandObjectCreator {
 		virtual ~IToolCommandObjectCreator() = default;
 
 		/// Creates the IToolCommand.
-		virtual std::shared_ptr<IToolCommand> Create() = 0;
+		virtual std::shared_ptr<IToolCommand> create() = 0;
 
 		// dont touch :)
 		IToolCommandObjectCreator* next;
@@ -46,13 +46,13 @@ namespace tool {
 		using FactoryMethod = std::shared_ptr<IToolCommand> (*)();
 
 		/// Creates a task.
-		static std::shared_ptr<IToolCommand> CreateNamed(const std::string& name);
+		static std::shared_ptr<IToolCommand> createNamed(const std::string& name);
 
 	   private:
 		template <class T>
 		friend struct ToolCommandRegister;
 
-		static void RegisterToolCommand(IToolCommandObjectCreator* pCreate);
+		static void registerToolCommand(IToolCommandObjectCreator* pCreate);
 	};
 
 	/// Helper template to register into the [ToolCommandFactory].
@@ -61,10 +61,10 @@ namespace tool {
 		ToolCommandRegister(const std::string& name) {
 			static_assert(std::is_base_of_v<IToolCommand, T>, "what you doing sir.");
 			this->name = name;
-			ToolCommandFactory::RegisterToolCommand(this);
+			ToolCommandFactory::registerToolCommand(this);
 		}
 
-		std::shared_ptr<IToolCommand> Create() override {
+		std::shared_ptr<IToolCommand> create() override {
 			return std::make_shared<T>();
 		}
 	};

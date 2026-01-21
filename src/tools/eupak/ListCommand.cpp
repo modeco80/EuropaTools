@@ -41,15 +41,15 @@ namespace eupak {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("list");
 		}
 
-		int Parse() override {
+		int parse() override {
 			try {
 				currentArgs.verbose = parser.get<bool>("--verbose");
 				currentArgs.inputPath = eupak::fs::path(parser.get("input"));
@@ -66,7 +66,7 @@ namespace eupak {
 			return 0;
 		}
 
-		int Run() override {
+		int run() override {
 			auto ifs = mco::FileStream::open(currentArgs.inputPath.string().c_str(), mco::FileStream::Read);
 			eio::pak::Reader reader(ifs);
 
@@ -85,10 +85,10 @@ namespace eupak {
 				else if constexpr(std::decay_t<decltype(header)>::VERSION == estructs::PakVersion::Ver5)
 					version = "Version 5 (Jedi Starfighter)";
 
-				printf("Archive \"%s\": %s, created %s, %d files", currentArgs.inputPath.string().c_str(), version.data(), FormatUnixTimestamp(header.creationUnixTime, DATE_FORMAT).c_str(), header.fileCount);
+				printf("Archive \"%s\": %s, created %s, %d files", currentArgs.inputPath.string().c_str(), version.data(), formatUnixTimestamp(header.creationUnixTime, DATE_FORMAT).c_str(), header.fileCount);
 
 				if(currentArgs.verbose) {
-					printf(", data size: %s", FormatUnit(header.tocOffset + header.tocSize).c_str());
+					printf(", data size: %s", formatUnit(header.tocOffset + header.tocSize).c_str());
 				}
 
 				printf("\n");
@@ -96,7 +96,7 @@ namespace eupak {
 
 			for(const auto& [filename, file] : reader.getPackageFiles()) {
 				file.visitTOCEntry([&](auto& tocEntry) {
-					std::printf("%16s %10s %8s", FormatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), FormatUnit(tocEntry.size).c_str(), filename.c_str());
+					std::printf("%16s %10s %8s", formatUnixTimestamp(tocEntry.creationUnixTime, DATE_FORMAT).c_str(), formatUnit(tocEntry.size).c_str(), filename.c_str());
 
 					if constexpr(std::is_same_v<std::decay_t<decltype(tocEntry)>, estructs::PakHeader_V5::TocEntry_SectorAligned>) {
 						std::printf(" (LBA %u)", tocEntry.startLBA);

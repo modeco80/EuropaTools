@@ -56,15 +56,15 @@ namespace eupak {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("extract");
 		}
 
-		int Parse() override {
+		int parse() override {
 			currentArgs.verbose = parser.get<bool>("--verbose");
 			currentArgs.inputPath = eupak::fs::path(parser.get("input"));
 
@@ -131,7 +131,7 @@ namespace eupak {
 			fh.write(reinterpret_cast<const std::uint8_t*>(dump.data()), dump.size());
 		}
 
-		int Run() override {
+		int run() override {
 			std::cout << "Input PAK/PMDL: " << currentArgs.inputPath << '\n';
 			std::cout << "Output Directory: " << currentArgs.outputDirectory << '\n';
 

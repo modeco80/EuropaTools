@@ -112,15 +112,15 @@ namespace eupak {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("create");
 		}
 
-		int Parse() override {
+		int parse() override {
 			currentArgs.verbose = parser.get<bool>("--verbose");
 			currentArgs.inputManifest = fs::path(parser.get("--manifest"));
 			currentArgs.outputFile = fs::path(parser.get("output"));
@@ -167,7 +167,7 @@ namespace eupak {
 			return 0;
 		}
 
-		int Run() override {
+		int run() override {
 			const auto& jsonManifest = currentArgs.manifest;
 			auto fileCount = jsonManifest.files.size();
 

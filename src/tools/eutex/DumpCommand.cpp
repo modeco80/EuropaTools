@@ -40,15 +40,15 @@ namespace eutex {
 			// clang-format on
 		}
 
-		void Init(argparse::ArgumentParser& parentParser) override {
+		void init(argparse::ArgumentParser& parentParser) override {
 			parentParser.add_subparser(parser);
 		}
 
-		bool ShouldRun(argparse::ArgumentParser& parentParser) const override {
+		bool shouldRun(argparse::ArgumentParser& parentParser) const override {
 			return parentParser.is_subcommand_used("dump");
 		}
 
-		int Parse() override {
+		int parse() override {
 			inputTexPath = fs::path(parser.get("input"));
 
 			if(parser.is_used("--output-file")) {
@@ -62,7 +62,7 @@ namespace eutex {
 			return 0;
 		}
 
-		int Run() override {
+		int run() override {
 			if(!fs::is_regular_file(inputTexPath)) {
 				std::cout << "Invalid file " << inputTexPath << "\n";
 				return 1;
