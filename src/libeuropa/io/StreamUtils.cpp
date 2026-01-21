@@ -62,18 +62,10 @@ namespace europa::io::impl {
 	}
 
 	void WritePString(mco::WritableStream& os, const std::string& string) {
-		if(string.length() >= 255)
+		if(string.length() > 254)
 			throw std::invalid_argument("String length too long for WritePString()");
-
-		auto len = static_cast<std::uint8_t>(string.length() + 1);
-
 		// Write the length and the string.
-		os.write(reinterpret_cast<char*>(&len), sizeof(len));
-
-		// It might be iffy to just depend on the C++ STL's
-		// implicit NUL termination?
-		// I mean, c_str() would be broken and the library implementation could be considered
-		// faulty, so idk.
+		os.put(static_cast<std::uint8_t>(string.length() + 1));
 		os.write(string.data(), string.length() + 1);
 	}
 
