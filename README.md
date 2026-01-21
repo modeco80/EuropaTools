@@ -1,6 +1,6 @@
 ## EuropaTools
 
-Tools for working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter), written in C++20. For nyoom. And also because why not.
+Tools and libraries for modifying and working with LEC Europa based games (Star Wars: Starfighter & Star Wars: Jedi Starfighter), written in C++23.
 
 ## Building
 
@@ -27,28 +27,6 @@ This currently contains:
 - ImHex Pattern Language files for MSH,c PAK, and TEX files.
 - A Model Researcher Pro Python script for getting it to read MSH files. **Not a replacement for a real model exporter, which I'm working on**.
 
-## The Libraries
-
-### `libeuropa`
-
-Provides IO readers and writers for Europa data files.
-
-#### File Format Support
-
-> [!NOTE]  
-> Things marked as unsupported will probably end up being supported at some point; so don't treat this as "final".
-
-| Type                  | Support                         |
-| --------------------- | ------------------------------- |
-| Package (.pak, .pmdl) | Read/Write (all versions)       |
-| PS2 Texture (.tex)    | Read-only export (all versions) |
-| Mesh (.msh)           | Currently unsupported (planned) |
-| Model (.mdl)          | Currently unsupported (planned) |
-| Animation (.ani)      | Currently unsupported (planned) |
-| GOD Data (.c3po)      | Currently unsupported           |
-| Mission (.wrl)        | Currently unsupported           |
-| Scene (.scene)        | Currently unsupported           |
-
 ## The Tools
 
 ### `Adam`
@@ -69,3 +47,27 @@ Can create, extract, and show info on them.
 ### `eutex`
 
 A utlity for dumping Europa PS2 .tex files. (creation later)
+
+## The Libraries
+
+### `libeuropa`
+
+Provides IO readers and writers for Europa data files.
+
+#### File Format Support
+
+> [!NOTE]  
+> Things marked as unsupported will probably end up being supported at some point; so don't treat this as "final".
+
+| Type                  | Support                                    |
+| --------------------- | ------------------------------------------ |
+| Package (.pak, .pmdl) | Full read/write (all versions)             |
+| PS2 Texture (.tex)    | Read-only export (all versions)            |
+| Mesh (.msh)           | Currently unsupported (planned)            |
+| Model (.mdl)          | Currently unsupported (planned)            |
+| Animation (.ani)      | Currently unsupported (planned)            |
+| GOD Data (.c3po)      | Currently unsupported (planned w/ r2d2)    |
+| Mission (.wrl)        | Currently unsupported (planned)            |
+| Scene (.scene)        | Currently unsupported (planned)            |
+
+
