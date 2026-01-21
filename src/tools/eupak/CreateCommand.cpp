@@ -218,7 +218,7 @@ namespace eupak {
 				eio::pak::Writer writer;
 
 				// Do it.
-				writer.Write(ofs, reportSink, eioManifest);
+				writer.writePackage(ofs, reportSink, eioManifest);
 			} catch(std::exception& ex) {
 				std::cout << "Caught exception: " << ex.what() << "\n";
 				return 1;

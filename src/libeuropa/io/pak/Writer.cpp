@@ -33,31 +33,41 @@ namespace europa::io::pak {
 		}
 	}
 
-	void Writer::Write(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
+	void Writer::writePackage(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
 		// Sanity check the manifest.
 		if(manifest.tocOrder.size() != manifest.files.size()) {
 			throw std::runtime_error("Invalid TOC order (doesn't match files)");
 		}
 
-		// Depending on the version, do a mix of runtime/compile-time dispatch to the right
-		// package format version we have been told to write.
+		for(auto& filename : manifest.tocOrder) {
+			auto it = std::find_if(manifest.files.begin(), manifest.files.end(), [&](const auto& el) {
+				return el.first == filename;
+			});
+
+			if(it == manifest.files.end()) {
+				throw std::runtime_error("Invalid TOC order (lists files which aren't going to be packed!!!)");
+			}
+		}
+
+		// After sanity checking, do a mix of runtime/compile-time dispatch to the right
+		// package format version we have been told to write, to write the package.
 		switch(manifest.version) {
 			case structs::PakVersion::Ver3:
-				WriteImpl<structs::PakHeader_V3>(os, sink, manifest);
+				writePackageImpl<structs::PakHeader_V3>(os, sink, manifest);
 				break;
 			case structs::PakVersion::Ver4:
-				WriteImpl<structs::PakHeader_V4>(os, sink, manifest);
+				writePackageImpl<structs::PakHeader_V4>(os, sink, manifest);
 				break;
 			case structs::PakVersion::Ver5:
-				WriteImpl<structs::PakHeader_V5>(os, sink, manifest);
+				writePackageImpl<structs::PakHeader_V5>(os, sink, manifest);
 				break;
 			default:
-				throw std::invalid_argument("Invalid version");
+				throw std::invalid_argument("Invalid package version in manifest.");
 		}
 	}
 
 	template <class THeader>
-	void Writer::WriteImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
+	void Writer::writePackageImpl(mco::WritableStream& os, WriterProgressReportSink& sink, const Manifest& manifest) {
 		// TODO: assert that os.isRandomAccess() == true, since it's the only way
 		// we can function currently.
 		THeader pakHeader {};
@@ -140,10 +150,6 @@ namespace europa::io::pak {
 			auto it = std::find_if(manifest.files.begin(), manifest.files.end(), [&](const auto& el) {
 				return el.first == filename;
 			});
-
-			if(it == manifest.files.end()) {
-				throw std::runtime_error("Invalid TOC order");
-			}
 
 			impl::WritePString(os, filename);
 			(*it).second.visitTOCEntry([&](auto& tocEntry) {
