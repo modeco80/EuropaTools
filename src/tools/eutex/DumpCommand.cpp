@@ -77,7 +77,7 @@ namespace eutex {
 
 			std::cout << "Opening \"" << inputTexPath << "\"\n";
 
-			if(!reader.ReadImage(yatfHeader, surface)) {
+			if(!reader.readImage(yatfHeader, surface)) {
 				std::cout << "Invalid YATF file \"" << inputTexPath << "\"\n";
 				return 1;
 			}

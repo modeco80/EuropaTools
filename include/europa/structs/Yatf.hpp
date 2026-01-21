@@ -57,7 +57,7 @@ namespace europa::structs {
 		u32 height;
 		u32 width;
 
-		[[nodiscard]] constexpr bool IsValid() const {
+		[[nodiscard]] constexpr bool valid() const {
 			if(auto magicValid = magic == ValidMagic_V1 || magic == ValidMagic_V2; !magicValid)
 				return false;
 

@@ -20,10 +20,9 @@ namespace europa::io::yatf {
 		: stream(is) {
 	}
 
-	bool Reader::ReadImage(structs::YatfHeader& header, util::ImageSurface& surface) {
+	bool Reader::readImage(structs::YatfHeader& header, util::ImageSurface& surface) {
 		header = impl::ReadStreamType<structs::YatfHeader>(stream);
-
-		if(!header.IsValid()) {
+		if(!header.valid()) {
 			return false;
 		}
 
