@@ -57,6 +57,14 @@ struct CVariableInfo {
     CValue value;
 };
 
+
+struct CVariableInfo_Ver5 {
+    char variableName[];
+    u8 unk;
+    u8 unk2;
+    CValue value;
+};
+
 enum ClassType : u8 {
     Invalid = 0,
     Class = 1,
@@ -64,30 +72,61 @@ enum ClassType : u8 {
     ForcePower = 3,
 };
 
+struct zString { char string[]; };
+
+struct CClassInfo_Ver5 {
+    // In version 5, most of the differences between
+    // each "type" of class script have been (mostly) factored out.
+    char className[];
+    char baseClassName[];
+    u8 variableCount;
+    CVariableInfo_Ver5 variables[variableCount];
+
+    u8 unk;
+    u8 unk2;
+    u8 unk3;
+    u8 unk4;
+    if(unk == 0x11) {
+        u8 unkPropCount;
+        CVariableInfo unkProperties[unkPropCount];
+    }
+};
+
+
 struct c3poFile {
     char magic[0x14+1];
     u8 revision;
     u16 version;
-    ClassType type;
 
-    match(type) {
-        (ClassType::Class): {
-            char className[];
-            char baseClassName[];
-            char modelFileName[];
-            // it seems classes have an extra byte of padding which breaks
-            // reading until EOF.
-            //CVariableInfo variables[11];
+    if(version == 5) {
+       CClassInfo_Ver5 class;
+    } else {
+        // Versions 2..4 have the same binary layout.
+        // interestingly, version 4 (used on PC and Special Edition)
+        // supposedly supports force powers from Jedi Starfighter
+        // (this is probably beta code from JSF)
+        ClassType type;
+        match(type) {
+            (ClassType::Class): {
+                char className[];
+                char baseClassName[];
+                char modelFileName[];
+
+                u8 stringCount;
+                zString strings[stringCount];
+
+                u8 variableCount;
+                CVariableInfo variables[variableCount];
+            }
+            (ClassType::Weapon): {
+                char className[];
+                char baseClassName[];
+                u8 unk;
+                CVariableInfo variables[while(!std::mem::eof())];
+            }
+            (_): {}
         }
-        (ClassType::Weapon): {
-            char className[];
-            char baseClassName[];
-            u8 unk;
-            CVariableInfo variables[while(!std::mem::eof())];
-        }
-        (_): {}
     }
-
 };
 
 c3poFile file @ 0;
