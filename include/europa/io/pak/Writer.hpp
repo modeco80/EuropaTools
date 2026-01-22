@@ -36,7 +36,7 @@ namespace europa::io::pak {
 			}
 
 			structs::PakVersion version;
-			std::uint32_t creationUnixTime;
+			u32 creationUnixTime;
 			SectorAlignment sectorAlignment { SectorAlignment::DoNotAlign };
 			std::vector<FlattenedType>& files;
 			std::vector<std::string>& tocOrder;

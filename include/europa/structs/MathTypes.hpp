@@ -14,10 +14,6 @@
 
 namespace europa::structs {
 
-#ifdef _MSC_VER
-	#pragma pack(push, 1)
-#endif
-
 	struct [[gnu::packed]] Vec3f {
 		float x;
 		float y;
@@ -28,10 +24,6 @@ namespace europa::structs {
 		float u;
 		float v;
 	};
-
-#ifdef _MSC_VER
-	#pragma pack(pop)
-#endif
 
 	static_assert(sizeof(Vec3f) == 0xc, "Vec3f size is incorrect");
 	static_assert(sizeof(Uvf) == 0x8, "Uvf size is incorrect");

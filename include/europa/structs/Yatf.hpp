@@ -9,7 +9,7 @@
 #ifndef EUROPA_STRUCTS_YATF_H
 #define EUROPA_STRUCTS_YATF_H
 
-#include <europa/structs/ImHexAdapter.hpp>
+#include <mco/base_types.hpp>
 #include <europa/util/FourCC.hpp>
 
 namespace europa::structs {

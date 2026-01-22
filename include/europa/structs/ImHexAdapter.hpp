@@ -13,6 +13,8 @@
 
 #include <cstdint>
 
+#error This file should not be included, use <mco/base_types.hpp>
+
 namespace europa::structs {
 	using u8 = std::uint8_t;
 	using s8 = std::int8_t;

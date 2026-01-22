@@ -45,7 +45,7 @@ namespace europa::io::pak {
 			return 0;
 		}
 
-		std::size_t readCount = length;
+		usize readCount = length;
 		if(virtualPosition + length > fileSize)
 			readCount = fileSize - virtualPosition;
 
@@ -59,7 +59,7 @@ namespace europa::io::pak {
 	}
 
 	i64 Reader::OpenedFile::seek(i64 offset, Whence whence) {
-		std::uint64_t target = 0;
+		u64 target = 0;
 		switch(whence) {
 			case mco::Stream::Begin:
 				target = offset;
@@ -104,7 +104,7 @@ namespace europa::io::pak {
 
 		// Read the archive TOC.
 		stream.seek(pakHeader.tocOffset, mco::Stream::Begin);
-		for(std::uint32_t i = 0; i < pakHeader.fileCount; ++i) {
+		for(u32 i = 0; i < pakHeader.fileCount; ++i) {
 			// The first part of the TOC entry is always a VLE string,
 			// which we don't store inside the type (because we can't).
 			auto filename = impl::ReadPString(stream);

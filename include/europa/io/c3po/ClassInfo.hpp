@@ -9,21 +9,20 @@
 #ifndef EUROPA_IO_C3PO_CLASSINFO_HPP
 #define EUROPA_IO_C3PO_CLASSINFO_HPP
 
+#include <mco/base_types.hpp>
 #include <string>
 #include <vector>
 
 namespace europa::io::c3po {
 
-	struct ClassBaseInfo {
-		virtual ~ClassBaseInfo() = default;
-		std::string c
-	}
+	struct ClassInfo {
+		using VariableInfo = std::tuple<std::string, u8, structs::Value>;
+		virtual ~ClassInfo() = default;
 
-	struct ClassInfo : public ClassBaseInfo {
+		std::string name;
+		std::string extends;
+		std::vector<VariableInfo> properties;
 	};
-
-	struct WeaponInfo : public ClassBaseInfo {
-	}
 
 } // namespace europa::io::c3po
 

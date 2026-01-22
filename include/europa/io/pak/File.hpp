@@ -29,7 +29,7 @@ namespace europa::io::pak {
 		// clang-format off
 		using Variant = std::variant<
 			// File data
-			std::vector<std::uint8_t>,
+			std::vector<u8>,
 
 			// Path
 			std::filesystem::path
@@ -37,7 +37,7 @@ namespace europa::io::pak {
 		// clang-format on
 
 		/// Creates an instance of FileData which holds the file data buffer.
-		static FileData newBuffer(std::vector<std::uint8_t>&& buffer) {
+		static FileData newBuffer(std::vector<u8>&& buffer) {
 			return FileData(std::move(buffer));
 		}
 
@@ -46,24 +46,24 @@ namespace europa::io::pak {
 			return FileData(path);
 		}
 
-		std::uint32_t getSize() const {
+		u32 getSize() const {
 			// FIXME: make this just a overloaded lambda
 			struct SizeVisitor {
-				std::uint32_t& size;
+				u32& size;
 
 				// bleh
 				void operator()(const std::vector<uint8_t>& buffer) {
-					size = static_cast<std::uint32_t>(buffer.size());
+					size = static_cast<u32>(buffer.size());
 				}
 
 				void operator()(const std::filesystem::path& fsPath) {
 					if(!std::filesystem::exists(fsPath) && !std::filesystem::is_regular_file(fsPath))
 						throw std::runtime_error("invalid path in path file");
-					size = static_cast<std::uint32_t>(std::filesystem::file_size(fsPath));
+					size = static_cast<u32>(std::filesystem::file_size(fsPath));
 				}
 			};
 
-			std::uint32_t size {};
+			u32 size {};
 			std::visit(SizeVisitor { size }, variant_);
 			return size;
 		}
@@ -79,7 +79,7 @@ namespace europa::io::pak {
 		}
 
 	   private:
-		FileData(std::vector<std::uint8_t>&& buffer)
+		FileData(std::vector<u8>&& buffer)
 			: variant_(Variant(std::move(buffer))) {
 		}
 
@@ -162,8 +162,8 @@ namespace europa::io::pak {
 			return std::get<T>(toc);
 		}
 
-		std::uint32_t getCreationUnixTime() const {
-			std::uint32_t time {};
+		u32 getCreationUnixTime() const {
+			u32 time {};
 
 			std::visit([&](auto& entry) {
 				time = entry.creationUnixTime;
@@ -173,15 +173,15 @@ namespace europa::io::pak {
 			return time;
 		}
 
-		void setCreationUnixTime(std::uint32_t time) {
+		void setCreationUnixTime(u32 time) {
 			std::visit([&](auto& entry) {
 				entry.creationUnixTime = time;
 			},
 					   toc);
 		}
 
-		std::uint32_t getOffset() const {
-			std::uint32_t size {};
+		u32 getOffset() const {
+			u32 size {};
 
 			std::visit([&](auto& entry) {
 				size = entry.offset;
@@ -191,8 +191,8 @@ namespace europa::io::pak {
 			return size;
 		}
 
-		std::uint32_t getSize() const {
-			std::uint32_t size {};
+		u32 getSize() const {
+			u32 size {};
 
 			std::visit([&](auto& entry) {
 				size = entry.size;

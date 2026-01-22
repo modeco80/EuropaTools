@@ -22,13 +22,13 @@ namespace eupak {
 	struct ManifestFile {
 		std::string path;
 		std::string sourcePath;
-		std::optional<std::uint32_t> creationTime;
+		std::optional<u32> creationTime;
 	};
 
 	struct ManifestRoot {
 		estructs::PakVersion version;
 		std::optional<eio::pak::Writer::SectorAlignment> alignment;
-		std::optional<std::uint32_t> creationTime;
+		std::optional<u32> creationTime;
 
 		std::vector<ManifestFile> files;
 		std::vector<std::string> tocOrder;
@@ -42,7 +42,7 @@ namespace daw::json {
 		using type = json_member_list<
 		json_string<"path">,
 		json_string<"sourcePath">,
-		json_number_null<"creationTime", std::optional<std::uint32_t>>>;
+		json_number_null<"creationTime", std::optional<u32>>>;
 
 		static inline auto to_json_data(const eupak::ManifestFile& file) {
 			return std::forward_as_tuple(file.path, file.sourcePath, file.creationTime);
@@ -54,7 +54,7 @@ namespace daw::json {
 		using type = json_member_list<
 		json_number<"version", europa::structs::PakVersion>,
 		json_number_null<"alignment", std::optional<europa::io::pak::Writer::SectorAlignment>>,
-		json_number_null<"creationTime", std::optional<std::uint32_t>>,
+		json_number_null<"creationTime", std::optional<u32>>,
 		json_array<"files", eupak::ManifestFile>,
 		json_array<"tocOrder", std::string>>;
 

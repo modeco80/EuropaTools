@@ -15,8 +15,8 @@
 namespace europa::io::impl {
 
 	namespace detail {
-		void ReadStreamTypeImpl(mco::Stream& is, char* buffer, std::size_t size);
-		void WriteStreamTypeImpl(mco::WritableStream& os, const char* buffer, std::size_t buffer_size);
+		void ReadStreamTypeImpl(mco::Stream& is, char* buffer, usize size);
+		void WriteStreamTypeImpl(mco::WritableStream& os, const char* buffer, usize buffer_size);
 	} // namespace detail
 
 	// This is lame. But it works :)

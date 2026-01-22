@@ -11,7 +11,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <europa/structs/ImHexAdapter.hpp>
+#include <mco/base_types.hpp>
 #include <string>
 #include <variant>
 
@@ -20,23 +20,23 @@ namespace europa::structs {
 #define EUROPA_VALUE_TYPE_MAPPING() \
 	X(String, std::string)          \
 	X(Bool, bool)                   \
-	X(Char, std::int8_t)            \
-	X(UChar, std::uint8_t)          \
-	X(Short, std::int16_t)          \
-	X(UShort, std::uint16_t)        \
-	X(Long, std::int32_t)           \
-	X(ULong, std::uint32_t)         \
+	X(Char, i8)                     \
+	X(UChar, u8)                    \
+	X(Short, i16)                   \
+	X(UShort, u16)                  \
+	X(Long, i32)                    \
+	X(ULong, u32)                   \
 	X(Float, float)                 \
 	X(Double, double)
 
 #define EUROPA_VALUE_TYPE_MAPPING_TRIVIAL() \
 	X(Bool, bool)                           \
-	X(Char, std::int8_t)                    \
-	X(UChar, std::uint8_t)                  \
-	X(Short, std::int16_t)                  \
-	X(UShort, std::uint16_t)                \
-	X(Long, std::int32_t)                   \
-	X(ULong, std::uint32_t)                 \
+	X(Char, i8)                             \
+	X(UChar, u8)                            \
+	X(Short, i16)                           \
+	X(UShort, u16)                          \
+	X(Long, i32)                            \
+	X(ULong, u32)                           \
 	X(Float, float)                         \
 	X(Double, double)
 
@@ -95,12 +95,12 @@ namespace europa::structs {
 	using Value = std::variant<
 	std::string,
 	bool,
-	std::int8_t,
-	std::uint8_t,
-	std::int16_t,
-	std::uint16_t,
-	std::int32_t,
-	std::uint32_t,
+	i8,
+	u8,
+	i16,
+	u16,
+	i32,
+	u32,
 	float,
 	double>;
 

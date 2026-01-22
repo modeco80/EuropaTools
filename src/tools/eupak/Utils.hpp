@@ -9,7 +9,7 @@
 #ifndef EUROPA_EUPAK_UTILS_HPP
 #define EUROPA_EUPAK_UTILS_HPP
 
-#include <cstdint>
+#include "CommonDefs.hpp"
 #include <ctime>
 #include <string>
 
@@ -19,7 +19,7 @@ namespace eupak {
 	 * Format a raw amount of bytes to a human-readable unit, if possible.
 	 * \param[in] bytes Size in bytes.
 	 */
-	std::string formatUnit(std::uint64_t bytes);
+	std::string formatUnit(u64 bytes);
 
 	/**
 	 * Formats a Unix timestamp using the strftime() C function.

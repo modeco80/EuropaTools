@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cstddef>
+#include <mco/base_types.hpp>
 #include <memory>
 
 namespace europa::util {
@@ -19,7 +20,7 @@ namespace europa::util {
 	template <class T>
 	struct UniqueArray final {
 		UniqueArray() = default;
-		explicit UniqueArray(std::size_t size) {
+		explicit UniqueArray(usize size) {
 			resize(size);
 		}
 
@@ -44,7 +45,7 @@ namespace europa::util {
 			return *this;
 		}
 
-		void resize(std::size_t size) {
+		void resize(usize size) {
 			this->array = std::make_unique<T[]>(size);
 			this->mSize = size;
 		}
@@ -55,11 +56,11 @@ namespace europa::util {
 			this->mSize = 0;
 		}
 
-		T& operator[](std::size_t index) {
+		T& operator[](usize index) {
 			return (array.get())[index];
 		}
 
-		const T& operator[](std::size_t index) const {
+		const T& operator[](usize index) const {
 			return (array.get())[index];
 		}
 
@@ -71,12 +72,12 @@ namespace europa::util {
 			return array.get();
 		}
 
-		std::size_t size() const {
+		usize size() const {
 			return mSize;
 		}
 
 	   private:
 		std::unique_ptr<T[]> array {};
-		std::size_t mSize {};
+		usize mSize {};
 	};
 } // namespace europa::util

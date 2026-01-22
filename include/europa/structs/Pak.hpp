@@ -11,7 +11,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <europa/structs/ImHexAdapter.hpp>
+#include <mco/base_types.hpp>
 #include <variant>
 
 namespace europa::structs {

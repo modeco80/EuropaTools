@@ -46,7 +46,7 @@ namespace europa::io::pak {
 
 			mco::Stream& source;
 			File& file;
-			std::size_t virtualPosition;
+			usize virtualPosition;
 		};
 
 		/// Constructor. Takes in a input stream to read pak data from.

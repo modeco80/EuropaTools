@@ -15,13 +15,13 @@ namespace europa::io::impl {
 
 	namespace detail {
 
-		void ReadStreamTypeImpl(mco::Stream& is, char* buffer, std::size_t size) {
+		void ReadStreamTypeImpl(mco::Stream& is, char* buffer, usize size) {
 			if(auto n = is.read(&buffer[0], size); n != size) {
 				throw std::runtime_error("Short/incomplete read!");
 			}
 		}
 
-		void WriteStreamTypeImpl(mco::WritableStream& os, const char* buffer, std::size_t buffer_size) {
+		void WriteStreamTypeImpl(mco::WritableStream& os, const char* buffer, usize buffer_size) {
 			if(auto n = os.write(&buffer[0], buffer_size); n != buffer_size) {
 				throw std::runtime_error("Short/incomplete write!");
 			}
@@ -45,7 +45,7 @@ namespace europa::io::impl {
 
 	std::string ReadPString(mco::Stream& is) {
 		std::string s;
-		std::uint32_t length = static_cast<std::uint32_t>(is.get());
+		u32 length = static_cast<u32>(is.get());
 
 		if(length == 0) {
 			// TODO: is this even possible/valid?

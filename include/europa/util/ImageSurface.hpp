@@ -15,8 +15,8 @@
 namespace europa::util {
 
 	struct Size {
-		std::uint16_t width;
-		std::uint16_t height;
+		u16 width;
+		u16 height;
 
 		constexpr std::size_t linear() const {
 			return static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
@@ -32,16 +32,16 @@ namespace europa::util {
 	};
 
 	struct [[gnu::packed]] PixelRGB {
-		std::uint8_t r;
-		std::uint8_t g;
-		std::uint8_t b;
+		u8 r;
+		u8 g;
+		u8 b;
 	};
 
 	struct [[gnu::packed]] Pixel {
-		std::uint8_t r;
-		std::uint8_t g;
-		std::uint8_t b;
-		std::uint8_t a;
+		u8 r;
+		u8 g;
+		u8 b;
+		u8 a;
 
 		static constexpr Pixel fromRGB(const PixelRGB& rgb) {
 			return {
@@ -62,9 +62,9 @@ namespace europa::util {
 
 		Size getSize() const;
 
-		std::uint32_t* getBuffer();
+		u32* getBuffer();
 
-		std::uint32_t const* getBuffer() const;
+		u32 const* getBuffer() const;
 
 		void resize(Size newSize);
 
@@ -77,14 +77,14 @@ namespace europa::util {
 
 		/// Paint from a 4bpp source.
 		/// Assumes this image has been initalized to the proper size already.
-		void paintFromSource_4bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
+		void paintFromSource_4bpp(u8 const* pSrc, Pixel const* pPalette);
 
 		/// Paint from a 8bpp source.
 		/// Assumes this image has been initalized to the proper size already.
-		void paintFromSource_8bpp(std::uint8_t const* pSrc, Pixel const* pPalette);
+		void paintFromSource_8bpp(u8 const* pSrc, Pixel const* pPalette);
 
 	   private:
-		UniqueArray<std::uint32_t> imageBuffer;
+		UniqueArray<u32> imageBuffer;
 		Size size;
 	};
 

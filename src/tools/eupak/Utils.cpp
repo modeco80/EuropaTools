@@ -11,17 +11,20 @@
 	#define _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 
+#include "Utils.hpp"
+
 #include <algorithm>
-#include <Utils.hpp>
+
+#include "CommonDefs.hpp"
 
 namespace eupak {
 
-	std::string formatUnit(std::uint64_t bytes) {
+	std::string formatUnit(u64 bytes) {
 		char buf[1024];
 		constexpr auto unit = 1024;
 
-		std::size_t exp {};
-		std::size_t div = unit;
+		usize exp {};
+		usize div = unit;
 
 		if(bytes < unit) {
 			sprintf(buf, "%zu B", bytes);
@@ -38,7 +41,7 @@ namespace eupak {
 			}
 		}
 
-#define CHECKED_LIT(literal, expression) (literal)[std::clamp(expression, std::size_t(0), sizeof(literal) - 1)]
+#define CHECKED_LIT(literal, expression) (literal)[std::clamp(expression, usize(0), sizeof(literal) - 1)]
 		sprintf(buf, "%0.2f %cB", float(bytes) / float(div), CHECKED_LIT("kMG", exp));
 #undef CHECKED_LIT
 		return buf;
@@ -52,7 +55,7 @@ namespace eupak {
 		auto count = std::strftime(&buf[0], sizeof(buf), format.data(), &tmObject);
 
 		// an error occured, probably.
-		if(count == static_cast<std::size_t>(-1))
+		if(count == static_cast<usize>(-1))
 			return "";
 
 		return { buf, count };

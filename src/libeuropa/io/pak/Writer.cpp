@@ -98,14 +98,14 @@ namespace europa::io::pak {
 
 			// Update the offset to where we currently are, since we will be writing the file there.
 			file.visitTOCEntry([&](auto& tocEntry) {
-				tocEntry.offset = static_cast<std::uint32_t>(os.tell());
+				tocEntry.offset = static_cast<u32>(os.tell());
 			});
 
 			// For sector alignment.
 			if constexpr(THeader::VERSION == structs::PakVersion::Ver5) {
 				if(manifest.sectorAlignment == SectorAlignment::Align) {
 					auto& toc = file.getTOCEntry<structs::PakHeader_V5::TocEntry_SectorAligned>();
-					toc.startLBA = static_cast<std::uint32_t>((os.tell() / util::kCDSectorSize));
+					toc.startLBA = static_cast<u32>((os.tell() / util::kCDSectorSize));
 				}
 			}
 
@@ -125,7 +125,7 @@ namespace europa::io::pak {
 					mco::teeStreams(fs, os, file.getSize());
 				},
 
-				[&](const std::vector<std::uint8_t>& buffer) {
+				[&](const std::vector<u8>& buffer) {
 					ensureWrite(os, reinterpret_cast<const char*>(buffer.data()), file.getSize());
 				} 
 			});
@@ -141,7 +141,7 @@ namespace europa::io::pak {
 						   filename });
 		}
 
-		pakHeader.tocOffset = static_cast<std::uint32_t>(os.tell());
+		pakHeader.tocOffset = static_cast<u32>(os.tell());
 
 		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingToc });
 
@@ -160,8 +160,8 @@ namespace europa::io::pak {
 		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
-		pakHeader.fileCount = static_cast<std::uint32_t>(manifest.files.size());
-		pakHeader.tocSize = static_cast<std::uint32_t>(os.tell()) - (pakHeader.tocOffset - 1);
+		pakHeader.fileCount = static_cast<u32>(manifest.files.size());
+		pakHeader.tocSize = static_cast<u32>(os.tell()) - (pakHeader.tocOffset - 1);
 
 		// The TOC was accidentally constructed in a way which always adds a trailer null byte,
 		// so replicate that. We do this after filling in the TOC size, because that size

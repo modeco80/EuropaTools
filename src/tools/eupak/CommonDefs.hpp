@@ -10,6 +10,7 @@
 #define EUROPA_EUPAK_COMMONDEFS_HPP
 
 #include <filesystem>
+#include <mco/base_types.hpp>
 
 namespace europa {
 	namespace io {}
