@@ -53,6 +53,7 @@ namespace europa::io::impl {
 	std::string ReadZeroTerminatedString(mco::Stream& is);
 	std::string ReadPString(mco::Stream& is);
 
+	void writeNullTerminatedString(mco::WritableStream& os, const std::string& string);
 	void WritePString(mco::WritableStream& os, const std::string& string);
 
 } // namespace europa::io::impl

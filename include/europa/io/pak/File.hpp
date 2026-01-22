@@ -78,12 +78,14 @@ namespace europa::io::pak {
 			return std::visit(v, variant_);
 		}
 
-	private:
+	   private:
 		FileData(std::vector<std::uint8_t>&& buffer)
-			: variant_(Variant(std::move(buffer))) {}
+			: variant_(Variant(std::move(buffer))) {
+		}
 
 		FileData(const std::filesystem::path& path)
-			: variant_(Variant(path)) {}
+			: variant_(Variant(path)) {
+		}
 
 		FileData::Variant variant_;
 	};
@@ -175,7 +177,7 @@ namespace europa::io::pak {
 			std::visit([&](auto& entry) {
 				entry.creationUnixTime = time;
 			},
-			toc);
+					   toc);
 		}
 
 		std::uint32_t getOffset() const {

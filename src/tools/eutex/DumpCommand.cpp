@@ -68,7 +68,6 @@ namespace eutex {
 				return 1;
 			}
 
-
 			auto ifs = mco::FileStream::open(inputTexPath.string().c_str(), mco::FileStream::Read);
 			yatf::Reader reader(ifs);
 

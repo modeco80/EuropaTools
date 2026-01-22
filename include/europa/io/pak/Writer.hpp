@@ -9,11 +9,11 @@
 #ifndef EUROPA_IO_PAKWRITER_H
 #define EUROPA_IO_PAKWRITER_H
 
-#include <mco/io/stream.hpp>
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
 #include <europa/structs/Pak.hpp>
 #include <iosfwd>
+#include <mco/io/stream.hpp>
 #include <string>
 #include <utility>
 
@@ -32,7 +32,7 @@ namespace europa::io::pak {
 		/// Manifest data structure.
 		struct Manifest {
 			explicit Manifest(std::vector<FlattenedType>& files, std::vector<std::string>& tocOrder)
-			: files(files), tocOrder(tocOrder) {
+				: files(files), tocOrder(tocOrder) {
 			}
 
 			structs::PakVersion version;

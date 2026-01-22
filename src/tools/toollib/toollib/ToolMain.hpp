@@ -16,7 +16,7 @@ namespace tool {
 
 	struct IToolCommand;
 
-    /// Provides information about a tool.
+	/// Provides information about a tool.
 	struct ToolInfo {
 		std::string_view name;		  // "Eupak"
 		std::string_view version;	  // v1.0.0

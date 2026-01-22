@@ -55,10 +55,16 @@ namespace europa::io::impl {
 
 		// Read the string.
 		s.resize(length - 1);
-		is.read(&s[0], length-1);
+		is.read(&s[0], length - 1);
 		static_cast<void>(is.get());
 
 		return s;
+	}
+
+	void writeNullTerminatedString(mco::WritableStream& os, const std::string& string) {
+		if(auto n = os.write(string.data(), string.length() + 1); n != string.length() + 1) {
+			throw std::runtime_error("Short/incomplete write in writeNullTerminatedString()!");
+		}
 	}
 
 	void WritePString(mco::WritableStream& os, const std::string& string) {
@@ -66,8 +72,7 @@ namespace europa::io::impl {
 			throw std::invalid_argument("String length too long for WritePString()");
 		// Write the length and the string.
 		os.put(static_cast<std::uint8_t>(string.length() + 1));
-		os.write(string.data(), string.length() + 1);
+		writeNullTerminatedString(os, string);
 	}
-
 
 } // namespace europa::io::impl

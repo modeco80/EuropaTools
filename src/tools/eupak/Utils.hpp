@@ -9,15 +9,15 @@
 #ifndef EUROPA_EUPAK_UTILS_HPP
 #define EUROPA_EUPAK_UTILS_HPP
 
-#include <string>
-#include <ctime>
 #include <cstdint>
+#include <ctime>
+#include <string>
 
 namespace eupak {
 
 	/**
- 	 * Format a raw amount of bytes to a human-readable unit, if possible.
- 	 * \param[in] bytes Size in bytes.
+	 * Format a raw amount of bytes to a human-readable unit, if possible.
+	 * \param[in] bytes Size in bytes.
 	 */
 	std::string formatUnit(std::uint64_t bytes);
 
@@ -30,7 +30,6 @@ namespace eupak {
 	 */
 	std::string formatUnixTimestamp(std::time_t time, const std::string_view format);
 
-}
-
+} // namespace eupak
 
 #endif // EUROPA_EUPAK_UTILS_HPP

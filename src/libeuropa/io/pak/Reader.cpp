@@ -30,7 +30,9 @@ namespace europa::io::pak {
 		virtualPosition = 0;
 	}
 
-	bool Reader::OpenedFile::isRandomAccess() const noexcept { return true; }
+	bool Reader::OpenedFile::isRandomAccess() const noexcept {
+		return true;
+	}
 
 	u64 Reader::OpenedFile::read(void* buffer, u64 length) {
 		const auto fileSize = file.getSize();
@@ -85,7 +87,6 @@ namespace europa::io::pak {
 	u64 Reader::OpenedFile::getSize() {
 		return file.getSize();
 	}
-
 
 	/// Reader
 

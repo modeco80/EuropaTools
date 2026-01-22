@@ -66,7 +66,6 @@ namespace europa::util {
 	template <usize N>
 	FixedString(char const (&)[N]) -> FixedString<N - 1>;
 
-
 } // namespace europa::util
 
 #endif // EUROPA_UTIL_FIXEDSTRING_H

@@ -68,7 +68,7 @@ namespace europa::util {
 
 		void resize(Size newSize);
 
-		// FIXME: For now, these APIs will work. It may actually make sense 
+		// FIXME: For now, these APIs will work. It may actually make sense
 		// to have a ImageSurface hold a Unique<IPixelBuffer>, that knows about
 		// format and can optionally output pixels or provide raw buffer access
 		// if desired.

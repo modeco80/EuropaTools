@@ -11,14 +11,14 @@
 
 namespace tool {
 	int toollibMain(const ToolInfo& toolInfo, const ToolMainInput& mainInput) {
-        // :( Again, FUCK argparse.
+		// :( Again, FUCK argparse.
 		argparse::ArgumentParser parser(std::string(toolInfo.name), std::string(toolInfo.version));
 		parser.add_description(std::string(toolInfo.description));
 
-        // Add commands to this parser
+		// Add commands to this parser
 		for(auto& toolCmds : mainInput.toolCommands) {
-            toolCmds->init(parser);
-        }
+			toolCmds->init(parser);
+		}
 
 		try {
 			// No command was specified, display the help and then exit with a failure code.

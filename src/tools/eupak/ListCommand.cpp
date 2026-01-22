@@ -11,8 +11,8 @@
 #include <EupakConfig.hpp>
 #include <europa/io/pak/Reader.hpp>
 #include <filesystem>
-#include <mco/io/file_stream.hpp>
 #include <iostream>
+#include <mco/io/file_stream.hpp>
 #include <toollib/ToolCommand.hpp>
 #include <Utils.hpp>
 
@@ -92,7 +92,8 @@ namespace eupak {
 				}
 
 				printf("\n");
-			}, reader.getPackageHeader());
+			},
+					   reader.getPackageHeader());
 
 			for(const auto& [filename, file] : reader.getPackageFiles()) {
 				file.visitTOCEntry([&](auto& tocEntry) {

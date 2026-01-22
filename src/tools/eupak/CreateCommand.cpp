@@ -14,16 +14,15 @@
 #include <europa/io/pak/File.hpp>
 #include <europa/io/pak/Writer.hpp>
 #include <europa/io/pak/WriterProgressReportSink.hpp>
-#include <mco/io/file_stream.hpp>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
+#include <mco/io/file_stream.hpp>
 #include <toollib/ToolCommand.hpp>
 #include <Utils.hpp>
 
-#include "europa/structs/Pak.hpp"
-
 #include "daw/json/daw_json_exception.h"
+#include "europa/structs/Pak.hpp"
 #include "ManifestJSON.hpp"
 
 namespace eupak {
@@ -87,10 +86,9 @@ namespace eupak {
 		};
 	};
 
-
 	struct CreateCommand : tool::IToolCommand {
 		CreateCommand()
-		: parser("create", EUPAK_VERSION_STR, argparse::default_arguments::help) {
+			: parser("create", EUPAK_VERSION_STR, argparse::default_arguments::help) {
 			// Setup argparse
 			// clang-format off
 			parser.add_description("Create a package file.");
@@ -127,7 +125,7 @@ namespace eupak {
 
 			if(!eupak::fs::is_regular_file(currentArgs.inputManifest)) {
 				std::cout << "Error: Provided manifest isn't a file or doesn't exist\n"
-				<< parser;
+						  << parser;
 				return 1;
 			}
 
@@ -212,7 +210,6 @@ namespace eupak {
 			currentArgs.manifest = {};
 
 			try {
-
 				auto ofs = mco::FileStream::open(currentArgs.outputFile.string().c_str(), mco::FileStream::ReadWrite | mco::FileStream::Create);
 				CreateArchiveReportSink reportSink(fileCount);
 				eio::pak::Writer writer;
@@ -228,13 +225,13 @@ namespace eupak {
 		}
 
 	   private:
-		   struct Arguments {
-			   fs::path inputManifest;
-			   fs::path outputFile;
-			   ManifestRoot manifest;
+		struct Arguments {
+			fs::path inputManifest;
+			fs::path outputFile;
+			ManifestRoot manifest;
 
-			   bool verbose;
-		   };
+			bool verbose;
+		};
 
 		argparse::ArgumentParser parser;
 		Arguments currentArgs;

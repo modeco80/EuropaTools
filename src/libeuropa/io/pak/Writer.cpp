@@ -16,11 +16,11 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <mco/io/file_stream.hpp>
+#include <mco/io/stream_utils.hpp>
 #include <stdexcept>
 
 #include "../StreamUtils.h"
-#include <mco/io/file_stream.hpp>
-#include <mco/io/stream_utils.hpp>
 
 namespace europa::io::pak {
 
@@ -157,7 +157,6 @@ namespace europa::io::pak {
 			});
 		}
 
-
 		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::FillInHeader });
 
 		// Fill out the rest of the header.
@@ -170,7 +169,6 @@ namespace europa::io::pak {
 		os.put(0);
 
 		pakHeader.creationUnixTime = manifest.creationUnixTime;
-
 
 		sink.onEvent({ WriterProgressReportSink::PakEvent::EventCode::WritingHeader });
 

@@ -9,11 +9,11 @@
 #include <CommonDefs.hpp>
 #include <EupakConfig.hpp>
 #include <europa/io/pak/Reader.hpp>
-#include <mco/io/file_stream.hpp>
-#include <mco/io/stream_utils.hpp>
 #include <indicators/cursor_control.hpp>
 #include <indicators/progress_bar.hpp>
 #include <iostream>
+#include <mco/io/file_stream.hpp>
+#include <mco/io/stream_utils.hpp>
 #include <stdexcept>
 #include <toollib/ToolCommand.hpp>
 
@@ -24,10 +24,10 @@ namespace eupak {
 	std::string BeautifyPath(const std::string& path) {
 		auto nameCopy = path;
 
-		#ifndef _WIN32
+#ifndef _WIN32
 		// Replace path seperators with the POSIX ones.
 		std::replace(nameCopy.begin(), nameCopy.end(), '\\', '/');
-		#endif
+#endif
 		return nameCopy;
 	}
 
@@ -90,7 +90,7 @@ namespace eupak {
 				root.version = pakHdr.version;
 				root.creationTime = pakHdr.creationUnixTime;
 			},
-			header);
+					   header);
 
 			// if this is pakv5, then set the alignment appropiately
 			// (the default is fine for older versions which don't have alignment)
@@ -111,17 +111,17 @@ namespace eupak {
 			});
 
 			for(auto& [filename, file] : files) {
-				//printf("%s toc offset : %08x\n", filename.c_str(), file.GetOffset());
+				// printf("%s toc offset : %08x\n", filename.c_str(), file.GetOffset());
 				root.tocOrder.push_back(filename);
 			}
 
 			for(auto& [filename, file] : fileOrderedClone) {
-				//printf("%s file offset : %08x\n", filename.c_str(), file.GetOffset());
+				// printf("%s file offset : %08x\n", filename.c_str(), file.GetOffset());
 				auto outpath = (currentArgs.outputDirectory / "files" / BeautifyPath(filename));
 				root.files.push_back(ManifestFile {
-					.path = filename,
-					.sourcePath = outpath.string(),
-									 .creationTime = file.getCreationUnixTime() });
+				.path = filename,
+				.sourcePath = outpath.string(),
+				.creationTime = file.getCreationUnixTime() });
 			}
 
 			// Serialize the JSON to the manifest file.

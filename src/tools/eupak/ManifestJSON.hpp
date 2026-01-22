@@ -19,47 +19,47 @@
 
 namespace eupak {
 
-    struct ManifestFile {
-        std::string path;
-        std::string sourcePath;
-        std::optional<std::uint32_t> creationTime;
-    };
+	struct ManifestFile {
+		std::string path;
+		std::string sourcePath;
+		std::optional<std::uint32_t> creationTime;
+	};
 
-    struct ManifestRoot {
-        estructs::PakVersion version;
-        std::optional<eio::pak::Writer::SectorAlignment> alignment;
-        std::optional<std::uint32_t> creationTime;
+	struct ManifestRoot {
+		estructs::PakVersion version;
+		std::optional<eio::pak::Writer::SectorAlignment> alignment;
+		std::optional<std::uint32_t> creationTime;
 
-        std::vector<ManifestFile> files;
-        std::vector<std::string> tocOrder;
-    };
+		std::vector<ManifestFile> files;
+		std::vector<std::string> tocOrder;
+	};
 
 } // namespace eupak
 
 namespace daw::json {
-    template <>
-    struct json_data_contract<eupak::ManifestFile> {
-        using type = json_member_list<
-        json_string<"path">,
-        json_string<"sourcePath">,
-        json_number_null<"creationTime", std::optional<std::uint32_t>>>;
+	template <>
+	struct json_data_contract<eupak::ManifestFile> {
+		using type = json_member_list<
+		json_string<"path">,
+		json_string<"sourcePath">,
+		json_number_null<"creationTime", std::optional<std::uint32_t>>>;
 
-        static inline auto to_json_data(const eupak::ManifestFile& file) {
-            return std::forward_as_tuple(file.path, file.sourcePath, file.creationTime);
-        }
-    };
+		static inline auto to_json_data(const eupak::ManifestFile& file) {
+			return std::forward_as_tuple(file.path, file.sourcePath, file.creationTime);
+		}
+	};
 
-    template <>
-    struct json_data_contract<eupak::ManifestRoot> {
-        using type = json_member_list<
-        json_number<"version", europa::structs::PakVersion>,
-        json_number_null<"alignment", std::optional<europa::io::pak::Writer::SectorAlignment>>,
-        json_number_null<"creationTime", std::optional<std::uint32_t>>,
-        json_array<"files", eupak::ManifestFile>,
-        json_array<"tocOrder", std::string>>;
+	template <>
+	struct json_data_contract<eupak::ManifestRoot> {
+		using type = json_member_list<
+		json_number<"version", europa::structs::PakVersion>,
+		json_number_null<"alignment", std::optional<europa::io::pak::Writer::SectorAlignment>>,
+		json_number_null<"creationTime", std::optional<std::uint32_t>>,
+		json_array<"files", eupak::ManifestFile>,
+		json_array<"tocOrder", std::string>>;
 
-        static inline auto to_json_data(const eupak::ManifestRoot& root) {
-            return std::forward_as_tuple(root.version, root.alignment, root.creationTime, root.files, root.tocOrder);
-        }
-    };
+		static inline auto to_json_data(const eupak::ManifestRoot& root) {
+			return std::forward_as_tuple(root.version, root.alignment, root.creationTime, root.files, root.tocOrder);
+		}
+	};
 } // namespace daw::json

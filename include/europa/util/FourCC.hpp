@@ -89,14 +89,13 @@ namespace europa::util {
 		};
 
 		/// [FourCCGenerator], but endian can be picked at runtime.
-		template<FourCCPolicy Policy = FourCCDefaultPolicy>
+		template <FourCCPolicy Policy = FourCCDefaultPolicy>
 		struct RuntimeFourCCGenerator {
 			using Generator = FourCCGenerator<Policy>;
 
-			template<FixedString fccString>
+			template <FixedString fccString>
 			inline static FourCC generate(std::endian endian = std::endian::little) {
-				switch(endian)
-				{
+				switch(endian) {
 					case std::endian::little:
 						return Generator::template generate<fccString, std::endian::little>();
 					case std::endian::big:
@@ -117,6 +116,5 @@ namespace europa::util {
 	using impl::RuntimeFourCCGenerator;
 
 } // namespace europa::util
-
 
 #endif // EUROPA_FOURCC_H

@@ -25,7 +25,6 @@ namespace europa::structs {
 		Ver5 = 0x5
 	};
 
-	
 	struct [[gnu::packed]] PakHeader_Common {
 		char magic[16]; // "Europa Packfile\0"
 
@@ -69,8 +68,8 @@ namespace europa::structs {
 		}
 	};
 
-#define IMPL_BRINGIN(T, Version) \
-	using PakHeader_Impl<T, Version>::VERSION; \
+#define IMPL_BRINGIN(T, Version)                      \
+	using PakHeader_Impl<T, Version>::VERSION;        \
 	using PakHeader_Impl<T, Version>::PakHeader_Impl; \
 	using PakHeader_Impl<T, Version>::valid;
 
@@ -92,7 +91,6 @@ namespace europa::structs {
 		// Zeroes.
 		u32 reservedPad {};
 	};
-
 
 	struct [[gnu::packed]] PakHeader_V4 : public PakHeader_Impl<PakHeader_V4, PakVersion::Ver4> {
 		IMPL_BRINGIN(PakHeader_V4, PakVersion::Ver4);

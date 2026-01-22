@@ -41,6 +41,6 @@ namespace europa::io::pak {
 		virtual void onEvent(const FileEvent& event) = 0;
 	};
 
-} // namespace europa::io
+} // namespace europa::io::pak
 
 #endif // EUROPA_IO_PAKPROGRESSREPORTSINK_H

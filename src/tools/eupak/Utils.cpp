@@ -11,8 +11,8 @@
 	#define _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 
-#include <Utils.hpp>
 #include <algorithm>
+#include <Utils.hpp>
 
 namespace eupak {
 
@@ -45,8 +45,8 @@ namespace eupak {
 	}
 
 	std::string formatUnixTimestamp(std::time_t time, const std::string_view format) {
-		char buf[1024]{};
-		tm tmObject{};
+		char buf[1024] {};
+		tm tmObject {};
 
 		localtime_r(&time, &tmObject);
 		auto count = std::strftime(&buf[0], sizeof(buf), format.data(), &tmObject);
@@ -58,4 +58,4 @@ namespace eupak {
 		return { buf, count };
 	}
 
-}
+} // namespace eupak

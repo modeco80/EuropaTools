@@ -9,9 +9,9 @@
 #ifndef EUROPA_IO_PAKREADER_H
 #define EUROPA_IO_PAKREADER_H
 
-#include <mco/io/stream.hpp>
 #include <europa/io/pak/File.hpp>
 #include <europa/structs/Pak.hpp>
+#include <mco/io/stream.hpp>
 #include <string>
 
 namespace europa::io::pak {
@@ -40,7 +40,7 @@ namespace europa::io::pak {
 			i64 seek(i64 offset, Whence whence) override;
 			u64 getSize() override;
 
-		private:
+		   private:
 			friend Reader;
 			OpenedFile(mco::Stream& source, File& file);
 

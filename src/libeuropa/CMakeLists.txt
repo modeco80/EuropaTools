@@ -14,6 +14,9 @@ add_library(europa
 		# Implementation details
 		io/StreamUtils.cpp
 
+		# Values
+		io/Value.cpp
+
 		# Pak IO
 		io/pak/Reader.cpp
 		io/pak/Writer.cpp
