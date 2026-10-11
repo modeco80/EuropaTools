@@ -6,14 +6,21 @@
 # SPDX-License-Identifier: MIT
 #
 
+# HACK!!!! Latest HEAD breaks daw_json_link!!!!
+FetchContent_Declare(
+        daw_header_libraries
+        GIT_REPOSITORY https://github.com/beached/header_libraries.git
+        GIT_TAG v2.136.0
+)
+
 FetchContent_Declare(daw_json_link
         GIT_REPOSITORY https://github.com/beached/daw_json_link.git
-		# latest released version as of 8/4/25
-		GIT_TAG v3.30.2
+		# latest released version as of 10/11/26
+		GIT_TAG v3.38.1
 		GIT_PROGRESS ON
         )
 
-FetchContent_MakeAvailable(daw_json_link)
+FetchContent_MakeAvailable(daw_header_libraries daw_json_link)
 
 add_executable(eupak
 		main.cpp
